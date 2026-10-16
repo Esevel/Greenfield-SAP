@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raise request - Tracker - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/all.html" class="breadcrumb-link">Tracker</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Raise request</span>
+        </nav>
+        
+        <div class="page-header">
+          <h1 class="page-title">Raise request</h1>
+          <p class="page-description">Raise a request on a client's behalf. It's tagged "Raised by Esevel for client" and starts straight away.</p>
+        </div>
+        
+        <div class="request-success" id="requestSuccess" hidden>
+          <span id="successText"></span>
+          <span class="success-links" id="successLinks"></span>
+        </div>
+        
+        <form class="card request-form" id="requestForm" novalidate>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label" for="reqClient">Client <span class="required">*</span></label>
+              <select class="form-select" id="reqClient"></select>
+              <div class="form-error" id="clientError" hidden>Select a client.</div>
+            </div>
+            
+            <div class="form-group">
+              <span class="form-label">Request type</span>
+              <div class="segmented-control" id="reqType">
+                <button type="button" class="segment-button" data-type="redeployment">Redeployment</button>
+                <button type="button" class="segment-button" data-type="storage">Storage</button>
+                <button type="button" class="segment-button" data-type="disposal">Disposal</button>
+              </div>
+              <div class="input-helper" id="typeHelp"></div>
+            </div>
+            
+            <!-- Redeployment: where it's going and where it comes from -->
+            <div class="redeploy-fields" id="redeployFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="reqRecipient">Recipient <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="reqRecipient" placeholder="Employee name or email">
+                  <div class="form-error" id="recipientError" hidden>Enter a recipient.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="reqCountry">Destination country</label>
+                  <select class="form-select" id="reqCountry"></select>
+                </div>
+              </div>
+              
+              <fieldset class="form-group source-group">
+                <legend class="form-label">Source</legend>
+                <div class="radio-row">
+                  <label class="check-option"><input type="radio" name="source" value="hub" checked> Esevel hub <span class="text-muted" id="srcHubNote"></span></label>
+                  <label class="check-option"><input type="radio" name="source" value="site"> Client site</label>
+                  <label class="check-option"><input type="radio" name="source" value="employee"> Another employee</label>
+                </div>
+              </fieldset>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="assetSearch">Assets <span class="required">*</span></label>
+              <div class="selected-assets" id="selectedAssets"></div>
+              <div class="asset-picker">
+                <input type="text" class="form-input" id="assetSearch" placeholder="Search by model, serial or location..." autocomplete="off">
+                <div class="asset-results" id="assetResults" hidden></div>
+              </div>
+              <div class="form-error" id="assetError" hidden>Add at least one asset.</div>
+            </div>
+            
+            <!-- Storage / Disposal: destination comes from the assigned hub -->
+            <div class="form-group" id="destBlock">
+              <span class="form-label">Destination</span>
+              <div class="dest-list" id="destList"></div>
+              <div class="form-error" id="destError" hidden>Some devices have no destination. Assign a hub for that country first.</div>
+            </div>
+            
+            <!-- Redeployment: plan preview -->
+            <div class="form-group" id="planBlock" hidden>
+              <span class="form-label">Plan</span>
+              <div class="plan-box" id="planBox"></div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="reqPriority">Priority</label>
+              <select class="form-select" id="reqPriority">
+                <option>Low</option>
+                <option selected>Normal</option>
+                <option>High</option>
+                <option>Urgent</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="reqNotes">Notes <span class="label-optional">(optional)</span></label>
+              <textarea class="form-textarea" id="reqNotes" placeholder="Anything the team or vendor should know..."></textarea>
+            </div>
+          </div>
+          
+          <div class="request-actions">
+            <a href="/pages/tracker/all.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="submitBtn">Create work order</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/raise-request.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

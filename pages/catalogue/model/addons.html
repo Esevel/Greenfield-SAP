@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Add-ons - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="addons"></div>
+        
+        <div class="toolbar-with-description">
+          <div class="toolbar-description">
+            <p>Warranties, insurance and services that can be added to this model.</p>
+          </div>
+          <button class="btn btn-primary">Add add-on</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th style="width: 40px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AppleCare+ for Business, 3 years</strong></td>
+                <td><span class="tag tag-addon-warranty">Warranty extension</span></td>
+                <td>USD 379.00</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td>
+                  <div class="dropdown">
+                    <button class="btn-icon dropdown-toggle">⋯</button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <a href="#" class="dropdown-menu-item">Edit</a>
+                      <a href="#" class="dropdown-menu-item">Duplicate</a>
+                      <a href="#" class="dropdown-menu-item">Remove</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Accidental damage protection</strong></td>
+                <td><span class="tag tag-addon-insurance">Accidental damage insurance</span></td>
+                <td>USD 199.00</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td>
+                  <div class="dropdown">
+                    <button class="btn-icon dropdown-toggle">⋯</button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <a href="#" class="dropdown-menu-item">Edit</a>
+                      <a href="#" class="dropdown-menu-item">Duplicate</a>
+                      <a href="#" class="dropdown-menu-item">Remove</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Jamf Pro MDM enrolment</strong></td>
+                <td><span class="tag tag-addon-mdm">MDM enrolment</span></td>
+                <td>USD 49.00</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+                <td>
+                  <div class="dropdown">
+                    <button class="btn-icon dropdown-toggle">⋯</button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <a href="#" class="dropdown-menu-item">Edit</a>
+                      <a href="#" class="dropdown-menu-item">Duplicate</a>
+                      <a href="#" class="dropdown-menu-item">Remove</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Premium accessories bundle</strong></td>
+                <td><span class="tag tag-addon-bundle">Peripheral bundle</span></td>
+                <td>USD 159.00</td>
+                <td><label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+                <td>
+                  <div class="dropdown">
+                    <button class="btn-icon dropdown-toggle">⋯</button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <a href="#" class="dropdown-menu-item">Edit</a>
+                      <a href="#" class="dropdown-menu-item">Duplicate</a>
+                      <a href="#" class="dropdown-menu-item">Remove</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/catalogue-edit.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

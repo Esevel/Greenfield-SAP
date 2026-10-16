@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Replaced by the Tracker "All · by risk" tab -->
+  <meta http-equiv="refresh" content="0; url=/pages/tracker/all.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLA command centre - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">SLA command centre</h1>
+            <span class="stock-updated">Live · refreshed 1 min ago</span>
+          </div>
+        </div>
+        
+        <div class="inventory-summary sla-summary">
+          <div class="summary-tile">
+            <div class="summary-tile-label">Open</div>
+            <div class="summary-tile-value">142</div>
+          </div>
+          <div class="summary-tile summary-tile-ok">
+            <div class="summary-tile-label">On track</div>
+            <div class="summary-tile-value">98</div>
+          </div>
+          <div class="summary-tile summary-tile-alert">
+            <div class="summary-tile-label">At risk (24–48h)</div>
+            <div class="summary-tile-value">31</div>
+          </div>
+          <div class="summary-tile summary-tile-breached">
+            <div class="summary-tile-label">Breached</div>
+            <div class="summary-tile-value">13</div>
+          </div>
+        </div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All clients</a>
+                <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item">MediaWorks</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Service type <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All types</a>
+                <a href="#" class="dropdown-menu-item">Orders</a>
+                <a href="#" class="dropdown-menu-item">Onboarding</a>
+                <a href="#" class="dropdown-menu-item">Offboarding</a>
+                <a href="#" class="dropdown-menu-item">Repairs</a>
+                <a href="#" class="dropdown-menu-item">Redeployments</a>
+                <a href="#" class="dropdown-menu-item">Support</a>
+                <a href="#" class="dropdown-menu-item">Storage</a>
+                <a href="#" class="dropdown-menu-item">Disposal</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Country <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All countries</a>
+                <a href="#" class="dropdown-menu-item">Singapore</a>
+                <a href="#" class="dropdown-menu-item">Malaysia</a>
+                <a href="#" class="dropdown-menu-item">Australia</a>
+                <a href="#" class="dropdown-menu-item">United States</a>
+                <a href="#" class="dropdown-menu-item">United Kingdom</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Owner <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All owners</a>
+                <a href="#" class="dropdown-menu-item">Me</a>
+                <a href="#" class="dropdown-menu-item">Qonit</a>
+                <a href="#" class="dropdown-menu-item">Marcus</a>
+                <a href="#" class="dropdown-menu-item">Jia Ling</a>
+                <a href="#" class="dropdown-menu-item">Aisha</a>
+                <a href="#" class="dropdown-menu-item">Unassigned</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Health <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All</a>
+                <a href="#" class="dropdown-menu-item">On track</a>
+                <a href="#" class="dropdown-menu-item">At risk</a>
+                <a href="#" class="dropdown-menu-item">Breached</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Blocked <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All</a>
+                <a href="#" class="dropdown-menu-item">Blocked only</a>
+                <a href="#" class="dropdown-menu-item">Not blocked</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container asset-table-container">
+          <table class="table catalogue-table sla-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Type</th>
+                <th>Current stage</th>
+                <th>Stage owner</th>
+                <th>Blocker</th>
+                <th>Time remaining</th>
+                <th>Health</th>
+                <th>Latest handover note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="selected" data-id="OFF-2055">
+                <td class="card-id">OFF-2055</td>
+                <td>Digital Solutions</td>
+                <td><span class="type-icon" data-tooltip="Offboarding">📤</span></td>
+                <td>Scheduled</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Qonit"></select></div></td>
+                <td class="blocker-text">Awaiting courier</td>
+                <td><div class="runway"><div class="runway-label overdue">1d 4h overdue</div><div class="runway-bar"><div class="runway-fill overdue" style="width: 100%;"></div></div></div></td>
+                <td><span class="sla-pill sla-breached">Breached</span></td>
+                <td><span class="note-preview"><strong>Qonit:</strong> DHL missed second pickup window, escalated to account manager</span></td>
+              </tr>
+              <tr data-id="REP-0871">
+                <td class="card-id">REP-0871</td>
+                <td>TechGlobal Inc</td>
+                <td><span class="type-icon" data-tooltip="Repairs">🔧</span></td>
+                <td>Vendor repair</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Jia Ling"></select></div></td>
+                <td class="blocker-text">Awaiting part</td>
+                <td><div class="runway"><div class="runway-label overdue">9h overdue</div><div class="runway-bar"><div class="runway-fill overdue" style="width: 100%;"></div></div></div></td>
+                <td><span class="sla-pill sla-breached">Breached</span></td>
+                <td><span class="note-preview"><strong>Jia Ling:</strong> Logic board back-ordered, vendor ETA Friday. Loaner sent.</span></td>
+              </tr>
+              <tr data-id="ORD-30398">
+                <td class="card-id">ORD-30398</td>
+                <td>Acme Tech</td>
+                <td><span class="type-icon" data-tooltip="Orders">📦</span></td>
+                <td>Customs clearance</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Aisha"></select></div></td>
+                <td class="blocker-text">Missing import permit</td>
+                <td><div class="runway"><div class="runway-label overdue">2h overdue</div><div class="runway-bar"><div class="runway-fill overdue" style="width: 100%;"></div></div></div></td>
+                <td><span class="sla-pill sla-breached">Breached</span></td>
+                <td><span class="note-preview"><strong>Aisha:</strong> Broker needs commercial invoice re-issued with HS codes</span></td>
+              </tr>
+              <tr data-id="ONB-1182">
+                <td class="card-id">ONB-1182</td>
+                <td>MediaWorks</td>
+                <td><span class="type-icon" data-tooltip="Onboarding">👋</span></td>
+                <td>Device prep</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Marcus"></select></div></td>
+                <td class="blocker-text">Awaiting client approval</td>
+                <td><div class="runway"><div class="runway-label risk">26h left</div><div class="runway-bar"><div class="runway-fill risk" style="width: 73%;"></div></div></div></td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="note-preview"><strong>Marcus:</strong> Chased client admin twice for spec sign-off on the 16" upgrade</span></td>
+              </tr>
+              <tr data-id="SUP-5521">
+                <td class="card-id">SUP-5521</td>
+                <td>Acme Tech</td>
+                <td><span class="type-icon" data-tooltip="Support">💬</span></td>
+                <td>Investigating</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Qonit"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label risk">31h left</div><div class="runway-bar"><div class="runway-fill risk" style="width: 68%;"></div></div></div></td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="note-preview"><strong>Qonit:</strong> VPN profile reissued, waiting on user to confirm it connects</span></td>
+              </tr>
+              <tr data-id="OFF-2044">
+                <td class="card-id">OFF-2044</td>
+                <td>TechGlobal Inc</td>
+                <td><span class="type-icon" data-tooltip="Offboarding">📤</span></td>
+                <td>In transit</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Jia Ling"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label risk">38h left</div><div class="runway-bar"><div class="runway-fill risk" style="width: 60%;"></div></div></div></td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="note-preview"><strong>Jia Ling:</strong> Tracking stalled at Memphis hub, opened trace with FedEx</span></td>
+              </tr>
+              <tr data-id="RED-0311">
+                <td class="card-id">RED-0311</td>
+                <td>MediaWorks</td>
+                <td><span class="type-icon" data-tooltip="Redeployments">🔁</span></td>
+                <td>QC and wipe</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Aisha"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label risk">45h left</div><div class="runway-bar"><div class="runway-fill risk" style="width: 53%;"></div></div></div></td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="note-preview"><strong>Aisha:</strong> Wipe certificate generated, QC bench slot tomorrow AM</span></td>
+              </tr>
+              <tr data-id="ORD-30455">
+                <td class="card-id">ORD-30455</td>
+                <td>Acme Tech</td>
+                <td><span class="type-icon" data-tooltip="Orders">📦</span></td>
+                <td>Picking</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Marcus"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label">3d 2h left</div><div class="runway-bar"><div class="runway-fill" style="width: 22%;"></div></div></div></td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td><span class="note-preview"><strong>Marcus:</strong> Allocated from SG Hub return pool (C02WR9T6MD6T)</span></td>
+              </tr>
+              <tr data-id="REP-0874">
+                <td class="card-id">REP-0874</td>
+                <td>Digital Solutions</td>
+                <td><span class="type-icon" data-tooltip="Repairs">🔧</span></td>
+                <td>Diagnosis</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Jia Ling"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label">4d left</div><div class="runway-bar"><div class="runway-fill" style="width: 20%;"></div></div></div></td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td><span class="note-preview"><strong>Jia Ling:</strong> Booked with FixPoint London, drop-off Thursday</span></td>
+              </tr>
+              <tr data-id="ONB-1190">
+                <td class="card-id">ONB-1190</td>
+                <td>TechGlobal Inc</td>
+                <td><span class="type-icon" data-tooltip="Onboarding">👋</span></td>
+                <td>Shipping kit</td>
+                <td><div class="owner-select"><span class="card-avatar"></span><select class="form-select owner-dropdown" data-owner="Qonit"></select></div></td>
+                <td class="text-muted">—</td>
+                <td><div class="runway"><div class="runway-label">5d 8h left</div><div class="runway-bar"><div class="runway-fill" style="width: 12%;"></div></div></div></td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td><span class="note-preview"><strong>Qonit:</strong> Kit packed, courier label created for Monday</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count">Showing 10 of 142 open items · Sorted by risk (most overdue first)</div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- SLA side panel (opened from a row) -->
+  <div class="side-panel open" id="slaPanel">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="slaTitle"></h3>
+        <div class="device-panel-meta" id="slaMeta"></div>
+      </div>
+      <button class="side-panel-close" id="closeSlaPanel">&times;</button>
+    </div>
+    
+    <div class="side-panel-body">
+      <div class="panel-section">
+        <h4 class="panel-section-title">Runway</h4>
+        <div class="runway-big" id="slaRunwayBig"></div>
+        <div class="runway-bar runway-bar-lg"><div class="runway-fill" id="slaRunwayFill"></div></div>
+        <div class="info-grid">
+          <div class="info-row"><span class="info-label">SLA target</span><span class="info-value" id="slaTarget"></span></div>
+          <div class="info-row"><span class="info-label">Stage started</span><span class="info-value" id="slaStarted"></span></div>
+          <div class="info-row"><span class="info-label">Due</span><span class="info-value" id="slaDue"></span></div>
+          <div class="info-row"><span class="info-label">Time in stage</span><span class="info-value" id="slaElapsed"></span></div>
+        </div>
+      </div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Blocker</h4>
+        <div id="slaBlocker"></div>
+      </div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Handover notes</h4>
+        <div class="handover-feed" id="slaNotes"></div>
+        <div class="add-note">
+          <textarea class="form-textarea" id="slaNoteInput" placeholder="Add a handover note for the next owner..."></textarea>
+          <button class="btn btn-primary btn-sm" id="slaAddNote">Add note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="side-panel-overlay show" id="slaPanelOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/sla.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

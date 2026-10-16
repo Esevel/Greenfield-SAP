@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Client catalogues - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="client-catalogues"></div>
+        
+        <div class="toolbar-with-description">
+          <div class="toolbar-description">
+            <p>Contract-calculated price and marketplace availability for this model.</p>
+          </div>
+          <div class="toolbar-actions">
+            <div class="search-bar search-bar-sm">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="clientCatalogueSearch" placeholder="Search clients...">
+            </div>
+            <label class="filter-select"><span>Offer status</span><select id="clientCatalogueFilter"><option value="">All</option><option value="offered">Offered</option><option value="not-offered">Not offered</option></select></label>
+            <a class="btn btn-secondary" href="/pages/catalogue/model/country-listings.html">Country listings</a>
+          </div>
+        </div>
+        
+        <div class="info-line">
+          Standard clients pay retail. A custom client contract can apply a percentage adjustment to retail; custom prices are floored at vendor cost. Catalogue defaults are suggested when adding a contract adjustment, not applied automatically. This page controls whether the model is offered; it does not set prices.
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Country</th>
+                <th>Billing entity and invoice currency</th>
+                <th>Vendor cost</th>
+                <th>Retail price</th>
+                <th>Adjustment</th>
+                <th>Contract price</th>
+                <th>Offered to client</th>
+                <th>Contract</th>
+              </tr>
+            </thead>
+            <tbody id="clientCatalogueRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="clientCatalogueCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/billing-settings-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/client-catalogues.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

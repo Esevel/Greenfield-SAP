@@ -1,0 +1,231 @@
+/* Integrations styles */
+
+.integrations-summary {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.summary-tile-degraded .summary-tile-value {
+  color: var(--color-warning);
+}
+
+.integrations-table td,
+.integrations-table th {
+  white-space: nowrap;
+  padding-left: var(--space-sm);
+  padding-right: var(--space-sm);
+}
+
+.integrations-table th {
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.integrations-table td:nth-child(1),
+.integrations-table td:nth-child(8) {
+  white-space: normal;
+}
+
+.integrations-table .num {
+  text-align: right;
+}
+
+.integrations-table tbody tr {
+  cursor: pointer;
+}
+
+.integrations-table tbody tr:hover {
+  background-color: var(--color-background);
+}
+
+.system-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.system-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  color: white;
+  flex-shrink: 0;
+}
+
+.logo-workday { background-color: #f38b00; }
+.logo-okta { background-color: #007dc1; }
+.logo-servicenow { background-color: #293e40; }
+.logo-jira { background-color: #2684ff; }
+.logo-bamboo { background-color: #73c41d; }
+.logo-entra { background-color: #0078d4; }
+
+.tag-hris {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #9333ea;
+}
+
+.tag-itsm {
+  background-color: rgba(8, 145, 178, 0.1);
+  color: #0891b2;
+}
+
+.integration-degraded {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.integration-degraded::before {
+  background-color: var(--color-warning);
+}
+
+.integration-disconnected {
+  color: var(--color-text-muted);
+}
+
+.integration-disconnected::before {
+  background-color: var(--color-border);
+}
+
+.errors-count {
+  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+}
+
+.drift {
+  font-size: var(--font-size-sm);
+}
+
+.drift-gap {
+  margin-left: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-warning);
+  background-color: rgba(245, 158, 11, 0.12);
+  border-radius: var(--border-radius-sm);
+}
+
+.drift-ok {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--color-success);
+}
+
+.owner-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+}
+
+/* Integration detail */
+.error-row-msg {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Field mapping */
+.mapping-summary {
+  font-size: var(--font-size-sm);
+}
+
+.mapping-table td {
+  vertical-align: middle;
+}
+
+.mapping-table th:nth-child(3) {
+  width: 190px;
+}
+
+.mapping-table th:nth-child(5) {
+  width: 200px;
+}
+
+.source-field {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+}
+
+.mapping-select {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+}
+
+.tag-required {
+  color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.mapping-note {
+  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.mapping-row-missing {
+  background-color: rgba(239, 68, 68, 0.04);
+}
+
+.mapping-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.mapping-footer .form-error,
+.mapping-saved {
+  margin: 0 auto 0 0;
+  font-size: var(--font-size-sm);
+}
+
+.mapping-saved {
+  color: var(--color-success);
+}
+
+.preview-note {
+  margin: 0 0 var(--space-md);
+}
+
+.preview-record {
+  margin: 0;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 6px 0;
+  font-size: var(--font-size-sm);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.preview-row:last-child {
+  border-bottom: none;
+}
+
+.preview-row dt {
+  color: var(--color-text-secondary);
+}
+
+.preview-row dd {
+  margin: 0;
+  text-align: right;
+  font-weight: var(--font-weight-medium);
+  word-break: break-word;
+}
+
+.preview-review dd::after {
+  content: ' ⚠';
+  color: var(--color-warning);
+}

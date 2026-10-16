@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Overview - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="overview"></div>
+        
+        <div class="edit-layout">
+          <!-- Left Column: Form -->
+          <div class="edit-form-column">
+            <div class="card">
+              <div class="card-body">
+                <div class="form-grid">
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Model name</label>
+                    <input type="text" class="form-input" value="MacBook Pro 14&quot; M3">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="form-label">Brand</label>
+                    <select class="form-select">
+                      <option selected>Apple</option>
+                      <option>Dell</option>
+                      <option>Lenovo</option>
+                      <option>HP</option>
+                      <option>Logitech</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select">
+                      <option selected>Laptops</option>
+                      <option>Monitors</option>
+                      <option>Accessories</option>
+                      <option>Peripherals</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Family</label>
+                    <input type="text" class="form-input" value="MacBook Pro" placeholder="Start typing...">
+                    <div class="input-helper">Type to see suggestions</div>
+                  </div>
+                  
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">End-of-life date <span class="label-optional">(optional)</span></label>
+                    <input type="date" class="form-input">
+                    <div class="input-helper">Clients will see a phasing-out notice</div>
+                  </div>
+                  
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Status</label>
+                    <div class="segmented-control">
+                      <button class="segment-button" data-value="draft">Draft</button>
+                      <button class="segment-button active" data-value="active">Active</button>
+                      <button class="segment-button" data-value="eol">End of life</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Column: Image & Summary -->
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg">
+              <div class="card-body">
+                <div class="image-upload-section">
+                  <div class="product-image-preview">
+                    <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%; height: 200px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 64px;">
+                      💻
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary" style="width: 100%; margin-top: var(--space-md);">Upload image</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Summary</h3>
+              </div>
+              <div class="card-body">
+                <div class="summary-list">
+                  <div class="summary-item">
+                    <span class="summary-icon">🌍</span>
+                    <span class="summary-text">Live in 4 of 7 countries</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-icon">📦</span>
+                    <span class="summary-text">Used in 12 packages</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-icon">🕒</span>
+                    <span class="summary-text">Last updated 8 Oct 2026 by Qonit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/catalogue-edit.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

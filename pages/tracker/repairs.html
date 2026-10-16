@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Repairs - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Repairs</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="repairs"></nav>
+        
+        <div class="tracker-controls">
+          <div class="asset-toolbar">
+            <div class="filter-chips">
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All clients</a>
+                  <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                  <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                  <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                  <a href="#" class="dropdown-menu-item">MediaWorks</a>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Facility <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All facilities</a>
+                  <a href="#" class="dropdown-menu-item">FixPoint London</a>
+                  <a href="#" class="dropdown-menu-item">iFix Kuala Lumpur</a>
+                  <a href="#" class="dropdown-menu-item">Dell Service Centre Singapore</a>
+                  <a href="#" class="dropdown-menu-item">Apple AASP Sydney</a>
+                  <a href="#" class="dropdown-menu-item">TechCare New Jersey</a>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">SLA status <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All</a>
+                  <a href="#" class="dropdown-menu-item">On track</a>
+                  <a href="#" class="dropdown-menu-item">At risk</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <nav class="segmented-control view-toggle">
+            <a href="/pages/tracker/repairs.html" class="segment-button active">Board</a>
+            <a href="/pages/tracker/repairs-list.html" class="segment-button">List</a>
+            <a href="/pages/tracker/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
+          </nav>
+        </div>
+        
+        <div class="board board-fit">
+          <!-- In transit to facility -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">In Transit to Facility <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 1.4 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0877</span></div>
+                <div class="card-subject">Cracked display</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">MacBook Pro 14" M3 · <span class="asset-serial">C02XK4P7MD6T</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier X</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 iFix Kuala Lumpur</div>
+                <div class="card-bottom"><span>Return 23 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Received / Diagnosing -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Diagnosing <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 1.1 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0878</span></div>
+                <div class="card-subject">Mic not detected</div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">Jabra Evolve2 65 · <span class="asset-serial">JB65-0093407</span></div>
+                <div class="card-tags"><span class="owner-tag owner-tech">Technician</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 FixPoint London</div>
+                <div class="card-bottom"><span>Return 24 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0876</span></div>
+                <div class="card-subject">Dead pixels, backlight bleed</div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Dell UltraSharp U2723QE · <span class="asset-serial">CN-0H8W2K-74512</span></div>
+                <div class="card-tags"><span class="owner-tag owner-tech">Technician</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 TechCare New Jersey</div>
+                <div class="card-bottom"><span>Return 22 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- In repair -->
+          <section class="board-column">
+            <div class="board-column-header over-target">
+              <div class="board-column-title">In Repair <span class="board-count">3</span></div>
+              <span class="board-avg" data-tooltip="Avg 4.6 days · target 3">⚠ Avg 4.6 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card blocked" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0871</span></div>
+                <div class="card-subject">Logic board failure</div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Dell XPS 15 · <span class="asset-serial">8HJ2KL9</span></div>
+                <span class="blocked-flag">⛔ Blocked: awaiting part</span>
+                <div class="card-tags"><span class="owner-tag owner-tech">Technician</span><span class="sla-pill sla-risk">At risk</span><span class="alert-sent" data-tooltip="Technician and client admin notified">🔔 Alert sent</span></div>
+                <div class="card-facility">🔧 Dell Service Centre Singapore</div>
+                <div class="card-bottom"><span class="date-late">Return 14 Oct · 2d late</span><span class="card-avatar">JL</span></div>
+              </a>
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0869</span></div>
+                <div class="card-subject">Keyboard keys unresponsive</div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">MacBook Pro 14" M3 · <span class="asset-serial">C02XK4W5MD6T</span></div>
+                <div class="card-tags"><span class="owner-tag owner-tech">Technician</span><span class="sla-pill sla-risk">At risk</span><span class="alert-sent" data-tooltip="Technician and client admin notified">🔔 Alert sent</span></div>
+                <div class="card-facility">🔧 iFix Kuala Lumpur</div>
+                <div class="card-bottom"><span class="date-late">Return 15 Oct · 1d late</span><span class="card-avatar">AI</span></div>
+              </a>
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0874</span></div>
+                <div class="card-subject">Loose lid hinge, screen flicker</div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">ThinkPad X1 Carbon · <span class="asset-serial">PF3QW8ZN</span></div>
+                <div class="card-tags"><span class="owner-tag owner-tech">Technician</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 FixPoint London</div>
+                <div class="card-bottom"><span>Return 19 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Ready to ship -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Ready to Ship <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 0.5 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0872</span></div>
+                <div class="card-subject">Scroll wheel sensor fault</div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">Logitech MX Master 3S · <span class="asset-serial">2241LZ0A9C11</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 Dell Service Centre Singapore</div>
+                <div class="card-bottom"><span>Return 18 Oct</span><span class="card-avatar">AI</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Returning -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Returning <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 1.6 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="/pages/tracker/work-order.html">
+                <div class="card-top"><span class="card-id">REP-0873</span></div>
+                <div class="card-subject">Battery not holding charge</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">MacBook Air 13" M2 · <span class="asset-serial">FVFHG2LMQ6L4</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">DHL Express</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-facility">🔧 Apple AASP Sydney</div>
+                <div class="card-bottom"><span>Return 17 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+        </div>
+        
+        <div class="board-footnote">Alerts go out automatically when a repair passes its expected return date. Average time in stage over the last 30 days.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

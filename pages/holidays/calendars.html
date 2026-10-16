@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operating calendar - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/holidays.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">Operating calendar</h1>
+            <button class="btn btn-primary" id="addClosure">Add closure</button>
+          </div>
+        </div>
+        
+        <div class="request-success" id="closureSaved" hidden style="max-width: none;">
+          <span id="closureSavedText"></span>
+        </div>
+        
+        <div class="holiday-layout">
+          <!-- Countries -->
+          <aside class="card country-list-card">
+            <div class="card-body">
+              <input type="text" class="form-input country-search" id="countrySearch" placeholder="Search countries..." aria-label="Search countries">
+              <ul class="country-list" id="countryList"></ul>
+            </div>
+          </aside>
+          
+          <!-- Calendar -->
+          <section class="card">
+            <div class="card-body">
+              <div class="cal-toolbar">
+                <div class="cal-nav">
+                  <button class="btn btn-secondary btn-sm" id="calPrev" aria-label="Previous month">‹</button>
+                  <span class="cal-month" id="calMonth"></span>
+                  <button class="btn btn-secondary btn-sm" id="calNext" aria-label="Next month">›</button>
+                  <button class="btn-text" id="calToday">Today</button>
+                </div>
+                <div class="segmented-control segmented-sm" id="calView">
+                  <button type="button" class="segment-button active" data-view="calendar">Calendar</button>
+                  <button type="button" class="segment-button" data-view="list">List</button>
+                </div>
+              </div>
+              
+              <div class="cal-legend">
+                <span><span class="legend-dot entry-public"></span>Public holiday</span>
+                <span><span class="legend-dot entry-adhoc"></span>Ad-hoc closure</span>
+                <span><span class="legend-dot" style="background: repeating-linear-gradient(45deg, transparent 0 3px, rgba(0,0,0,0.15) 3px 6px);"></span>Non-operating day</span>
+              </div>
+              
+              <div id="calGridWrap">
+                <div class="cal-grid" id="calGrid"></div>
+              </div>
+              <div id="calListWrap" hidden>
+                <ul class="holiday-list" id="calList"></ul>
+              </div>
+            </div>
+          </section>
+          
+          <!-- Operating schedule -->
+          <aside class="card">
+            <div class="card-header"><h3 class="card-title" id="scheduleTitle">Operating schedule</h3></div>
+            <div class="card-body">
+              <div class="detail-label">Operating days</div>
+              <div class="weekday-row" id="weekdayRow"></div>
+              <div class="detail-label">Working hours</div>
+              <div class="detail-value" id="workingHours" style="margin-bottom: var(--space-md);"></div>
+              <div class="info-grid">
+                <div class="info-row"><span class="info-label">Timezone</span><span class="info-value" id="tzValue"></span></div>
+                <div class="info-row"><span class="info-label">Holidays this year</span><span class="info-value" id="holidayCount"></span></div>
+              </div>
+              <div class="readonly-note">Checkout estimates and SLA clocks skip non-operating days, holidays and closures.</div>
+            </div>
+            
+            <div class="card-header ops-subhead"><h3 class="card-title">Orders</h3></div>
+            <div class="card-body">
+              <div class="cutoff-row"><label for="cutoffInput">Order cut-off (local)</label><input type="time" class="form-input" id="cutoffInput"></div>
+              <div class="detail-label">Delay notices</div>
+              <ul class="delay-list" id="delayList"></ul>
+              <button type="button" class="btn btn-secondary btn-sm" id="addDelay">Add delay notice</button>
+              <div class="readonly-note">Delay notices lengthen checkout estimates and show a notice to clients. SLA targets don't change.</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Add closure dialog -->
+  <div class="modal-overlay" id="closureModal" role="dialog" aria-modal="true" aria-labelledby="closureTitle">
+    <form class="modal closure-modal" id="closureForm" novalidate>
+      <div class="modal-header">
+        <h3 class="modal-title" id="closureTitle">Add closure</h3>
+        <button type="button" class="modal-close" id="closureClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="closureFrom">From <span class="required">*</span></label>
+            <input type="date" class="form-input" id="closureFrom">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="closureTo">To <span class="required">*</span></label>
+            <input type="date" class="form-input" id="closureTo">
+          </div>
+        </div>
+        <div class="form-error" id="dateError" hidden style="margin-top: calc(-1 * var(--space-md)); margin-bottom: var(--space-md);"></div>
+        
+        <div class="form-group">
+          <span class="form-label">Scope</span>
+          <div class="segmented-control" id="closureScope">
+            <button type="button" class="segment-button active" data-scope="country">Country</button>
+            <button type="button" class="segment-button" data-scope="region">Region</button>
+            <button type="button" class="segment-button" data-scope="hub" id="hubScopeBtn">Hub</button>
+          </div>
+        </div>
+        
+        <div class="form-group" id="hubGroup" hidden>
+          <label class="form-label" for="closureHub">Hub <span class="required">*</span></label>
+          <select class="form-select" id="closureHub"></select>
+          <div class="form-hint" id="hubClients"></div>
+        </div>
+        
+        <div class="form-group" id="regionGroup" hidden>
+          <label class="form-label" for="closureRegion">Region <span class="required">*</span></label>
+          <select class="form-select" id="closureRegion"></select>
+        </div>
+        
+        <div class="form-group">
+          <span class="form-label">Applies to</span>
+          <div class="segmented-control" id="closureApplies">
+            <button type="button" class="segment-button" data-applies="procurement">Procurement</button>
+            <button type="button" class="segment-button" data-applies="services">Services</button>
+            <button type="button" class="segment-button active" data-applies="both">Both</button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="closureReason">Reason <span class="required">*</span></label>
+          <input type="text" class="form-input" id="closureReason" placeholder="e.g. Warehouse stocktake, typhoon warning">
+          <div class="form-error" id="reasonError" hidden>Enter a reason.</div>
+        </div>
+      </div>
+      <div class="modal-footer closure-footer">
+        <div class="closure-preview" id="closurePreview" role="status"></div>
+        <div class="closure-footer-buttons">
+          <button type="button" class="btn btn-secondary" id="closureCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/holidays.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

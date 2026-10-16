@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Inventory - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="inventory"></div>
+        
+        <div class="toolbar-with-description">
+          <div class="toolbar-description">
+            <p>Client stock of this model. Every unit belongs to a client and sits in an Esevel hub or at a client site. <span class="badge badge-muted badge-sm">Read-only</span></p>
+          </div>
+          <a href="/pages/stock/list.html" class="btn btn-secondary">Open in Stock</a>
+        </div>
+        
+        <div class="inventory-summary" id="invTiles"></div>
+        
+        <div class="segmented-control mb-lg" id="invFilter">
+          <button type="button" class="segment-button active" data-f="">All</button>
+          <button type="button" class="segment-button" data-f="hub">In Esevel hubs</button>
+          <button type="button" class="segment-button" data-f="site">At client sites</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table inventory-table stock-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Location</th>
+                <th class="num">In stock</th>
+                <th class="num">Reserved</th>
+                <th class="num">Available</th>
+                <th>Incoming</th>
+              </tr>
+            </thead>
+            <tbody id="invRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>  <script src="/scripts/stock-data.js"></script>
+  <script>
+    // Inventory for MacBook Pro 14" M3, read from the shared Stock data
+    (function () {
+      const lines = STOCK_LINES.filter(l => l.model === 'mbp14');
+      let filter = '';
+      const tile = (label, value, sub) => `<div class="summary-tile"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div><div class="summary-tile-sub">${sub}</div></div>`;
+      const sum = (ls, fn) => ls.reduce((s, l) => s + fn(l), 0);
+      document.getElementById('invTiles').innerHTML = [
+        tile('In Esevel hubs', sum(lines.filter(l => isHub(stockLoc(l.loc))), l => l.onHand), 'Storage fees apply'),
+        tile('At client sites', sum(lines.filter(l => !isHub(stockLoc(l.loc))), l => l.onHand), 'No Esevel fees'),
+        tile('Reserved', sum(lines, l => l.reserved), 'For open orders')
+      ].join('');
+      function render() {
+        const shown = lines.filter(l => !filter || (filter === 'hub') === isHub(stockLoc(l.loc)));
+        document.getElementById('invRows').innerHTML = shown.map(l => {
+          const loc = stockLoc(l.loc);
+          return `<tr>
+            <td>${clientCell(l.client)}</td>
+            <td><div class="loc-cell"><span><span class="flag">${WH_COUNTRIES[loc.country][0]}</span> ${escapeHtml(loc.name)}</span>${locationTag(loc)}</div></td>
+            <td class="num">${l.onHand}${l.onHand ? `<div class="stock-sub">${stockNew(l)} new · ${l.used} used</div>` : ''}</td>
+            <td class="num">${l.reserved}</td>
+            <td class="num"><strong>${stockAvailable(l)}</strong></td>
+            <td>${l.incoming ? `${l.incoming.qty} · ${l.incoming.date}<div class="stock-sub">${escapeHtml(l.incoming.ref)}</div>` : '<span class="text-muted">—</span>'}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="6" class="text-muted sla-empty">No stock here</td></tr>';
+      }
+      document.querySelectorAll('#invFilter .segment-button').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('#invFilter .segment-button').forEach(x => x.classList.toggle('active', x === b));
+        filter = b.dataset.f;
+        render();
+      }));
+      render();
+    })();
+  </script>
+  <script src="/scripts/catalogue-edit.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

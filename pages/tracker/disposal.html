@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Disposal - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Tracker</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html?type=disposal" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="disposal"></nav>
+        
+        <div class="board board-fit">
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Collection <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 3.1 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">DSP-0211</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">Jabra Evolve2 65 + dock</div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">From client site · London office · <span class="flag">🇬🇧</span></div>
+                <div class="card-step">Pickup 18 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To e-waste partner · London</span><span class="card-avatar">JL</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Data wipe <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 2.4 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card blocked">
+                <div class="card-top"><span class="card-id">DSP-0207</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
+                <div class="card-subject">4 × MacBook Pro 13" (2019)</div>
+                <div class="card-client">FinanceExperts</div>
+                <div class="card-recipient">At Singapore Hub · from storage · <span class="flag">🇸🇬</span></div>
+                <span class="blocked-flag">⛔ Wipe failed on 1 of 4 drives</span>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-breached">Breached</span></div>
+                <div class="card-bottom"><span>Re-running wipe</span><span class="card-avatar">AI</span></div>
+              </div>
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">DSP-0209</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">Dell Latitude 7420</div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">At US East Hub · <span class="flag">🇺🇸</span></div>
+                <div class="card-step step-done">✓ Collected 14 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><a href="/pages/tracker/work-order.html?wo=DSP-0209" class="link-sm">Open · issue certificate</a><span class="card-avatar">M</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Disposed &amp; certificate <span class="board-count">1</span></div>
+              <span class="board-avg">Last 7 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">DSP-0203</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">6 × Logitech MX Keys</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Singapore Hub · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">Met</span></div>
+                <div class="card-bottom"><a href="#" class="link-sm">Certificate CD-88213</a><span class="card-avatar">Q</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        
+        <div class="board-footnote">Devices in storage or already in a hub skip Collection. The disposal certificate is shared with the client and attached to each asset. Issuing it posts the disposal charge.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

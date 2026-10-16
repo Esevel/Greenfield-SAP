@@ -1,0 +1,323 @@
+/* Holiday calendars styles */
+
+.holiday-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+/* Orders section: cut-off and delay notices (moved from Lead times) */
+.ops-subhead {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.cutoff-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.cutoff-row .form-input {
+  width: 110px;
+}
+
+.delay-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0 var(--space-sm);
+  padding: 0;
+}
+
+.delay-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  padding: 6px var(--space-sm);
+  font-size: var(--font-size-xs);
+  background-color: rgba(245, 158, 11, 0.08);
+  border: var(--border-width) solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--border-radius-md);
+}
+
+.delay-item strong {
+  color: var(--color-warning);
+}
+
+.delay-empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Country list */
+.country-list-card .card-body {
+  padding: var(--space-sm);
+}
+
+.country-search {
+  width: 100%;
+  margin-bottom: var(--space-sm);
+}
+
+.country-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.country-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  text-align: left;
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
+.country-item:hover {
+  background-color: var(--color-background);
+}
+
+.country-item.active {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.country-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* Calendar */
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.cal-month {
+  min-width: 150px;
+  text-align: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cal-legend {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: var(--border-width) solid var(--color-border);
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.cal-dow {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  background-color: var(--color-background);
+  border-right: var(--border-width) solid var(--color-border);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.cal-day {
+  min-height: 88px;
+  padding: var(--space-xs);
+  border-right: var(--border-width) solid var(--color-border);
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.cal-day.outside {
+  background-color: var(--color-background);
+  color: var(--color-text-muted);
+}
+
+.cal-day.non-working {
+  background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgba(0, 0, 0, 0.025) 6px 12px);
+}
+
+.cal-day.today .cal-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.cal-date {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-weight: var(--font-weight-medium);
+}
+
+.cal-entry {
+  display: block;
+  margin-bottom: 2px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1.3;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-public {
+  background-color: rgba(168, 85, 247, 0.12);
+  color: #7e22ce;
+}
+
+.entry-adhoc {
+  background-color: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/* List view */
+.holiday-list {
+  list-style: none;
+}
+
+.holiday-list li {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-sm) 0;
+  font-size: var(--font-size-sm);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.holiday-list li:last-child {
+  border-bottom: none;
+}
+
+.holiday-list .hl-date {
+  color: var(--color-text-secondary);
+}
+
+.holiday-list .hl-meta {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.holiday-empty {
+  padding: var(--space-xl);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Operating schedule */
+.weekday-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-md);
+}
+
+.weekday {
+  flex: 1;
+  padding: 6px 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  color: var(--color-text-muted);
+  background-color: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.weekday.on {
+  color: var(--color-primary);
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+/* Add closure dialog */
+.closure-modal {
+  max-width: 520px;
+}
+
+.closure-modal .form-grid .form-group {
+  margin-bottom: 0;
+}
+
+.closure-modal .form-grid {
+  margin-bottom: var(--space-lg);
+}
+
+.closure-modal .segmented-control {
+  display: flex;
+}
+
+.closure-modal .segment-button {
+  flex: 1;
+}
+
+.closure-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #b45309;
+  background-color: rgba(245, 158, 11, 0.08);
+  border: var(--border-width) solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--border-radius-md);
+}
+
+.closure-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-sm);
+}
+
+.closure-footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

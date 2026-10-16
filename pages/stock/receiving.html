@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock · Receiving - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="stockHeader" data-view="receiving"></div>
+        
+        <div class="saved-note" id="rcSaved" hidden></div>
+        
+        <div class="receive-scan card mb-lg">
+          <div class="card-body">
+            <label class="form-label" for="rcScan">Scan or type a serial</label>
+            <div class="scan-row">
+              <input type="text" class="form-input" id="rcScan" placeholder="e.g. C02XK4511G" autocomplete="off">
+              <button type="button" class="btn btn-primary" id="rcFind">Find</button>
+            </div>
+            <div class="form-error" id="rcScanError" hidden></div>
+            <div class="readonly-note">Receiving a device records its grade and photos, completes the work order's "Received at hub" step, and starts storage billing from today.</div>
+          </div>
+        </div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="segmented-control segmented-sm" id="rcState">
+              <button type="button" class="segment-button active" data-s="arrived">To inspect</button>
+              <button type="button" class="segment-button" data-s="expected">Expected</button>
+              <button type="button" class="segment-button" data-s="received">Received</button>
+              <button type="button" class="segment-button" data-s="">All</button>
+            </div>
+            <label class="filter-select"><span>Hub</span><select id="rcHub"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table receiving-table">
+            <thead class="catalogue-table-header">
+              <tr><th>Device</th><th>Client</th><th>From</th><th>Hub</th><th>Work order</th><th>Expected</th><th>Outcome</th><th>Grade</th><th>Status</th></tr>
+            </thead>
+            <tbody id="rcRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="rcCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="rcPanel" role="dialog" aria-modal="true" aria-labelledby="rcTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="rcTitle"></h3>
+        <div class="device-panel-meta" id="rcMeta"></div>
+      </div>
+      <button class="side-panel-close" id="rcClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="info-grid mb-lg" id="rcInfo"></div>
+      <div id="rcForm">
+        <div class="form-group">
+          <span class="form-label">Condition</span>
+          <div class="segmented-control segmented-sm" id="rcCond">
+            <button type="button" class="segment-button" data-v="new">New (sealed)</button>
+            <button type="button" class="segment-button" data-v="used">Used</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <span class="form-label">Grade</span>
+          <div class="grade-options" id="rcGrade"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rcNotes">Inspection notes</label>
+          <textarea class="form-textarea" id="rcNotes" rows="2" placeholder="Damage, missing parts, accessories included"></textarea>
+        </div>
+        <div class="form-group">
+          <span class="form-label">Photos</span>
+          <div class="photo-gallery" id="rcPhotos"></div>
+          <button type="button" class="btn btn-secondary btn-sm" id="rcAddPhoto">Add photo</button>
+        </div>
+        <div class="form-error" id="rcError" hidden></div>
+      </div>
+      <div class="saved-note" id="rcDone" hidden></div>
+    </div>
+    <div class="side-panel-footer" id="rcFooter">
+      <button class="btn btn-secondary" type="button" id="rcCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="rcSave">Receive into stock</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="rcOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/ops-inputs.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/stock-header.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const fmt = s => stockFmtDate(s);
+      const OUTCOME = { redeploy: 'Redeploy', store: 'Store', dispose: 'Dispose' };
+      let state = 'arrived';
+      let current = null;
+      let form = {};
+
+      const hubs = [...new Set(RECEIVING.map(r => r.hub))].map(stockLoc);
+      $('rcHub').innerHTML = '<option value="">All</option>' + hubs.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+
+      function note(t) { $('rcSaved').textContent = `✓ ${t}`; $('rcSaved').hidden = false; }
+
+      function render() {
+        const rows = RECEIVING.filter(r => (!state || r.status === state) && (!$('rcHub').value || String(r.hub) === $('rcHub').value));
+        document.querySelectorAll('#rcState .segment-button').forEach(b => {
+          b.classList.toggle('active', b.dataset.s === state);
+          const n = RECEIVING.filter(r => !b.dataset.s || r.status === b.dataset.s).length;
+          b.innerHTML = `${b.textContent.replace(/ \d+$/, '')} <span class="tab-count${b.dataset.s === 'arrived' && n ? ' tab-count-alert' : ''}">${n}</span>`;
+        });
+        $('rcRows').innerHTML = rows.map(r => {
+          const [l, c] = RECEIVING_STATUS[r.status];
+          return `<tr data-id="${r.id}" tabindex="0">
+            <td><strong>${escapeHtml(r.model)}</strong><div class="stock-sub asset-serial">${r.serial}</div></td>
+            <td>${clientCell(r.client)}</td>
+            <td>${escapeHtml(r.from)}</td>
+            <td>${escapeHtml(stockLoc(r.hub).name)}</td>
+            <td><a href="/pages/tracker/offboarding-detail.html" class="link-sm">${r.wo}</a></td>
+            <td>${fmt(r.eta)}${r.tracking ? `<div class="stock-sub">${escapeHtml(r.tracking)}</div>` : ''}</td>
+            <td>${OUTCOME[r.outcome]}</td>
+            <td>${r.grade ? `<span class="grade-cell">${r.grade}</span>` : '<span class="text-muted">—</span>'}</td>
+            <td><span class="badge ${c} badge-sm">${l}</span></td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="9" class="text-muted sla-empty">${state === 'arrived' ? 'Nothing waiting for inspection.' : 'Nothing here'}</td></tr>`;
+        $('rcCount').textContent = `${rows.length} shown · Expected devices come from offboarding and restock work orders. Courier return receipts in the Sync inbox mark them as arrived.`;
+        renderStockHeader();
+      }
+
+      function setCond(v) { form.condition = v; document.querySelectorAll('#rcCond .segment-button').forEach(b => b.classList.toggle('active', b.dataset.v === v)); }
+      function setGrade(v) { form.grade = v; renderGrades(); }
+      function renderGrades() {
+        $('rcGrade').innerHTML = Object.entries(GRADES).map(([g, l]) => `<button type="button" class="grade-option ${form.grade === g ? 'active' : ''}" data-g="${g}" ${current.status === 'received' ? 'disabled' : ''}><strong>${g}</strong><span>${l}</span></button>`).join('');
+      }
+      function renderPhotos() {
+        const colors = ['#667eea, #764ba2', '#43e97b, #38f9d7', '#f093fb, #f5576c', '#4facfe, #00f2fe', '#fa709a, #fee140'];
+        const labels = ['Front', 'Back', 'Screen', 'Ports', 'Serial'];
+        $('rcPhotos').innerHTML = Array.from({ length: form.photos }, (_, i) => `<div class="photo-tile" style="background: linear-gradient(135deg, ${colors[i % 5]});">📷<span>${labels[i % 5]}</span></div>`).join('') || '<div class="text-muted">No photos yet. At least 2 needed.</div>';
+      }
+
+      function open(r) {
+        current = r;
+        const locked = r.status === 'received';
+        form = { condition: r.condition || 'used', grade: r.grade || '', photos: r.photos || 0 };
+        $('rcTitle').textContent = r.model;
+        $('rcMeta').textContent = `${r.serial} · ${stockClient(r.client).name}`;
+        const rate = storageRate(r.client, stockLoc(r.hub).country);
+        $('rcInfo').innerHTML = [
+          ['From', escapeHtml(r.from)], ['Work order', `<a href="/pages/tracker/offboarding-detail.html">${r.wo}</a>`], ['Hub', escapeHtml(stockLoc(r.hub).name)],
+          ['Outcome', OUTCOME[r.outcome]], ['Storage', rate.perDay ? `${money(rate.cur, rate.perDay)} / day from intake${rate.fx ? `<div class="stock-sub">${money(rate.local.cur, rate.local.perDay)} local fee at ${rate.fx.rate.toFixed(4)} (${escapeHtml(rate.fx.source)})</div>` : ''}` : 'Not billable on contract']
+        ].map(([a, b]) => `<div class="info-row"><span class="info-label">${a}</span><span class="info-value">${b}</span></div>`).join('');
+        setCond(form.condition);
+        renderGrades();
+        $('rcNotes').value = r.notes || '';
+        $('rcNotes').disabled = locked;
+        renderPhotos();
+        $('rcAddPhoto').hidden = locked;
+        document.querySelectorAll('#rcCond .segment-button').forEach(b => { b.disabled = locked; });
+        $('rcError').hidden = true;
+        $('rcFooter').hidden = locked;
+        $('rcDone').hidden = !locked;
+        const ch = locked ? activeCharges(r.wo, 'Received at hub').find(x => x.asset.startsWith(r.serial)) : null;
+        $('rcDone').innerHTML = locked ? `✓ Received ${r.receivedAt} by ${escapeHtml(r.receivedBy)}. Storage billing started.${ch ? `<div class="stock-sub">Retrieval charge <a href="/pages/billing/ledger.html?entry=${ch.id}" class="link-sm">${ch.id}</a> · ${fmtAmount(ch.cur, ch.amount)} · ${escapeHtml(chargeBasisText(ch))}</div>` : ''}` : '';
+        $('rcPanel').classList.add('open');
+        $('rcOverlay').classList.add('show');
+      }
+      const close = () => { $('rcPanel').classList.remove('open'); $('rcOverlay').classList.remove('show'); current = null; };
+
+      $('rcSave').addEventListener('click', () => {
+        const msg = r => (!form.grade ? 'Pick a grade.' : form.photos < 2 ? 'Add at least 2 photos.' : '');
+        const m = msg(current);
+        $('rcError').textContent = m;
+        $('rcError').hidden = !m;
+        if (m) return;
+        Object.assign(current, { status: 'received', grade: form.grade, condition: form.condition, notes: $('rcNotes').value.trim(), photos: form.photos, receivedAt: billNow(), receivedBy: 'You' });
+        const r = current;
+        const log = completeStep({ wo: r.wo, step: 'Received at hub', source: `Receiving · ${stockLoc(r.hub).name}`, doc: `Intake · ${r.photos} photos · grade ${r.grade}`, cc: stockLoc(r.hub).country, client: r.client,
+          assets: [`${r.serial} · ${r.model}`], recipient: r.from.replace(/ \(.*\)$/, '') });
+        close();
+        note(`${r.serial} received as grade ${r.grade}. ${postingSummary(log)}. Storage billing starts today.${r.grade === 'D' && r.outcome !== 'dispose' ? ' Grade D: consider changing the outcome to Dispose.' : ''}`);
+        render();
+      });
+
+      function find() {
+        const s = $('rcScan').value.trim().toUpperCase();
+        const r = RECEIVING.find(x => x.serial.toUpperCase() === s);
+        $('rcScanError').hidden = !!r || !s;
+        $('rcScanError').textContent = s ? `${s} isn't expected at any hub. Check the serial, or raise a support ticket for an unexpected arrival.` : '';
+        if (!r) return;
+        if (r.status === 'expected') { r.status = 'arrived'; saveBilling(); }
+        state = r.status;
+        render();
+        open(r);
+      }
+      $('rcFind').addEventListener('click', find);
+      $('rcScan').addEventListener('keydown', e => { if (e.key === 'Enter') find(); });
+
+      document.querySelectorAll('#rcCond .segment-button').forEach(b => b.addEventListener('click', () => setCond(b.dataset.v)));
+      $('rcGrade').addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (b) setGrade(b.dataset.g); });
+      $('rcAddPhoto').addEventListener('click', () => { form.photos = Math.min(5, form.photos + 1); renderPhotos(); });
+      $('rcRows').addEventListener('click', e => {
+        if (e.target.closest('a')) return;
+        const row = e.target.closest('tr[data-id]');
+        if (row) open(RECEIVING.find(r => r.id === row.dataset.id));
+      });
+      $('rcState').addEventListener('click', e => { const b = e.target.closest('.segment-button'); if (b) { state = b.dataset.s; render(); } });
+      $('rcHub').addEventListener('change', render);
+      $('rcClose').addEventListener('click', close);
+      $('rcCancel').addEventListener('click', close);
+      $('rcOverlay').addEventListener('click', close);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

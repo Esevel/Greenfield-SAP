@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock · Restock queue - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="stockHeader" data-view="restock"></div>
+        
+        <div class="saved-note" id="rqSaved" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="segmented-control segmented-sm" id="rqStatus">
+              <button type="button" class="segment-button active" data-s="new">To send</button>
+              <button type="button" class="segment-button" data-s="awaiting">Awaiting client</button>
+              <button type="button" class="segment-button" data-s="approved">Approved</button>
+              <button type="button" class="segment-button" data-s="closed">Declined / dismissed</button>
+              <button type="button" class="segment-button" data-s="">All</button>
+            </div>
+            <label class="filter-select"><span>Client</span><select id="rqClient"></select></label>
+            <label class="filter-select"><span>Country</span><select id="rqCountry"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table restock-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>Country</th>
+                <th>Category</th>
+                <th class="num">Available / min</th>
+                <th class="num">Restock qty</th>
+                <th>Vendor</th>
+                <th>Delivers to</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rqRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="rqCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Threshold / restock panel (same markup as templates/threshold-panel.html) -->
+  <div class="side-panel" id="thPanel" role="dialog" aria-modal="true" aria-labelledby="thTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="thTitle"></h3>
+        <div class="device-panel-meta" id="thMeta"></div>
+      </div>
+      <button class="side-panel-close" id="thClose" aria-label="Close">&times;</button>
+    </div>
+    <form class="side-panel-body" id="thForm" novalidate>
+      <div class="form-grid" id="thNewFields" hidden>
+        <div class="form-group">
+          <label class="form-label" for="thClient">Client</label>
+          <select class="form-select" id="thClient"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="thCategory">Category</label>
+          <select class="form-select" id="thCategory"><option>Laptops</option><option>Monitors</option><option>Peripherals</option></select>
+        </div>
+        <div class="form-group form-group-span-2">
+          <label class="form-label" for="thCountry">Country</label>
+          <select class="form-select" id="thCountry"></select>
+          <div class="form-error" id="thDupError" hidden>This client already has a threshold for that category and country.</div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Threshold</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="thMin">Minimum available</label>
+            <input type="number" class="form-input" id="thMin" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="thRestockTo">Restock up to</label>
+            <input type="number" class="form-input" id="thRestockTo" min="1" step="1">
+          </div>
+        </div>
+        <div class="form-error" id="thMinError" hidden></div>
+        <div class="form-group">
+          <span class="form-label">Set by</span>
+          <div class="segmented-control segmented-sm" id="thSetBy">
+            <button type="button" class="segment-button" data-setby="client">Client</button>
+            <button type="button" class="segment-button" data-setby="esevel">Esevel on client's behalf</button>
+          </div>
+        </div>
+        <div class="readonly-note">Counts available units in the client's hub and at their own sites in that country.</div>
+      </div>
+      <div class="panel-section" id="thProposal" hidden>
+        <h4 class="panel-section-title">Restock</h4>
+        <div class="proposal-card">
+          <div class="proposal-qty" id="prQty"></div>
+          <div class="info-grid">
+            <div class="info-row"><span class="info-label">Vendor</span><span class="info-value" id="prVendor"></span></div>
+            <div class="info-row"><span class="info-label">Est. unit cost</span><span class="info-value" id="prCost"></span></div>
+            <div class="info-row"><span class="info-label">Lead time</span><span class="info-value" id="prLead"></span></div>
+            <div class="info-row"><span class="info-label">Delivers to</span><span class="info-value" id="prHub"></span></div>
+          </div>
+          <div class="proposal-status" id="prStatus"></div>
+        </div>
+        <div class="proposal-actions" id="prActions">
+          <button type="button" class="btn btn-secondary btn-sm" id="prDismiss">Dismiss</button>
+          <button type="button" class="btn btn-primary btn-sm" id="prSend">Send to client for approval</button>
+        </div>
+        <div class="readonly-note">Restocks always need the client's approval. Esevel can't approve on their behalf.</div>
+      </div>
+    </form>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" type="button" id="thCancel">Cancel</button>
+      <button class="btn btn-primary" type="submit" form="thForm">Save threshold</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="thOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/stock-header.js"></script>
+  <script src="/scripts/stock-threshold-panel.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const STATUS = {
+        new: ['To send', 'badge-error'],
+        awaiting: ['Awaiting client', 'badge-warning'],
+        approved: ['Approved · PO raised', 'badge-success'],
+        declined: ['Declined by client', 'badge-neutral'],
+        dismissed: ['Dismissed', 'badge-neutral']
+      };
+      let status = 'new';
+
+      const all = restockList();
+      const clients = [...new Set(all.map(r => r.t.client))];
+      $('rqClient').innerHTML = '<option value="">All</option>' + clients.map(id => `<option value="${id}">${stockClient(id).name}</option>`).join('');
+      $('rqCountry').innerHTML = '<option value="">All</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][1]}</option>`).join('');
+
+      function render() {
+        const list = restockList();
+        const rows = list.filter(r => (!status || (status === 'closed' ? ['declined', 'dismissed'].includes(r.state) : r.state === status))
+          && (!$('rqClient').value || r.t.client === $('rqClient').value)
+          && (!$('rqCountry').value || r.t.country === $('rqCountry').value));
+        document.querySelectorAll('#rqStatus .segment-button').forEach(b => {
+          const s = b.dataset.s;
+          const n = s ? list.filter(r => (s === 'closed' ? ['declined', 'dismissed'].includes(r.state) : r.state === s)).length : list.length;
+          b.classList.toggle('active', s === status);
+          b.innerHTML = `${b.textContent.replace(/ \d+$/, '')} <span class="tab-count${s === 'new' && n ? ' tab-count-alert' : ''}">${n}</span>`;
+        });
+        $('rqRows').innerHTML = rows.map(r => {
+          const t = r.t;
+          const [label, cls] = STATUS[r.state];
+          const sent = r.sent ? `<div class="stock-sub">Sent ${stockFmtDate(r.sent)}${r.by ? ` by ${escapeHtml(r.by)}` : ''}</div>` : '';
+          return `<tr>
+            <td><a href="/pages/stock/client.html?c=${t.client}&country=${t.country}" class="link-plain">${clientCell(t.client)}</a></td>
+            <td>${WH_COUNTRIES[t.country][0]} ${WH_COUNTRIES[t.country][1]}</td>
+            <td>${t.category}</td>
+            <td class="num"><strong class="${thresholdStatus(t) === 'breach' ? 'text-error' : ''}">${thresholdCurrent(t)}</strong> / ${t.min}</td>
+            <td class="num">${r.qty}</td>
+            <td>${escapeHtml(t.vendor)}<div class="stock-sub">${escapeHtml(t.unitCost)} / unit</div></td>
+            <td>${r.hub ? escapeHtml(r.hub) : '<span class="text-muted">Client to nominate</span>'}</td>
+            <td><span class="badge ${cls}">${label}</span>${sent}</td>
+            <td><button type="button" class="btn ${r.state === 'new' ? 'btn-primary' : 'btn-secondary'} btn-sm" data-th="${t.id}">${r.state === 'new' ? 'Review' : 'View'}</button></td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="9" class="text-muted sla-empty">${status === 'new' ? 'Nothing to send. New proposals appear here when a client drops below a threshold.' : 'No restocks match'}</td></tr>`;
+        $('rqCount').textContent = `${rows.length} restock${rows.length === 1 ? '' : 's'} · One proposal per client threshold below minimum. Clients approve in their portal.`;
+      }
+
+      const panel = initThresholdPanel(text => {
+        $('rqSaved').hidden = false;
+        $('rqSaved').textContent = `✓ ${text}`;
+        renderStockHeader();
+        render();
+      });
+      $('rqRows').addEventListener('click', e => {
+        const b = e.target.closest('[data-th]');
+        if (b) panel.open(STOCK_THRESHOLDS.find(t => t.id === b.dataset.th));
+      });
+      $('rqStatus').addEventListener('click', e => {
+        const b = e.target.closest('.segment-button');
+        if (b) { status = b.dataset.s; render(); }
+      });
+      ['rqClient', 'rqCountry'].forEach(id => $(id).addEventListener('change', render));
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

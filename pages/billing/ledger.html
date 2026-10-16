@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing ledger - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Billing ledger</h1>
+          <p class="page-description">Charges accrued in real time as billable steps complete, before invoicing. Entries are never edited: corrections appear as reversing entries.</p>
+        </div>
+        <nav class="tab-strip billing-tabs" aria-label="Billing">
+          <a href="/pages/billing/ledger.html" class="tab-link active">Ledger</a>
+          <a href="/pages/billing/invoices.html" class="tab-link">Invoices</a>
+          <a href="/pages/billing/invoices.html?tab=credits" class="tab-link">Credit notes</a>
+          <a href="/pages/billing/needs-action.html" class="tab-link">Needs action <span class="tab-count" id="billingActionCount"></span></a>
+        </nav>
+        
+        <div class="ledger-tiles" id="lgTiles"></div>
+        <div class="saved-note" id="lgSaved" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="segmented-control segmented-sm" id="lgView">
+              <button type="button" class="segment-button active" data-v="unbilled">Unbilled</button>
+              <button type="button" class="segment-button" data-v="attention">Needs attention</button>
+              <button type="button" class="segment-button" data-v="invoiced">Invoiced</button>
+              <button type="button" class="segment-button" data-v="">All</button>
+            </div>
+            <label class="filter-select"><span>Client</span><select id="lgClient"></select></label>
+            <label class="filter-select"><span>Event</span><select id="lgEvent"></select></label>
+            <label class="filter-select"><span>Currency</span><select id="lgCur"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table ledger-table">
+            <thead class="catalogue-table-header">
+              <tr><th>Entry</th><th>Posted</th><th>Client</th><th>Event</th><th>Work order · step</th><th>Asset / recipient</th><th class="num">Amount</th><th>Status</th></tr>
+            </thead>
+            <tbody id="lgRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="lgCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="lgPanel" role="dialog" aria-modal="true" aria-labelledby="lgTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="lgTitle"></h3>
+        <div class="device-panel-meta" id="lgMeta"></div>
+      </div>
+      <button class="side-panel-close" id="lgClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="ledger-alert" id="lgAlert" hidden></div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Amount</h4>
+        <div class="ledger-amount" id="lgAmount"></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Source</h4>
+        <div class="info-grid" id="lgSource"></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Billing</h4>
+        <div class="info-grid" id="lgBilling"></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Correction history</h4>
+        <ul class="location-history" id="lgHistory"></ul>
+      </div>
+      <div class="panel-section" id="lgReverseSection">
+        <h4 class="panel-section-title" id="lgReverseTitle">Reduce this charge</h4>
+        <div class="reduce-routes" id="lgRoutes" role="radiogroup" aria-label="Why reduce this charge"></div>
+        <div class="form-group">
+          <label class="form-label" for="lgReason">Reason</label>
+          <textarea class="form-textarea" id="lgReason" rows="2" placeholder="Why this charge is wrong. Shown in the audit trail."></textarea>
+        </div>
+        <div class="form-error" id="lgError" hidden></div>
+        <div class="readonly-note" id="lgReverseNote"></div>
+      </div>
+    </div>
+    <div class="side-panel-footer" id="lgFooter"></div>
+  </div>
+  <div class="side-panel-overlay" id="lgOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/dispute-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/billing-ledger.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

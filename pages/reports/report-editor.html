@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acme Tech · September 2026 report - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/reports.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content report-page">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/reports/service-reports.html" class="breadcrumb-link">Service reports</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Acme Tech · September 2026</span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit">Acme Tech · September 2026</h1>
+            <span class="badge badge-warning" id="reportStatus">In review</span>
+          </div>
+          <span class="stock-updated" id="savedState">Last saved 14 Oct, 16:20 by Qonit</span>
+        </div>
+        
+        <div class="request-success report-banner" id="reportBanner" hidden>
+          <span id="reportBannerText"></span>
+        </div>
+        
+        <div class="report-layout">
+          <!-- Preview -->
+          <article class="report-preview" aria-label="Report preview">
+            <header class="rp-header">
+              <div>
+                <div class="rp-eyebrow">Monthly service report</div>
+                <h2 class="rp-title">Acme Tech</h2>
+                <div class="rp-sub">1–30 September 2026 · Premium support contract v4</div>
+              </div>
+              <div class="rp-brand">Esevel</div>
+            </header>
+            
+            <section class="rp-section" data-section="summary">
+              <h3 class="rp-section-title">Summary</h3>
+              <div class="rp-kpis">
+                <div class="rp-kpi"><div class="rp-kpi-label">Tickets</div><div class="rp-kpi-value">142</div><div class="rp-delta up">+8% vs Aug</div></div>
+                <div class="rp-kpi"><div class="rp-kpi-label">SLA compliance</div><div class="rp-kpi-value">96.5%</div><div class="rp-delta down">−1.2 pts vs Aug</div></div>
+                <div class="rp-kpi"><div class="rp-kpi-label">Avg first response</div><div class="rp-kpi-value">38m</div><div class="rp-delta neutral">Target 1h</div></div>
+                <div class="rp-kpi"><div class="rp-kpi-label">Avg resolution</div><div class="rp-kpi-value">6h 10m</div><div class="rp-delta neutral">Target 8h</div></div>
+              </div>
+              <div class="rp-commentary" id="previewCommentary"></div>
+            </section>
+            
+            <section class="rp-section" data-section="volume">
+              <h3 class="rp-section-title">Ticket volume</h3>
+              <div class="rp-chart-caption">Tickets opened per month, by service</div>
+              <div class="bar-chart" id="volumeChart" role="img" aria-label="Ticket volume by month, April to September 2026"></div>
+              <div class="chart-legend" id="volumeLegend"></div>
+            </section>
+            
+            <section class="rp-section" data-section="sla">
+              <h3 class="rp-section-title">SLA compliance %</h3>
+              <div class="rp-chart-caption">Share of tickets meeting both response and resolution targets · target 95%</div>
+              <div id="slaChart" role="img" aria-label="SLA compliance by month, April to September 2026"></div>
+            </section>
+            
+            <div class="rp-two-col">
+              <section class="rp-section" data-section="response">
+                <h3 class="rp-section-title">Avg first response</h3>
+                <div class="rp-metric">38m <span class="rp-metric-target">target 1h</span></div>
+                <div class="rp-mini-bars" id="responseBars"></div>
+              </section>
+              
+              <section class="rp-section" data-section="resolution">
+                <h3 class="rp-section-title">Avg resolution</h3>
+                <div class="rp-metric">6h 10m <span class="rp-metric-target">target 8h</span></div>
+                <div class="rp-mini-bars" id="resolutionBars"></div>
+              </section>
+            </div>
+            
+            <section class="rp-section" data-section="breaches">
+              <h3 class="rp-section-title">Breaches <span class="rp-count">5</span></h3>
+              <table class="table doc-table rp-table">
+                <thead>
+                  <tr><th>Ticket</th><th>Service</th><th>SLA</th><th>Target</th><th>Actual</th><th>Cause</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td class="card-id">ORD-30214</td><td>Orders</td><td>Delivery</td><td>3 days</td><td class="sla-bad">5 days</td><td>Customs hold (MY)</td></tr>
+                  <tr><td class="card-id">SUP-5302</td><td>Tier-1 helpdesk</td><td>Resolution</td><td>8h</td><td class="sla-bad">11h 40m</td><td>Escalated to client network team</td></tr>
+                  <tr><td class="card-id">REP-0842</td><td>Depot repair</td><td>Resolution</td><td>5 days</td><td class="sla-bad">7 days</td><td>Part back-ordered</td></tr>
+                  <tr><td class="card-id">SUP-5317</td><td>Tier-1 helpdesk</td><td>First response</td><td>1h</td><td class="sla-bad">1h 25m</td><td>Weekend queue backlog</td></tr>
+                  <tr><td class="card-id">OFF-1988</td><td>Offboarding</td><td>Pickup</td><td>48h</td><td class="sla-bad">3 days</td><td>Courier missed pickup</td></tr>
+                </tbody>
+              </table>
+            </section>
+            
+            <footer class="rp-footer">Prepared by Esevel Customer Success · Figures exclude time paused while waiting on Acme Tech</footer>
+          </article>
+          
+          <!-- Controls -->
+          <aside class="report-controls">
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Sections</h3></div>
+              <div class="card-body">
+                <ul class="section-toggles" id="sectionToggles">
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="summary" checked><span class="toggle-slider"></span></span><span>Summary</span></label></li>
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="volume" checked><span class="toggle-slider"></span></span><span>Ticket volume</span></label></li>
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="sla" checked><span class="toggle-slider"></span></span><span>SLA compliance %</span></label></li>
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="response" checked><span class="toggle-slider"></span></span><span>Avg first response</span></label></li>
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="resolution" checked><span class="toggle-slider"></span></span><span>Avg resolution</span></label></li>
+                  <li><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" data-toggle="breaches" checked><span class="toggle-slider"></span></span><span>Breaches</span></label></li>
+                </ul>
+                <div class="readonly-note" id="sectionError" hidden style="color: var(--color-error);">Keep at least one section in the report.</div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Commentary</h3></div>
+              <div class="card-body">
+                <label class="form-label" for="commentary">Shown under the summary</label>
+                <textarea class="form-textarea commentary-input" id="commentary" maxlength="1200">September volume rose 8%, mainly from the onboarding of 14 new starters in Singapore. SLA compliance dipped to 96.5% but stayed above the 95% target. Three of the five breaches were outside Esevel's control (customs, client network, back-ordered part).
+
+Next month we will add weekend helpdesk cover to remove the Monday response backlog.</textarea>
+                <div class="commentary-meta"><span id="commentaryCount"></span></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+      
+      <div class="report-footer">
+        <span class="report-footer-note" id="footerNote">Changes are saved as a draft until issued.</span>
+        <div class="report-footer-actions">
+          <button class="btn btn-secondary" id="saveDraft">Save draft</button>
+          <button class="btn btn-secondary" data-export="PDF">Export PDF</button>
+          <button class="btn btn-secondary" data-export="CSV">Export CSV</button>
+          <button class="btn btn-secondary" data-export="executive deck">Export executive deck</button>
+          <button class="btn btn-primary" id="issueReport">Issue to client</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Issue confirmation -->
+  <div class="modal-overlay" id="issueModal" role="dialog" aria-modal="true" aria-labelledby="issueTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="issueTitle">Issue report to Acme Tech?</h3>
+        <button type="button" class="modal-close" id="issueClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="issue-text">The report is sent to <strong>Ravi Shah</strong> (client admin) and shown in the client portal. It can't be edited after it's issued.</p>
+        <p class="issue-text text-muted" id="issueSections"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="issueCancel">Cancel</button>
+        <button class="btn btn-primary" id="issueConfirm">Issue to client</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/report-editor.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

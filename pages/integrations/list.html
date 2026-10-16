@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+  <link rel="stylesheet" href="/styles/integrations.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Integrations</h1>
+        </div>
+        
+        <div class="inventory-summary integrations-summary">
+          <div class="summary-tile">
+            <div class="summary-tile-label">Connected</div>
+            <div class="summary-tile-value">7</div>
+          </div>
+          <div class="summary-tile summary-tile-ok">
+            <div class="summary-tile-label">Healthy</div>
+            <div class="summary-tile-value">4</div>
+          </div>
+          <div class="summary-tile summary-tile-degraded">
+            <div class="summary-tile-label">Degraded</div>
+            <div class="summary-tile-value">2</div>
+          </div>
+          <div class="summary-tile summary-tile-breached">
+            <div class="summary-tile-label">Failing</div>
+            <div class="summary-tile-value">1</div>
+          </div>
+          <div class="summary-tile">
+            <div class="summary-tile-label">Errors in queue</div>
+            <div class="summary-tile-value">57</div>
+          </div>
+        </div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All clients</a>
+                <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item">MediaWorks</a>
+                <a href="#" class="dropdown-menu-item">FinanceExperts</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Type <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All types</a>
+                <a href="#" class="dropdown-menu-item">HRIS/IdP</a>
+                <a href="#" class="dropdown-menu-item">ITSM/ITAM</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">System <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All systems</a>
+                <a href="#" class="dropdown-menu-item">Workday</a>
+                <a href="#" class="dropdown-menu-item">BambooHR</a>
+                <a href="#" class="dropdown-menu-item">Okta</a>
+                <a href="#" class="dropdown-menu-item">Microsoft Entra ID</a>
+                <a href="#" class="dropdown-menu-item">ServiceNow</a>
+                <a href="#" class="dropdown-menu-item">Jira Service Management</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Healthy</a>
+                <a href="#" class="dropdown-menu-item">Degraded</a>
+                <a href="#" class="dropdown-menu-item">Failing</a>
+                <a href="#" class="dropdown-menu-item">Disconnected</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container asset-table-container">
+          <table class="table catalogue-table integrations-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>System</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Last sync</th>
+                <th class="num">Records synced (24h)</th>
+                <th class="num">Errors</th>
+                <th>Employee drift</th>
+                <th>Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-servicenow">SN</span>ServiceNow</div></td>
+                <td><span class="tag tag-itsm">ITSM/ITAM</span></td>
+                <td><span class="integration-status integration-failing">Failing</span></td>
+                <td class="text-muted">14 Oct, 22:04</td>
+                <td class="num">0</td>
+                <td class="num errors-count">38</td>
+                <td class="text-muted">—</td>
+                <td><div class="owner-cell"><span class="card-avatar">JL</span>Jia Ling</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-workday">WD</span>Workday</div></td>
+                <td><span class="tag tag-hris">HRIS/IdP</span></td>
+                <td><span class="integration-status integration-degraded">Degraded</span></td>
+                <td class="text-muted">3h ago</td>
+                <td class="num">1,284</td>
+                <td class="num errors-count">12</td>
+                <td><span class="drift">HRIS 412 · Esevel 410</span><span class="drift-gap">2 missing</span></td>
+                <td><div class="owner-cell"><span class="card-avatar">Q</span>Qonit</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-okta">OK</span>Okta</div></td>
+                <td><span class="tag tag-hris">HRIS/IdP</span></td>
+                <td><span class="integration-status integration-degraded">Degraded</span></td>
+                <td class="text-muted">48 min ago</td>
+                <td class="num">642</td>
+                <td class="num errors-count">7</td>
+                <td><span class="drift">IdP 236 · Esevel 239</span><span class="drift-gap">3 extra</span></td>
+                <td><div class="owner-cell"><span class="card-avatar">M</span>Marcus</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-jira">JS</span>Jira Service Management</div></td>
+                <td><span class="tag tag-itsm">ITSM/ITAM</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">5 min ago</td>
+                <td class="num">318</td>
+                <td class="num text-muted">0</td>
+                <td class="text-muted">—</td>
+                <td><div class="owner-cell"><span class="card-avatar">M</span>Marcus</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-servicenow">SN</span>ServiceNow</div></td>
+                <td><span class="tag tag-itsm">ITSM/ITAM</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">2 min ago</td>
+                <td class="num">905</td>
+                <td class="num text-muted">0</td>
+                <td class="text-muted">—</td>
+                <td><div class="owner-cell"><span class="card-avatar">Q</span>Qonit</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">MW</div><span>MediaWorks</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-bamboo">BH</span>BambooHR</div></td>
+                <td><span class="tag tag-hris">HRIS/IdP</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">22 min ago</td>
+                <td class="num">174</td>
+                <td class="num text-muted">0</td>
+                <td><span class="drift">HRIS 158 · Esevel 158</span><span class="drift-ok">✓ In sync</span></td>
+                <td><div class="owner-cell"><span class="card-avatar">AI</span>Aisha</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-entra">EN</span>Microsoft Entra ID</div></td>
+                <td><span class="tag tag-hris">HRIS/IdP</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">11 min ago</td>
+                <td class="num">521</td>
+                <td class="num text-muted">0</td>
+                <td><span class="drift">IdP 304 · Esevel 304</span><span class="drift-ok">✓ In sync</span></td>
+                <td><div class="owner-cell"><span class="card-avatar">JL</span>Jia Ling</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">FE</div><span>FinanceExperts</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-workday">WD</span>Workday</div></td>
+                <td><span class="tag tag-hris">HRIS/IdP</span></td>
+                <td><span class="integration-status integration-disconnected">Disconnected</span></td>
+                <td class="text-muted">2 Sep 2026</td>
+                <td class="num text-muted">—</td>
+                <td class="num text-muted">—</td>
+                <td class="text-muted">—</td>
+                <td><div class="owner-cell"><span class="card-avatar">AI</span>Aisha</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count">Showing 8 of 8 integrations · Employee drift compares headcount in the client's HRIS/IdP with active users in Esevel</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script>
+    // Single prototype detail page for all integrations
+    document.querySelectorAll('.integrations-table tbody tr').forEach(row => {
+      row.addEventListener('click', () => { window.location.href = '/pages/integrations/detail.html'; });
+    });
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

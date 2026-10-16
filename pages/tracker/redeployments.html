@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Redeployments - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Tracker</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html?type=redeployment" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="redeployments"></nav>
+        
+        <div class="board board-fit">
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Collection <span class="board-count">3</span></div>
+              <span class="board-avg">From employees and client sites</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card blocked">
+                <div class="card-top"><span class="card-id">RED-0318</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">Dell XPS 15 → Marcus Bell</div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">From client site · Austin IT room · <span class="flag">🇺🇸</span></div>
+                <span class="blocked-flag">⛔ Site closed until 17 Oct</span>
+                <div class="card-step">Collection booked · FedEx 17 Oct, 09:00</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To US East Hub</span><span class="card-avatar">JL</span></div>
+              </div>
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0315</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
+                <div class="card-subject">MacBook Pro 14" + keyboard → Wei Jie Lim</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">From client site · Singapore office · <span class="flag">🇸🇬</span></div>
+                <div class="card-step">Pickup 17 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To Singapore Hub</span><span class="card-avatar">Q</span></div>
+              </div>
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0313</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">MacBook Pro 14" → Kenji Sato</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">From employee · Priya Raman · <span class="flag">🇸🇬</span></div>
+                <div class="card-step">In transit · ETA 17 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To Singapore Hub</span><span class="card-avatar">M</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Refurbish &amp; reimage <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 1.1 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0311</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">MacBook Air 13" → Siti Rahman</div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">At Kuala Lumpur Hub · <span class="flag">🇲🇾</span></div>
+                <div class="card-step step-done">✓ Collected 15 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>QC bench tomorrow</span><span class="card-avatar">AI</span></div>
+              </div>
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0316</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
+                <div class="card-subject">Dell XPS 15 → Ryan Cooper</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">From US East Hub · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>Reimage today</span><span class="card-avatar">M</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Repackage <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 0.3 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0314</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">Dell UltraSharp U2723QE → Ava Brooks</div>
+                <div class="card-client">CloudSystems</div>
+                <div class="card-recipient">From US West Hub · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>Ships today</span><span class="card-avatar">AI</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Dispatched <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 1.9 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">RED-0310</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">MacBook Pro 14" → Grace Lee</div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">From Singapore Hub · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">Q</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        
+        <div class="board-footnote">Devices already in a hub skip Collection and start at Refurbish. Redeployments a client does on their own don't appear here; they show up as updates on the asset.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

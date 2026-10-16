@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service reports - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/reports.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">Service reports</h1>
+            <button class="btn btn-primary" id="generateReports">Generate reports for September</button>
+          </div>
+        </div>
+        
+        <div class="request-success" id="reportsGenerated" hidden style="max-width: none;">
+          <span id="reportsGeneratedText"></span>
+        </div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All clients</a>
+                <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item">MediaWorks</a>
+                <a href="#" class="dropdown-menu-item">FinanceExperts</a>
+                <a href="#" class="dropdown-menu-item">Northwind Health</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Month <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All months</a>
+                <a href="#" class="dropdown-menu-item">September 2026</a>
+                <a href="#" class="dropdown-menu-item">August 2026</a>
+                <a href="#" class="dropdown-menu-item">July 2026</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Draft</a>
+                <a href="#" class="dropdown-menu-item">In review</a>
+                <a href="#" class="dropdown-menu-item">Issued</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table reports-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>Month</th>
+                <th>Status</th>
+                <th class="num">Tickets</th>
+                <th class="num">SLA compliance</th>
+                <th class="num">Avg first response</th>
+                <th class="num">Avg resolution</th>
+                <th>Issued date</th>
+                <th>Issued by</th>
+              </tr>
+            </thead>
+            <tbody id="reportRows"></tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count" id="reportCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/service-reports.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

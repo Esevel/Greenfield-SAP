@@ -1,0 +1,72 @@
+  <!-- Threshold / restock panel (shared markup, injected by stock-threshold-panel loader) -->
+  <div class="side-panel" id="thPanel" role="dialog" aria-modal="true" aria-labelledby="thTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="thTitle"></h3>
+        <div class="device-panel-meta" id="thMeta"></div>
+      </div>
+      <button class="side-panel-close" id="thClose" aria-label="Close">&times;</button>
+    </div>
+    <form class="side-panel-body" id="thForm" novalidate>
+      <div class="form-grid" id="thNewFields" hidden>
+        <div class="form-group">
+          <label class="form-label" for="thClient">Client</label>
+          <select class="form-select" id="thClient"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="thCategory">Category</label>
+          <select class="form-select" id="thCategory"><option>Laptops</option><option>Monitors</option><option>Peripherals</option></select>
+        </div>
+        <div class="form-group form-group-span-2">
+          <label class="form-label" for="thCountry">Country</label>
+          <select class="form-select" id="thCountry"></select>
+          <div class="form-error" id="thDupError" hidden>This client already has a threshold for that category and country.</div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Threshold</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="thMin">Minimum available</label>
+            <input type="number" class="form-input" id="thMin" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="thRestockTo">Restock up to</label>
+            <input type="number" class="form-input" id="thRestockTo" min="1" step="1">
+          </div>
+        </div>
+        <div class="form-error" id="thMinError" hidden></div>
+        <div class="form-group">
+          <span class="form-label">Set by</span>
+          <div class="segmented-control segmented-sm" id="thSetBy">
+            <button type="button" class="segment-button" data-setby="client">Client</button>
+            <button type="button" class="segment-button" data-setby="esevel">Esevel on client's behalf</button>
+          </div>
+        </div>
+        <div class="readonly-note">Counts available units in the client's hub and at their own sites in that country.</div>
+      </div>
+      <div class="panel-section" id="thProposal" hidden>
+        <h4 class="panel-section-title">Restock</h4>
+        <div class="proposal-card">
+          <div class="proposal-qty" id="prQty"></div>
+          <div class="info-grid">
+            <div class="info-row"><span class="info-label">Vendor</span><span class="info-value" id="prVendor"></span></div>
+            <div class="info-row"><span class="info-label">Est. unit cost</span><span class="info-value" id="prCost"></span></div>
+            <div class="info-row"><span class="info-label">Lead time</span><span class="info-value" id="prLead"></span></div>
+            <div class="info-row"><span class="info-label">Delivers to</span><span class="info-value" id="prHub"></span></div>
+          </div>
+          <div class="proposal-status" id="prStatus"></div>
+        </div>
+        <div class="proposal-actions" id="prActions">
+          <button type="button" class="btn btn-secondary btn-sm" id="prDismiss">Dismiss</button>
+          <button type="button" class="btn btn-primary btn-sm" id="prSend">Send to client for approval</button>
+        </div>
+        <div class="readonly-note">Restocks always need the client's approval. Esevel can't approve on their behalf.</div>
+      </div>
+    </form>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" type="button" id="thCancel">Cancel</button>
+      <button class="btn btn-primary" type="submit" form="thForm">Save threshold</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="thOverlay"></div>

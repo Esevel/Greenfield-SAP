@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>People · Joiners - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/people.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="peopleHeader" data-view="joiners"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
+            <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
+            <label class="filter-select"><span>Completeness</span>
+              <select id="fComp">
+                <option value="">All</option>
+                <option value="complete">Complete</option>
+                <option value="incomplete">Incomplete</option>
+                <option value="phone">Missing phone</option>
+                <option value="address">Missing address</option>
+              </select>
+            </label>
+            <label class="filter-select"><span>Status</span><select id="fStatus"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table joiners-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Employee</th>
+                <th>Client</th>
+                <th>Role</th>
+                <th>Start date</th>
+                <th>Recommended package</th>
+                <th>Completeness</th>
+                <th>Start-date risk</th>
+                <th>Status</th>
+                <th>Work order</th>
+              </tr>
+            </thead>
+            <tbody id="jnRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="jnCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="jnPanel" role="dialog" aria-modal="true" aria-labelledby="jnTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="jnTitle"></h3>
+        <div class="device-panel-meta" id="jnMeta"></div>
+      </div>
+      <button class="side-panel-close" id="jnClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="saved-note" id="jnNote" hidden></div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Employee</h4>
+        <div class="info-grid" id="jnDetails"></div>
+      </div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Package</h4>
+        <select class="form-select" id="jnPkg" aria-label="Package"></select>
+        <div class="pkg-reason" id="jnReason"></div>
+      </div>
+      
+      <div class="panel-section" id="jnRiskSection">
+        <h4 class="panel-section-title">Start-date risk</h4>
+        <div id="jnRisk"></div>
+      </div>
+      
+      <div class="panel-section" id="jnMissingSection">
+        <h4 class="panel-section-title">Missing information</h4>
+        <div class="form-group" id="jnPhoneGroup">
+          <label class="form-label" for="jnPhone">Phone</label>
+          <input type="tel" class="form-input" id="jnPhone" placeholder="Needed by the courier for delivery">
+        </div>
+        <div class="form-group" id="jnAddressGroup">
+          <label class="form-label" for="jnAddress">Delivery address</label>
+          <textarea class="form-textarea" id="jnAddress" rows="2" placeholder="Where the kit should be delivered"></textarea>
+        </div>
+        <div class="missing-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="jnRequest">Request from client</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="jnSaveMissing">Save details</button>
+        </div>
+        <div class="readonly-note" id="jnRequested" hidden></div>
+      </div>
+      
+      <div class="saved-note" id="jnCreated" hidden></div>
+    </div>
+    <div class="side-panel-footer">
+      <span class="readonly-note jn-create-hint" id="jnCreateHint">Fill missing details first</span>
+      <button class="btn btn-secondary" type="button" id="jnCancel">Close</button>
+      <button class="btn btn-primary" type="button" id="jnCreate">Create work order</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="jnOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/people-header.js"></script>
+  <script src="/scripts/people-joiners.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

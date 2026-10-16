@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplier · Overview - Vendors - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/sla-config.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/vendors/list.html" class="breadcrumb-link">Vendors</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current" id="supCrumb"></span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit" id="supTitle"></h1>
+            <div class="vendor-header-tags">
+              <span class="tag type-supplier">Hardware supplier</span>
+              <span class="badge badge-success">Active</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="request-success" id="supSaved" hidden style="max-width: none;"></div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg">
+              <div class="card-header">
+                <h3 class="card-title">Lead times</h3>
+                <button type="button" class="btn btn-primary btn-sm" id="supSave" disabled>Save</button>
+              </div>
+              <div class="card-body doc-body">
+                <table class="table doc-table">
+                  <thead><tr><th>Country</th><th>Lead time to hub (business days)</th><th>Actual 30-day avg</th><th>Clients with a shorter fixed target</th></tr></thead>
+                  <tbody id="supRows"></tbody>
+                </table>
+                <div class="readonly-note" style="padding: var(--space-sm) var(--space-md);">
+                  One lead time per country covers Regular, Rush and Bulk orders, whether the vendor ships to a hub, a client site or the employee. When this vendor takes an order, it sets the SLA target for <strong>Vendor delivery</strong> (plus the grace set in SLA configuration). If the vendor later revises an ETA, the target doesn't move, so a late arrival counts as a breach.
+                </div>
+              </div>
+            </section>
+            
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Overview</h3></div>
+              <div class="card-body">
+                <div class="detail-grid">
+                  <div><div class="detail-label">Account manager</div><div class="detail-value" id="supManager"></div></div>
+                  <div><div class="detail-label">Countries</div><div class="detail-value flag-list" id="supCountries"></div></div>
+                  <div><div class="detail-label">Ordering</div><div class="detail-value">Integration · POs sent automatically</div></div>
+                  <div><div class="detail-label">Contract</div><div class="detail-value">To 30 Jun 2027</div></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const key = new URLSearchParams(location.search).get('v') in SUPPLY_SUPPLIERS ? new URLSearchParams(location.search).get('v') : 'vendorA';
+      const sup = SUPPLY_SUPPLIERS[key];
+      const draft = JSON.parse(JSON.stringify(sup.leadTimes));
+      document.title = `${sup.name} · Vendors - Admin Portal`;
+      $('supCrumb').textContent = sup.name;
+      $('supTitle').textContent = sup.name;
+      $('supManager').textContent = `Account team · orders@${key.toLowerCase()}.example`;
+      $('supCountries').innerHTML = Object.keys(sup.leadTimes).map(cc => `<span class="flag" title="${WH_COUNTRIES[cc][1]}">${WH_COUNTRIES[cc][0]}</span>`).join('');
+
+      // Clients with a fixed Received-at-hub target shorter than this vendor's lead time
+      function conflicts(cc, max) {
+        return ['regular', 'rush', 'bulk'].flatMap(t => {
+          const i = slaSyncedIdx(t);
+          return slaClientsIn(cc).map(c => {
+            const ov = SLA_OVERRIDES[slaKey(c.id, t, cc)];
+            return ov && ov[i] !== null && ov[i] !== undefined && ov[i] < max ? `${c.name} · ${slaType(t).name} ${ov[i]}d` : null;
+          }).filter(Boolean);
+        });
+      }
+
+      const valid = ([a, b]) => Number.isInteger(a) && Number.isInteger(b) && a >= 1 && b >= a && b <= 60;
+      const dirty = () => Object.keys(draft).some(cc => draft[cc][0] !== sup.leadTimes[cc][0] || draft[cc][1] !== sup.leadTimes[cc][1]);
+
+      function render() {
+        $('supRows').innerHTML = Object.keys(draft).map(cc => {
+          const r = draft[cc];
+          const actual = sup.actual[cc];
+          const slow = actual > r[1];
+          const c = valid(r) ? conflicts(cc, r[1]) : [];
+          return `<tr>
+            <td><span class="flag">${WH_COUNTRIES[cc][0]}</span> ${WH_COUNTRIES[cc][1]}</td>
+            <td><span class="${valid(r) ? '' : 'lm-invalid'}"><input type="number" class="form-input lm-input" data-cc="${cc}" data-i="0" value="${r[0]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} minimum"> – <input type="number" class="form-input lm-input" data-cc="${cc}" data-i="1" value="${r[1]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} maximum"></span></td>
+            <td class="${slow ? 'rate-slow' : ''}">${actual.toFixed(1)}d${slow ? ' ⚠ slower than lead time' : ''}</td>
+            <td>${c.length ? `<span class="sla-conflict">⚠ ${c.map(escapeHtml).join(', ')}</span>` : '<span class="text-muted">—</span>'}</td>
+          </tr>`;
+        }).join('');
+        $('supSave').disabled = !dirty() || Object.values(draft).some(r => !valid(r));
+      }
+
+      $('supRows').addEventListener('change', e => {
+        const input = e.target.closest('.lm-input');
+        if (!input) return;
+        draft[input.dataset.cc][Number(input.dataset.i)] = parseInt(input.value, 10);
+        render();
+      });
+      $('supSave').addEventListener('click', () => {
+        Object.assign(sup.leadTimes, JSON.parse(JSON.stringify(draft)));
+        $('supSaved').hidden = false;
+        $('supSaved').textContent = `✓ Lead times saved. New orders placed with ${sup.name} use them; orders already placed keep their targets.`;
+        render();
+      });
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

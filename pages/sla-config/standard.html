@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLA configuration · Standard SLAs - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla-config.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">SLA configuration</h1>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/sla-config/standard.html" class="tab-link active">Standard SLAs</a>
+          <a href="/pages/sla-config/exceptions.html" class="tab-link">Client exceptions <span class="tab-count" id="excCount"></span></a>
+        </nav>
+        
+        <div class="request-success sla-saved" id="slaSaved" hidden>
+          <span id="slaSavedText"></span>
+        </div>
+        
+        <div class="std-toolbar">
+          <label class="filter-select"><span>Country</span><select id="stdCountry"></select></label>
+          <div class="std-legend">
+            <span><span class="synced-tag">From vendor</span> vendor's lead time + grace</span>
+            <span><span class="std-chip std-chip-hub std-legend-chip" aria-hidden="true"></span> Skipped when shipped direct</span>
+            <span><span class="std-chip std-chip-cond std-legend-chip" aria-hidden="true"></span> Only when a collection is needed</span>
+          </div>
+        </div>
+        
+        <div id="stdGroups"></div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Edit standard panel -->
+  <div class="side-panel" id="defPanel" role="dialog" aria-labelledby="defTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="defTitle"></h3>
+        <div class="device-panel-meta" id="defMeta"></div>
+      </div>
+      <button class="side-panel-close" id="defClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="panel-section">
+        <h4 class="panel-section-title">Milestones</h4>
+        <div id="defMilestones"></div>
+        <div class="def-total-row"><span>End-to-end</span><span id="defTotal"></span></div>
+        <div class="form-error" id="defError" hidden>Whole numbers, 1 or more.</div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Also apply to</h4>
+        <div class="def-also-list" id="defAlso"></div>
+      </div>
+      <div class="def-impact" id="defImpact" role="status"></div>
+    </div>
+    <div class="side-panel-footer">
+      <button type="button" class="btn btn-secondary" id="defCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="defSave">Save standard</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="defOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/sla-default-panel.js"></script>
+  <script src="/scripts/sla-standard.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

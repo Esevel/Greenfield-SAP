@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechGlobal Inc · Workday - Integrations - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/integrations.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/integrations/list.html" class="breadcrumb-link">Integrations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">TechGlobal Inc · Workday</span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <span class="system-logo logo-workday" style="width: 40px; height: 40px; font-size: 14px;">WD</span>
+            <h1 class="page-title-edit">Workday</h1>
+            <div class="vendor-header-tags">
+              <span class="tag tag-hris">HRIS/IdP</span>
+              <span class="integration-status integration-degraded">Degraded</span>
+              <span class="text-muted">· TechGlobal Inc</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Pause sync</button>
+            <button class="btn btn-primary">Sync now</button>
+          </div>
+        </div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Sync health</h3></div>
+              <div class="card-body">
+                <div class="detail-grid">
+                  <div><div class="detail-label">Last sync</div><div class="detail-value">3h ago · 13:02 SGT</div></div>
+                  <div><div class="detail-label">Schedule</div><div class="detail-value">Every hour</div></div>
+                  <div><div class="detail-label">Records synced (24h)</div><div class="detail-value">1,284</div></div>
+                  <div><div class="detail-label">Errors in queue</div><div class="detail-value errors-count">12</div></div>
+                  <div><div class="detail-label">Employee drift</div><div class="detail-value">HRIS 412 · Esevel 410 <span class="drift-gap">2 missing</span></div></div>
+                  <div><div class="detail-label">Connected since</div><div class="detail-value">Mar 2025 · OAuth</div></div>
+                </div>
+              </div>
+            </section>
+            
+            <section class="card mb-lg">
+              <div class="card-header">
+                <h3 class="card-title">Errors in queue <span class="tab-count">12</span></h3>
+                <button class="btn btn-secondary btn-sm">Retry all</button>
+              </div>
+              <div class="card-body doc-body">
+                <table class="table doc-table">
+                  <thead>
+                    <tr><th>Time</th><th>Record</th><th>Error</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="text-muted">13:02</td><td>Wei Jie Lim (W-10482)</td><td class="error-row-msg">Missing required field: work_country</td><td><button class="link-sm btn-text">Retry</button></td></tr>
+                    <tr><td class="text-muted">13:02</td><td>Sarah Kim (W-10477)</td><td class="error-row-msg">Manager not found in Esevel: W-08812</td><td><button class="link-sm btn-text">Retry</button></td></tr>
+                    <tr><td class="text-muted">12:01</td><td>Emily Zhang (W-10391)</td><td class="error-row-msg">Termination date in the past, offboarding not created</td><td><button class="link-sm btn-text">Retry</button></td></tr>
+                    <tr><td class="text-muted">11:00</td><td>Ryan Cooper (W-10215)</td><td class="error-row-msg">Rate limited (429), will retry automatically</td><td><button class="link-sm btn-text">Retry</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            
+            <section class="card mb-lg" id="fieldMapping">
+              <div class="card-header">
+                <h3 class="card-title">Field mapping</h3>
+                <span class="text-muted mapping-summary" id="fmSummary"></span>
+              </div>
+              <div class="card-body doc-body">
+                <table class="table doc-table mapping-table">
+                  <thead>
+                    <tr><th>Source field (Workday)</th><th>Sample value</th><th>Esevel field</th><th>Required</th><th>Status</th></tr>
+                  </thead>
+                  <tbody id="fmRows"></tbody>
+                </table>
+              </div>
+              <div class="mapping-footer">
+                <span class="form-error" id="fmError" hidden></span>
+                <span class="mapping-saved" id="fmSaved" hidden></span>
+                <button type="button" class="btn btn-secondary" id="fmDiscard">Discard</button>
+                <button type="button" class="btn btn-primary" id="fmSave">Save mapping</button>
+              </div>
+            </section>
+          </div>
+          
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Preview</h3></div>
+              <div class="card-body">
+                <div class="readonly-note preview-note">One sample record as it will appear in Esevel</div>
+                <dl class="preview-record" id="fmPreview"></dl>
+              </div>
+            </div>
+            
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Owner</h3></div>
+              <div class="card-body">
+                <div class="owner-cell"><span class="card-avatar">Q</span>Qonit · Customer Success</div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">What this integration does</h3></div>
+              <div class="card-body">
+                <ul class="updates-list">
+                  <li class="update-on"><span class="update-mark">✓</span>Creates onboarding for new hires</li>
+                  <li class="update-on"><span class="update-mark">✓</span>Creates offboarding on termination</li>
+                  <li class="update-on"><span class="update-mark">✓</span>Updates employee country and manager</li>
+                  <li class="update-off"><span class="update-mark"></span>Writes asset assignments back</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/integration-mapping.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

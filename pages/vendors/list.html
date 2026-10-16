@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendors - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">Vendors</h1>
+            <button class="btn btn-primary">Add vendor</button>
+          </div>
+        </div>        
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Type <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All types</a>
+                <a href="#" class="dropdown-menu-item">Courier</a>
+                <a href="#" class="dropdown-menu-item">3PL warehouse</a>
+                <a href="#" class="dropdown-menu-item">Repair technician</a>
+                <a href="#" class="dropdown-menu-item">Hardware supplier</a>
+                <a href="#" class="dropdown-menu-item">ITAD partner</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Country <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All countries</a>
+                <a href="#" class="dropdown-menu-item">Singapore</a>
+                <a href="#" class="dropdown-menu-item">Malaysia</a>
+                <a href="#" class="dropdown-menu-item">Australia</a>
+                <a href="#" class="dropdown-menu-item">United States</a>
+                <a href="#" class="dropdown-menu-item">United Kingdom</a>
+                <a href="#" class="dropdown-menu-item">Germany</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Access method <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All</a>
+                <a href="#" class="dropdown-menu-item">Portal</a>
+                <a href="#" class="dropdown-menu-item">Integration</a>
+                <a href="#" class="dropdown-menu-item">Both</a>
+                <a href="#" class="dropdown-menu-item">None</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Active</a>
+                <a href="#" class="dropdown-menu-item">On hold</a>
+                <a href="#" class="dropdown-menu-item">Offboarded</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container asset-table-container">
+          <table class="table catalogue-table vendors-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Vendor</th>
+                <th>Type</th>
+                <th>Countries</th>
+                <th>Access method</th>
+                <th class="num">Portal users</th>
+                <th class="num">Assigned jobs</th>
+                <th>Integration status</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="vendor-name">DHL Express</span></td>
+                <td><span class="tag type-courier">Courier</span></td>
+                <td class="flag-list"><span class="flag">🇸🇬</span><span class="flag">🇲🇾</span><span class="flag">🇦🇺</span><span class="flag">🇬🇧</span><span class="flag">🇩🇪</span></td>
+                <td>Integration</td>
+                <td class="num text-muted">0</td>
+                <td class="num">46</td>
+                <td><span class="integration-status integration-failing">Failing</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">FedEx</span></td>
+                <td><span class="tag type-courier">Courier</span></td>
+                <td class="flag-list"><span class="flag">🇺🇸</span></td>
+                <td>Integration</td>
+                <td class="num text-muted">0</td>
+                <td class="num">21</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Hub SG Logistics</span></td>
+                <td><span class="tag type-3pl">3PL warehouse</span></td>
+                <td class="flag-list"><span class="flag">🇸🇬</span></td>
+                <td>Both</td>
+                <td class="num">6</td>
+                <td class="num">38</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Kerry Logistics</span></td>
+                <td><span class="tag type-3pl">3PL warehouse</span></td>
+                <td class="flag-list"><span class="flag">🇲🇾</span><span class="flag">🇦🇺</span></td>
+                <td>Portal</td>
+                <td class="num">4</td>
+                <td class="num">17</td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">FixPoint London</span></td>
+                <td><span class="tag type-repair">Repair technician</span></td>
+                <td class="flag-list"><span class="flag">🇬🇧</span></td>
+                <td>Portal</td>
+                <td class="num">3</td>
+                <td class="num">9</td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Ingram Micro</span></td>
+                <td><span class="tag type-supplier">Hardware supplier</span></td>
+                <td class="flag-list"><span class="flag">🇸🇬</span><span class="flag">🇲🇾</span><span class="flag">🇦🇺</span><span class="flag">🇺🇸</span></td>
+                <td>Both</td>
+                <td class="num">2</td>
+                <td class="num">14</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Vendor A</span></td>
+                <td><span class="tag type-supplier">Hardware supplier</span></td>
+                <td class="flag-list"><span class="flag">🇸🇬</span><span class="flag">🇲🇾</span></td>
+                <td>Integration</td>
+                <td class="num text-muted">0</td>
+                <td class="num">22</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Vendor B</span></td>
+                <td><span class="tag type-supplier">Hardware supplier</span></td>
+                <td class="flag-list"><span class="flag">🇦🇺</span><span class="flag">🇬🇧</span></td>
+                <td>Integration</td>
+                <td class="num text-muted">0</td>
+                <td class="num">11</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">Vendor C</span></td>
+                <td><span class="tag type-supplier">Hardware supplier</span></td>
+                <td class="flag-list"><span class="flag">🇺🇸</span></td>
+                <td>Integration</td>
+                <td class="num text-muted">0</td>
+                <td class="num">16</td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td><span class="badge badge-success badge-sm">Active</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">GreenCycle ITAD</span></td>
+                <td><span class="tag type-itad">ITAD partner</span></td>
+                <td class="flag-list"><span class="flag">🇸🇬</span><span class="flag">🇦🇺</span></td>
+                <td>Portal</td>
+                <td class="num">2</td>
+                <td class="num">5</td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-warning badge-sm">On hold</span></td>
+              </tr>
+              <tr>
+                <td><span class="vendor-name">TechMend Repairs</span></td>
+                <td><span class="tag type-repair">Repair technician</span></td>
+                <td class="flag-list"><span class="flag">🇲🇾</span></td>
+                <td>None</td>
+                <td class="num text-muted">0</td>
+                <td class="num text-muted">0</td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-muted badge-sm">Offboarded</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count">Showing 11 of 11 vendors</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script>
+    // Prototype: hardware suppliers open the supplier page; every other vendor opens the Courier X page
+    const SUPPLIER_KEYS = { 'Vendor A': 'vendorA', 'Vendor B': 'vendorB', 'Vendor C': 'vendorC', 'Ingram Micro': 'ingram' };
+    document.querySelectorAll('.vendors-table tbody tr').forEach(row => {
+      const key = SUPPLIER_KEYS[row.querySelector('.vendor-name').textContent];
+      row.addEventListener('click', () => {
+        window.location.href = key ? `/pages/vendors/supplier.html?v=${key}` : '/pages/vendors/detail.html';
+      });
+    });
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock · Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="stockHeader" data-view="clients"></div>
+        
+        <div class="inventory-summary stock-summary stock-summary-4" id="scTiles"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="scSearch" placeholder="Search clients..." aria-label="Search clients">
+            </div>
+            <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
+            <label class="sla-check"><input type="checkbox" id="fAttention"> Needs attention</label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table stock-clients-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>Countries</th>
+                <th class="num">In stock</th>
+                <th class="num">Reserved</th>
+                <th class="num">Available</th>
+                <th>Where</th>
+                <th>Storage / month</th>
+                <th>Needs attention</th>
+              </tr>
+            </thead>
+            <tbody id="scRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="scCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/stock-header.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const clients = WH_CLIENTS.filter(c => STOCK_LINES.some(l => l.client === c.id) || STOCK_THRESHOLDS.some(t => t.client === c.id));
+      $('fCountry').innerHTML = '<option value="">All</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][1]}</option>`).join('');
+
+      // Attention items per client: thresholds below minimum, restocks awaiting approval, devices stored 90+ days
+      function attention(c, lines, cc) {
+        const items = [];
+        const breaches = STOCK_THRESHOLDS.filter(t => t.client === c.id && (!cc || t.country === cc) && thresholdStatus(t) === 'breach');
+        if (breaches.length) items.push(`<span class="att att-bad">${breaches.length} below threshold</span>`);
+        const awaiting = restockList().filter(r => r.t.client === c.id && (!cc || r.t.country === cc) && r.state === 'awaiting').length;
+        if (awaiting) items.push(`<span class="att att-wait">${awaiting} restock awaiting client</span>`);
+        const aged = agedCount(lines);
+        if (aged) items.push(`<span class="att att-aged">${aged} stored 90+ days</span>`);
+        return items;
+      }
+
+      function render() {
+        const cc = $('fCountry').value;
+        const q = $('scSearch').value.trim().toLowerCase();
+        const rows = clients.map(c => {
+          const lines = STOCK_LINES.filter(l => l.client === c.id && (!cc || stockLoc(l.loc).country === cc));
+          const sum = fn => lines.reduce((s, l) => s + fn(l), 0);
+          return { c, lines, inStock: sum(l => l.onHand), reserved: sum(l => l.reserved), hub: sum(l => (isHub(stockLoc(l.loc)) ? l.onHand : 0)), att: attention(c, lines, cc) };
+        }).filter(r => (!q || r.c.name.toLowerCase().includes(q))
+          && (!cc || r.lines.length || STOCK_THRESHOLDS.some(t => t.client === r.c.id && t.country === cc))
+          && (!$('fAttention').checked || r.att.length));
+
+        const all = rows.reduce((a, r) => ({ s: a.s + r.inStock, h: a.h + r.hub, r: a.r + r.reserved }), { s: 0, h: 0, r: 0 });
+        const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
+        const needs = rows.filter(r => r.att.length).length;
+        $('scTiles').innerHTML = [
+          tile('Clients with stock', rows.length),
+          tile('In stock', all.s, `${all.h} in Esevel hubs · ${all.s - all.h} at client sites`),
+          tile('Available', all.s - all.r, `${all.r} reserved`),
+          tile('Need attention', needs, 'Below threshold, awaiting restock or aged', needs ? 'summary-tile-alert' : '')
+        ].join('');
+
+        $('scRows').innerHTML = rows.map(r => {
+          const countries = [...new Set([...r.lines.map(l => stockLoc(l.loc).country), ...Object.keys(HUB_ASSIGNMENTS[r.c.id] || {})])]
+            .filter(x => !cc || x === cc);
+          const fees = storageByCurrency(r.lines);
+          return `<tr data-client="${r.c.id}" tabindex="0">
+            <td>${clientCell(r.c.id)}</td>
+            <td>${countries.map(x => `<span class="flag" title="${WH_COUNTRIES[x][1]}">${WH_COUNTRIES[x][0]}</span>`).join(' ')}</td>
+            <td class="num">${r.inStock}</td>
+            <td class="num">${r.reserved}</td>
+            <td class="num"><strong>${r.inStock - r.reserved}</strong></td>
+            <td>${r.inStock ? `<span class="where-split"><span class="tag tag-loc-hub">${r.hub} in hubs</span>${r.inStock - r.hub ? `<span class="tag tag-loc-site">${r.inStock - r.hub} at sites</span>` : ''}</span>` : '<span class="text-muted">—</span>'}</td>
+            <td>${Object.keys(fees).length ? feesLabel(fees) : '<span class="text-muted">None</span>'}</td>
+            <td>${r.att.join(' ') || '<span class="text-muted">—</span>'}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No clients match</td></tr>';
+        $('scCount').textContent = `${rows.length} clients · Click a client to see their stock by country, model and device`;
+      }
+
+      const open = row => { window.location.href = `/pages/stock/client.html?c=${row.dataset.client}${$('fCountry').value ? `&country=${$('fCountry').value}` : ''}`; };
+      $('scRows').addEventListener('click', e => { const row = e.target.closest('tr[data-client]'); if (row) open(row); });
+      $('scRows').addEventListener('keydown', e => { const row = e.target.closest('tr[data-client]'); if (row && e.key === 'Enter') open(row); });
+      ['fCountry', 'fAttention'].forEach(id => $(id).addEventListener('change', render));
+      $('scSearch').addEventListener('input', render);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

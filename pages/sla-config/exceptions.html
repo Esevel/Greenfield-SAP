@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLA configuration · Client exceptions - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla-config.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">SLA configuration</h1>
+            <button type="button" class="btn btn-primary" id="excAdd">Add exception</button>
+          </div>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/sla-config/standard.html" class="tab-link">Standard SLAs</a>
+          <a href="/pages/sla-config/exceptions.html" class="tab-link active">Client exceptions <span class="tab-count" id="excCount"></span></a>
+        </nav>
+        
+        <div class="request-success sla-saved" id="slaSaved" hidden>
+          <span id="slaSavedText"></span>
+        </div>
+        
+        <div class="exc-banner" id="excBanner" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
+            <label class="filter-select"><span>SLA type</span><select id="fType"></select></label>
+            <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table exc-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>SLA type</th>
+                <th>Country</th>
+                <th>Differs from standard</th>
+                <th>Contract</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="excRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="excFooter"></div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Add / edit exception panel -->
+  <div class="side-panel" id="excPanel" role="dialog" aria-labelledby="excTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="excTitle">Add exception</h3>
+        <div class="device-panel-meta" id="excMeta"></div>
+      </div>
+      <button class="side-panel-close" id="excClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="panel-section" id="excPick">
+        <div class="form-group">
+          <label class="form-label" for="pClient">Client</label>
+          <select class="form-select" id="pClient"></select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="pType">SLA type</label>
+            <select class="form-select" id="pType"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pCountry">Country</label>
+            <select class="form-select" id="pCountry"></select>
+          </div>
+        </div>
+        <div class="form-error" id="pExists" hidden></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Milestones</h4>
+        <div class="exc-ms-row exc-ms-head"><span>Milestone</span><span>Standard</span><span>This client</span></div>
+        <div id="excMilestones"></div>
+        <div class="form-error" id="excError" hidden>Whole numbers, 1 or more. Leave empty to use the standard.</div>
+        <div class="readonly-note">Leave a field empty to keep the standard. Saving creates a new contract version for the client.</div>
+      </div>
+      <div class="def-impact" id="excConflict" hidden></div>
+    </div>
+    <div class="side-panel-footer">
+      <button type="button" class="btn-text" id="excRemove" hidden>Remove exception</button>
+      <span style="flex: 1;"></span>
+      <button type="button" class="btn btn-secondary" id="excCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="excSave">Save</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="excOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/sla-standard.js"></script>
+  <script src="/scripts/sla-exceptions.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

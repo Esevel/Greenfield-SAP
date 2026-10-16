@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Activity - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="activity"></div>
+        
+        <div class="toolbar-with-description">
+          <div class="toolbar-description">
+            <p>Who changed what on this model.</p>
+          </div>
+          <div class="toolbar-actions">
+            <div class="dropdown">
+              <button class="dropdown-toggle btn-sm">
+                <span>All changes</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All changes</a>
+                <a href="#" class="dropdown-menu-item">Pricing</a>
+                <a href="#" class="dropdown-menu-item">Availability</a>
+                <a href="#" class="dropdown-menu-item">Stock</a>
+                <a href="#" class="dropdown-menu-item">Add-ons</a>
+                <a href="#" class="dropdown-menu-item">Client catalogues</a>
+              </div>
+            </div>
+            <button class="btn-text">Export</button>
+          </div>
+        </div>
+        
+        <div class="activity-feed">
+          <div class="activity-group">
+            <div class="activity-group-header">Today</div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">Q</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Qonit</strong>
+                  <span class="activity-time">2 hours ago</span>
+                </div>
+                <div class="activity-message">
+                  Changed Singapore retail price from <span class="strikethrough">SGD 2,199</span> to <strong>SGD 2,299</strong>
+                </div>
+                <span class="activity-tag">Pricing</span>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">Q</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Qonit</strong>
+                  <span class="activity-time">4 hours ago</span>
+                </div>
+                <div class="activity-message">Turned off availability in Malaysia</div>
+                <span class="activity-tag">Availability</span>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar system-icon">⚙</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>System</strong>
+                  <span class="activity-time">6 hours ago</span>
+                </div>
+                <div class="activity-message">
+                  Updated stock levels: Singapore warehouse SG-01 from <span class="strikethrough">18</span> to <strong>14 units</strong>
+                </div>
+                <span class="activity-tag">Stock</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="activity-group">
+            <div class="activity-group-header">Yesterday</div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">Q</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Qonit</strong>
+                  <span class="activity-time">Yesterday at 3:42 PM</span>
+                </div>
+                <div class="activity-message">Added AppleCare+ add-on</div>
+                <span class="activity-tag">Add-ons</span>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">M</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Marcus</strong>
+                  <span class="activity-time">Yesterday at 11:15 AM</span>
+                </div>
+                <div class="activity-message">
+                  Added client pricing for TechGlobal Inc: <strong>USD 1,499.00</strong>
+                </div>
+                <span class="activity-tag">Client catalogues</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="activity-group">
+            <div class="activity-group-header">Earlier</div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">Q</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Qonit</strong>
+                  <span class="activity-time">8 Oct 2026</span>
+                </div>
+                <div class="activity-message">
+                  Changed model name from <span class="strikethrough">MacBook Pro 14" M3 Pro</span> to <strong>MacBook Pro 14" M3</strong>
+                </div>
+                <span class="activity-tag">Overview</span>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar system-icon">⚙</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>System</strong>
+                  <span class="activity-time">5 Oct 2026</span>
+                </div>
+                <div class="activity-message">
+                  Applied pricing rule update: Laptops · <span class="strikethrough">+15%</span> <strong>+18%</strong>
+                </div>
+                <span class="activity-tag">Pricing</span>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-avatar">M</div>
+              <div class="activity-content">
+                <div class="activity-header">
+                  <strong>Marcus</strong>
+                  <span class="activity-time">1 Oct 2026</span>
+                </div>
+                <div class="activity-message">Created model</div>
+                <span class="activity-tag">Overview</span>
+              </div>
+            </div>
+          </div>
+          
+          <button class="btn btn-secondary" style="margin-top: var(--space-lg);">Load more</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/catalogue-edit.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

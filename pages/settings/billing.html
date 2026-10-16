@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing settings - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Billing</h1>
+          <p class="page-description">Defaults every client starts from. Client contracts store only what differs. Staff only.</p>
+        </div>
+        
+        <nav class="tab-strip" id="bsTabs">
+          <a href="?tab=fees" class="tab-link" data-tab="fees">Standard fees</a>
+          <a href="?tab=tax" class="tab-link" data-tab="tax">Tax and duties</a>
+          <a href="?tab=fx" class="tab-link" data-tab="fx">FX</a>
+        </nav>
+        
+        <div class="saved-note" id="bsSaved" hidden></div>
+        
+        <!-- Standard fees -->
+        <div id="tab-fees" hidden>
+          <div class="info-line">Charged automatically when the milestone completes: one charge per completed step. Each country is priced in its own currency; charges convert to the paying billing entity's currency at the contract's FX source.</div>
+          <div class="table-container">
+            <table class="table catalogue-table pricing-table std-fee-table">
+              <thead class="catalogue-table-header" id="sfHead"></thead>
+              <tbody id="sfRows"></tbody>
+            </table>
+          </div>
+          <div class="table-footer-count" id="sfCount"></div>
+        </div>
+        
+        <!-- Tax -->
+        <div id="tab-tax" hidden>
+          <div class="asset-toolbar">
+            <div class="filter-chips stock-filters">
+              <label class="filter-select"><span>Jurisdiction</span><select id="tJur"></select></label>
+              <label class="sla-check"><input type="checkbox" id="tPast"> Show past versions</label>
+            </div>
+            <button class="btn btn-primary btn-sm" id="txAdd">Add rate</button>
+          </div>
+          <div class="table-container">
+            <table class="table catalogue-table pricing-table tax-table">
+              <thead class="catalogue-table-header">
+                <tr><th>Jurisdiction</th><th>Tax type</th><th class="num">Rate</th><th>Effective</th><th>Duties and customs</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="tRows"></tbody>
+            </table>
+          </div>
+          <div class="table-footer-count">Checkout reads these rates to show tax and duties upfront. Importer of record and exemptions (e.g. resale certificates) are set on each client's billing entity.</div>
+        </div>
+        
+        <!-- FX -->
+        <div id="tab-fx" hidden>
+          <div class="info-line">Each client contract picks one FX source and when the rate locks (milestone or checkout). Used whenever a charge's fee currency differs from the paying entity's currency, and for converting spend into a client's cap currency.</div>
+          <div class="fx-layout">
+            <div class="table-container">
+              <table class="table catalogue-table pricing-table">
+                <thead class="catalogue-table-header"><tr><th>Source</th><th>Updates</th><th>Used by</th><th>Last refreshed</th></tr></thead>
+                <tbody id="fxSources"></tbody>
+              </table>
+            </div>
+            <div class="table-container">
+              <table class="table catalogue-table pricing-table">
+                <thead class="catalogue-table-header"><tr><th>Currency</th><th class="num">Per 1 USD</th><th class="num">Change (7d)</th></tr></thead>
+                <tbody id="fxRates"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Standard fee panel -->
+  <div class="side-panel side-panel-wide" id="sfPanel" role="dialog" aria-modal="true" aria-labelledby="sfTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="sfTitle"></h3>
+        <div class="device-panel-meta" id="sfMeta"></div>
+      </div>
+      <button class="side-panel-close" id="sfClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <table class="device-list-table sf-edit">
+        <thead><tr><th>Event</th><th>Charged when</th><th class="num">Fee</th></tr></thead>
+        <tbody id="sfEdit"></tbody>
+      </table>
+      <div class="form-grid sf-meta-fields">
+        <div class="form-group">
+          <label class="form-label" for="sfFrom">Effective from</label>
+          <input type="date" class="form-input" id="sfFrom">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sfNote">Reason</label>
+          <input type="text" class="form-input" id="sfNote" placeholder="e.g. Courier cost increase">
+        </div>
+      </div>
+      <div class="form-error" id="sfError" hidden></div>
+      <div class="readonly-note" id="sfImpact"></div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Version history</h4>
+        <ul class="location-history" id="sfHistory"></ul>
+      </div>
+    </div>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" type="button" id="sfCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="sfSave">Save new version</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="sfOverlay"></div>
+  
+  <!-- Tax panel -->
+  <div class="side-panel" id="tPanel" role="dialog" aria-modal="true" aria-labelledby="tTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="tTitle">Tax rate</h3>
+        <div class="device-panel-meta" id="tMeta"></div>
+      </div>
+      <button class="side-panel-close" id="tClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="tfJur">Country or US state</label>
+          <select class="form-select" id="tfJur"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tfType">Tax type</label>
+          <input type="text" class="form-input" id="tfType" placeholder="e.g. GST, VAT, Sales tax">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tfRate">Rate %</label>
+          <input type="number" class="form-input" id="tfRate" min="0" max="50" step="0.001">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tfFrom">Effective from</label>
+          <input type="date" class="form-input" id="tfFrom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="tfDuties">Duties and customs note</label>
+        <textarea class="form-textarea" id="tfDuties" rows="3" placeholder="Shown at checkout for cross-border orders"></textarea>
+      </div>
+      <div class="form-error" id="tError" hidden></div>
+      <div class="readonly-note" id="tNote"></div>
+    </div>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" type="button" id="tCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="tSave">Save</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="tOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/billing-settings-data.js"></script>
+  <script src="/scripts/billing-settings.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

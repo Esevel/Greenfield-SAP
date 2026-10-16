@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procurement caps · Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Clients</h1>
+          <p class="page-description">Device spend against each client's contracted cap for the current period. Each client's cap is in its own currency, so tiles count clients rather than adding money.</p>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/clients/list.html" class="tab-link">Clients</a>
+          <a href="/pages/clients/caps.html" class="tab-link active">Procurement caps</a>
+        </nav>
+        
+        <div class="inventory-summary stock-summary stock-summary-4" id="cpTiles"></div>
+        <div class="saved-note" id="cpSaved" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="segmented-control segmented-sm" id="cpState">
+              <button type="button" class="segment-button active" data-s="">All</button>
+              <button type="button" class="segment-button" data-s="over">Over cap</button>
+              <button type="button" class="segment-button" data-s="near">Near cap</button>
+              <button type="button" class="segment-button" data-s="healthy">Healthy</button>
+            </div>
+            <label class="filter-select"><span>Currency</span><select id="cpCur"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table cap-table">
+            <thead class="catalogue-table-header">
+              <tr><th></th><th>Client</th><th class="num">Cap</th><th class="num">Spend to date</th><th class="num">Remaining</th><th>Utilisation</th><th>Renewal</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="cpRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="cpCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/cap-panel.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const clientName = id => WH_CLIENTS.find(c => c.id === id).name;
+      const ORDER = { over: 0, near: 1, healthy: 2 };
+      const expanded = new Set();
+      let state = '';
+      $('cpCur').innerHTML = '<option value="">All</option>' + [...new Set(WH_CLIENTS.map(c => capInfo(c.id).cur))].sort().map(c => `<option>${c}</option>`).join('');
+
+      const panel = initCapPanel((id, draft) => {
+        $('cpSaved').innerHTML = `✓ New cap saved to draft v${draft.v} for ${escapeHtml(clientName(id))}. <a href="/pages/clients/amendment.html?c=${id}&v=${draft.v}">Review and publish</a> to send it for client acceptance.`;
+        $('cpSaved').hidden = false;
+        render();
+      });
+
+      function render() {
+        const all = WH_CLIENTS.map(c => ({ c, i: capInfo(c.id), k: CONTRACTS[c.id] }));
+        const n = s => all.filter(r => r.i.status === s).length;
+        const tile = (label, value, sub, cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div><div class="summary-tile-sub">${sub}</div></div>`;
+        const renewSoon = all.filter(r => r.i.renewal <= '2027-01-31').length;
+        $('cpTiles').innerHTML = [
+          tile('Over cap', n('over'), 'Orders need client approval above cap', n('over') ? 'summary-tile-breached' : ''),
+          tile('Near cap', n('near'), '80% or more used', n('near') ? 'summary-tile-alert' : ''),
+          tile('Healthy', n('healthy'), 'Under 80%'),
+          tile('Renewing by Jan 2027', renewSoon, 'Cap resets on renewal')
+        ].join('');
+        document.querySelectorAll('#cpState .segment-button').forEach(b => {
+          b.classList.toggle('active', b.dataset.s === state);
+          const c = b.dataset.s ? n(b.dataset.s) : all.length;
+          b.innerHTML = `${b.textContent.replace(/ \d+$/, '')} <span class="tab-count${b.dataset.s === 'over' && c ? ' tab-count-alert' : ''}">${c}</span>`;
+        });
+
+        const rows = all.filter(r => (!state || r.i.status === state) && (!$('cpCur').value || r.i.cur === $('cpCur').value))
+          .sort((a, b) => ORDER[a.i.status] - ORDER[b.i.status] || b.i.pct - a.i.pct);
+        $('cpRows').innerHTML = rows.map(({ c, i, k }) => {
+          const [l, cls] = CAP_STATUS[i.status];
+          const open = expanded.has(c.id);
+          const draft = k.versions.find(v => v.status === 'draft' || v.status === 'pending');
+          const proposed = draft && contractTermsFor(k, draft).cap;
+          const draftCap = proposed && (proposed.limit !== k.terms.cap.limit || proposed.currency !== k.terms.cap.currency) ? proposed : null;
+          return `<tr data-id="${c.id}">
+              <td><button type="button" class="expand-button" data-expand="${c.id}" aria-expanded="${open}" aria-label="Recent orders">${open ? '▼' : '▶'}</button></td>
+              <td>${clientCellHtml(c)}${k.status === 'expired' ? '<div class="stock-sub text-error">Contract expired</div>' : ''}</td>
+              <td class="num">${fmtAmount(i.cur, i.limit, 0)}<div class="stock-sub">${i.period}</div>${draftCap ? `<div class="stock-sub cap-draft">${draft.status === 'draft' ? 'Draft' : 'Pending'} v${draft.v}: ${fmtAmount(draftCap.currency, draftCap.limit, 0)}</div>` : ''}</td>
+              <td class="num">${fmtAmount(i.cur, i.spent, 0)}${i.parts.some(p => p.cur !== i.cur) ? `<div class="stock-sub">${i.parts.length} entities · converted</div>` : ''}</td>
+              <td class="num ${i.remaining < 0 ? 'text-error' : ''}"><strong>${i.remaining < 0 ? '−' : ''}${fmtAmount(i.cur, Math.abs(i.remaining), 0)}</strong></td>
+              <td><div class="util"><div class="util-bar"><div class="util-fill util-${i.status}" style="width:${Math.min(100, i.pct)}%"></div><div class="util-mark" title="80% warning"></div></div><span class="util-pct">${Math.round(i.pct)}%</span></div></td>
+              <td>${billingDate(i.renewal)}${(() => { const d = daysBetween(INVOICE_TODAY_CAP, i.renewal); return d < 0 ? `<div class="stock-sub text-error">Renewal overdue ${-d} days</div>` : `<div class="stock-sub">in ${d} days</div>`; })()}</td>
+              <td><span class="badge ${cls} badge-sm">${l}</span></td>
+              <td><button type="button" class="btn btn-secondary btn-sm" data-cap="${c.id}">Set cap</button></td>
+            </tr>${open ? `<tr class="expanded-content-row"><td colspan="9">
+              <table class="device-list-table cap-orders"><thead><tr><th>Billing entity</th><th class="num">Spend (entity currency)</th><th class="num">Rate</th><th class="num">Counted (${i.cur})</th></tr></thead>
+              <tbody>${i.parts.map(p => `<tr><td>${escapeHtml(p.entity.name)}</td><td class="num">${fmtAmount(p.cur, p.amount, 0)}</td><td class="num">${p.cur === i.cur ? '—' : p.rate.toFixed(4)}</td><td class="num">${fmtAmount(i.cur, p.converted, 0)}</td></tr>`).join('')}</tbody></table>
+              <table class="device-list-table cap-orders"><thead><tr><th>Recent order</th><th>Date</th><th>What</th><th>Entity</th><th class="num">Amount</th></tr></thead>
+              <tbody>${CAP_SPEND[c.id].orders.map(([id, d, what, e, amt]) => { const ent = entityById(k.terms, e); return `<tr><td class="asset-serial">${id}</td><td>${billingDate(d)}</td><td>${escapeHtml(what)}</td><td>${escapeHtml(ent.name)}</td><td class="num">${fmtAmount(ent.currency, amt, 0)}${ent.currency !== i.cur ? `<div class="stock-sub">≈ ${fmtAmount(i.cur, fxConvert(amt, ent.currency, i.cur), 0)}</div>` : ''}</td></tr>`; }).join('')}</tbody></table>
+              <div class="readonly-note">Spend in each entity's currency is converted into the cap currency at the ${i.fxSource} rate. Device purchases count at order value incl. tax. Lifecycle fees and billable users don't count. <a href="/pages/clients/detail.html?c=${c.id}#sec-cap">Contract cap terms</a></div>
+            </td></tr>` : ''}`;
+        }).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No clients match</td></tr>';
+        $('cpCount').textContent = `${rows.length} clients · Near cap from 80%. Spend counts device orders in the current cap period. Cap alerts and checkout warnings are configured separately.`;
+      }
+
+      const INVOICE_TODAY_CAP = '2026-10-16';
+      const contractTermsFor = (k, v) => (v.status === 'draft' ? v.terms : contractTerms(k, v.v));
+      const clientCellHtml = c => `<div class="client-cell"><div class="client-logo">${c.logo}</div><span>${escapeHtml(c.name)}</span></div>`;
+      const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+
+      $('cpRows').addEventListener('click', e => {
+        const x = e.target.closest('[data-expand]');
+        if (x) { expanded.has(x.dataset.expand) ? expanded.delete(x.dataset.expand) : expanded.add(x.dataset.expand); return render(); }
+        const s = e.target.closest('[data-cap]');
+        if (s) panel.open(s.dataset.cap);
+      });
+      $('cpState').addEventListener('click', e => { const b = e.target.closest('.segment-button'); if (b) { state = b.dataset.s; render(); } });
+      $('cpCur').addEventListener('change', render);
+      render();
+      const target = new URLSearchParams(location.search).get('set');
+      if (CONTRACTS[target]) panel.open(target);
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

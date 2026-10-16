@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Person - People - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/people.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/people/directory.html" class="breadcrumb-link">People</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current" id="pCrumb"></span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit" id="pTitle"></h1>
+            <div class="vendor-header-tags" id="pTags"></div>
+          </div>
+        </div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg" id="pQueue" hidden></section>
+            
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Details</h3></div>
+              <div class="card-body"><div class="detail-grid" id="pDetails"></div></div>
+            </section>
+            
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Devices <span class="tab-count" id="pAssetCount"></span></h3></div>
+              <div class="card-body doc-body">
+                <table class="table doc-table">
+                  <thead><tr><th>Device</th><th>Serial</th><th>Type</th><th>Status</th><th></th></tr></thead>
+                  <tbody id="pAssets"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+          
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Work orders</h3></div>
+              <div class="card-body" id="pOrders"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Source</h3></div>
+              <div class="card-body" id="pSource"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/people-data.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const p = personById(new URLSearchParams(location.search).get('id')) || PEOPLE[0];
+      const [label, cls] = PERSON_STATE[p.state];
+      document.title = `${p.name} - People - Admin Portal`;
+      $('pCrumb').textContent = p.name;
+      $('pTitle').textContent = p.name;
+      $('pTags').innerHTML = `<span class="badge ${cls}">${label}</span><span class="text-muted">· ${escapeHtml(p.role)} · ${peopleClientName(p.client)} · ${WH_COUNTRIES[p.cc][0]} ${WH_COUNTRIES[p.cc][1]}</span>`;
+
+      const missing = '<span class="text-error">Missing</span>';
+      $('pDetails').innerHTML = [
+        ['Work email', escapeHtml(p.email)], ['Phone', p.phone ? escapeHtml(p.phone) : missing],
+        ['Department', escapeHtml(p.dept)], ['Role', escapeHtml(p.role)],
+        ['Start date', peopleFmt(p.start)], ['Departure date', p.end ? `${peopleFmt(p.end)} · ${p.endConfirmed ? 'Confirmed' : 'Estimated'}` : '<span class="text-muted">—</span>'],
+        ['Delivery / return address', p.address ? escapeHtml(p.address) : missing]
+      ].map(([l, v]) => `<div><div class="detail-label">${l}</div><div class="detail-value">${v}</div></div>`).join('');
+
+      $('pAssetCount').textContent = p.assets.length;
+      $('pAssets').innerHTML = p.assets.map(a => `<tr>
+          <td>${ASSET_ICON[a.type]} ${escapeHtml(a.name)}</td>
+          <td class="asset-serial">${escapeHtml(a.serial)}</td>
+          <td class="text-muted">${a.type === 'laptop' ? 'Laptop' : 'Peripheral'}</td>
+          <td><span class="badge ${DEVICE_STATUS[a.status][1]} badge-sm">${DEVICE_STATUS[a.status][0]}</span><div class="stock-sub">since ${peopleFmt(a.since)}</div></td>
+          <td><a href="/pages/assets/detail.html" class="link-sm">View</a></td>
+        </tr>`).join('') || `<tr><td colspan="5" class="text-muted sla-empty">${p.state === 'joining' ? 'No devices yet. They are assigned when the onboarding work order is delivered.' : 'No devices assigned'}</td></tr>`;
+
+      const q = p.joiner ? ['Joiners', '/pages/people/joiners.html', p.joiner] : p.leaver ? ['Leavers', '/pages/people/leavers.html', p.leaver] : null;
+      if (q && q[2].status !== 'created') {
+        $('pQueue').hidden = false;
+        $('pQueue').innerHTML = `<div class="card-body queue-banner">
+            <span>${p.joiner ? `Joining ${peopleFmt(p.start)}` : `Leaving ${peopleFmt(p.end)}`} · no work order yet.</span>
+            <a href="${q[1]}?open=${p.id}" class="btn btn-primary btn-sm">Open in ${q[0]}</a>
+          </div>`;
+      }
+
+      const orders = [];
+      if (p.joiner && p.joiner.wo) orders.push(`<a href="/pages/tracker/onboarding-detail.html?id=${p.joiner.wo}" class="link-sm">${p.joiner.wo}</a> · Onboarding · ${escapeHtml(p.joiner.pkg)}`);
+      if (p.leaver && p.leaver.wo) orders.push(`<a href="/pages/tracker/offboarding-detail.html" class="link-sm">${p.leaver.wo}</a> · Offboarding · ${RETRIEVAL_METHODS[p.leaver.method].label}`);
+      $('pOrders').innerHTML = orders.length ? orders.map(o => `<div class="order-line">${o}</div>`).join('') : '<span class="text-muted">None</span>';
+      $('pSource').innerHTML = `<div>${escapeHtml(p.source)}</div><div class="readonly-note">${p.source.startsWith('HRIS') ? 'Fields are overwritten on each sync. Edit in the HRIS, or fix missing fields from the Joiners / Leavers queue.' : 'Added manually by the client in their portal.'}</div>`;
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

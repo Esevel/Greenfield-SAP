@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warehouses - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/warehouses.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <h1 class="page-title">Warehouses</h1>
+            <button class="btn btn-primary" id="addWarehouse">Add warehouse</button>
+          </div>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/warehouses/list.html" class="tab-link active">Warehouses</a>
+          <a href="/pages/warehouses/assignments.html" class="tab-link">Hub assignments</a>
+        </nav>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Type <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All types</a>
+                <a href="#" class="dropdown-menu-item">Esevel-managed hub</a>
+                <a href="#" class="dropdown-menu-item">Client-owned location</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Country <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All countries</a>
+                <a href="#" class="dropdown-menu-item">Singapore</a>
+                <a href="#" class="dropdown-menu-item">Malaysia</a>
+                <a href="#" class="dropdown-menu-item">Australia</a>
+                <a href="#" class="dropdown-menu-item">United States</a>
+                <a href="#" class="dropdown-menu-item">United Kingdom</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Active</a>
+                <a href="#" class="dropdown-menu-item">Decommissioned</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container menu-visible">
+          <table class="table catalogue-table warehouses-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Client</th>
+                <th>Country</th>
+                <th>Clients assigned</th>
+                <th class="num">Units held</th>
+                <th>Status</th>
+                <th>Last updated</th>
+                <th style="width: 40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="warehouseRows"></tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count" id="warehouseCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Edit / add warehouse panel -->
+  <div class="side-panel" id="whPanel">
+    <div class="side-panel-header">
+      <h3 class="side-panel-title" id="whPanelTitle">Edit warehouse</h3>
+      <button class="side-panel-close" id="whClose" aria-label="Close">&times;</button>
+    </div>
+    
+    <form class="side-panel-body wh-form" id="whForm" novalidate>
+      <div class="panel-section" id="whStock" hidden>
+        <h4 class="panel-section-title">Stock held here</h4>
+        <div id="whStockBody"></div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whName">Name <span class="required">*</span></label>
+        <input type="text" class="form-input" id="whName">
+        <div class="form-error" id="whNameError" hidden>Enter a name.</div>
+      </div>
+      
+      <div class="form-group">
+        <span class="form-label">Type</span>
+        <div class="segmented-control" id="whType">
+          <button type="button" class="segment-button" data-type="esevel">Esevel-managed hub</button>
+          <button type="button" class="segment-button" data-type="client">Client-owned location</button>
+        </div>
+        <div class="input-helper" id="whTypeNote"></div>
+      </div>
+      
+      <div class="form-group" id="whClientGroup">
+        <label class="form-label" for="whClient">Client <span class="required">*</span></label>
+        <select class="form-select" id="whClient">
+          <option value="">Select a client</option>
+          <option>Acme Tech</option>
+          <option>TechGlobal Inc</option>
+          <option>Digital Solutions</option>
+          <option>MediaWorks</option>
+        </select>
+        <div class="form-error" id="whClientError" hidden>Select the client that owns this location.</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whCountry">Country</label>
+        <select class="form-select" id="whCountry">
+          <option value="SG">🇸🇬 Singapore</option>
+          <option value="MY">🇲🇾 Malaysia</option>
+          <option value="AU">🇦🇺 Australia</option>
+          <option value="US">🇺🇸 United States</option>
+          <option value="GB">🇬🇧 United Kingdom</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whAddress">Address</label>
+        <textarea class="form-textarea" id="whAddress"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whContact">Contact</label>
+        <input type="text" class="form-input" id="whContact" placeholder="Name, phone or email">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whHours">Operating hours</label>
+        <input type="text" class="form-input" id="whHours" placeholder="e.g. Mon–Fri 09:00–18:00">
+      </div>
+      
+      <div class="form-group" id="whBufferGroup">
+        <label class="form-label" for="whBuffer">Dispatch buffer (business days)</label>
+        <input type="number" class="form-input" id="whBuffer" min="0" max="10" step="1" style="width: 100px;">
+        <div class="input-helper">Added to checkout estimates for orders shipping from this hub, after vendor arrival or stock reservation.</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="whStatus">Status</label>
+        <select class="form-select" id="whStatus">
+          <option>Active</option>
+          <option>Decommissioned</option>
+        </select>
+      </div>
+    </form>
+    
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" id="whCancel" type="button">Cancel</button>
+      <button class="btn btn-primary" type="submit" form="whForm">Save</button>
+    </div>
+  </div>
+  
+  <div class="side-panel-overlay" id="whOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/warehouses.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

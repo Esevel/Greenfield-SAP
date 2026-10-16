@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock · Storage fees - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="stockHeader" data-view="fees"></div>
+        
+        <div class="inventory-summary stock-summary stock-summary-4" id="feTiles"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <label class="filter-select"><span>Client</span><select id="feClient"></select></label>
+            <label class="filter-select"><span>Hub</span><select id="feHub"></select></label>
+            <label class="sla-check"><input type="checkbox" id="feAged"> Only with devices stored 90+ days</label>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="feExport">Export CSV</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table fees-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>Hub</th>
+                <th class="num">Devices billed</th>
+                <th class="num">Avg days stored</th>
+                <th class="num">Stored 90+ days</th>
+                <th class="num">Rate / day</th>
+                <th class="num">Fee / month</th>
+                <th class="num">Accrued to date</th>
+                <th>Suggested</th>
+              </tr>
+            </thead>
+            <tbody id="feRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="feCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/stock-header.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+
+      // One row per client × hub. Client-site stock is never billed, so it doesn't appear here.
+      const groups = {};
+      STOCK_LINES.forEach(l => {
+        const loc = stockLoc(l.loc);
+        if (!isHub(loc)) return;
+        const key = `${l.client}|${l.loc}`;
+        const r = storageRate(l.client, loc.country);
+        const g = groups[key] || (groups[key] = { client: l.client, hub: loc, cur: r.cur, perDay: r.perDay, rate: r, devices: 0, days: 0, aged: 0, monthly: 0, accrued: 0, redeploy: 0, dispose: 0 });
+        stockDevices(l).forEach(d => {
+          const s = deviceStorage(l, d);
+          g.devices++;
+          g.days += s.days;
+          g.monthly += s.rate;
+          g.accrued += s.accrued;
+          if (s.days > 90) g.aged++;
+          const rec = deviceSuggestion(d).rec;
+          if (rec === 'Redeploy') g.redeploy++;
+          if (rec === 'Dispose') g.dispose++;
+        });
+      });
+      const all = Object.values(groups).filter(g => g.devices)
+        .sort((a, b) => stockClient(a.client).name.localeCompare(stockClient(b.client).name) || a.hub.name.localeCompare(b.hub.name));
+
+      const clientIds = [...new Set(all.map(g => g.client))];
+      const hubs = [...new Map(all.map(g => [g.hub.id, g.hub])).values()];
+      $('feClient').innerHTML = '<option value="">All</option>' + clientIds.map(id => `<option value="${id}">${stockClient(id).name}</option>`).join('');
+      $('feHub').innerHTML = '<option value="">All</option>' + hubs.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+
+      const sumByCur = (rows, key) => {
+        const out = {};
+        rows.forEach(g => { out[g.cur] = (out[g.cur] || 0) + g[key]; });
+        return Object.entries(out).map(([c, v]) => money(c, v)).join('<br>') || '—';
+      };
+
+      function filtered() {
+        return all.filter(g => (!$('feClient').value || g.client === $('feClient').value)
+          && (!$('feHub').value || String(g.hub.id) === $('feHub').value)
+          && (!$('feAged').checked || g.aged));
+      }
+
+      function render() {
+        const rows = filtered();
+        const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
+        const devices = rows.reduce((s, g) => s + g.devices, 0);
+        const aged = rows.reduce((s, g) => s + g.aged, 0);
+        $('feTiles').innerHTML = [
+          tile('Fees / month', sumByCur(rows, 'monthly'), 'Billed per device in Esevel hubs', 'summary-tile-fees'),
+          tile('Accrued to date', sumByCur(rows, 'accrued'), 'Since each device\'s intake', 'summary-tile-fees'),
+          tile('Devices billed', devices, `${rows.length} client × hub combinations`),
+          tile('Stored 90+ days', aged, 'Review with the client: redeploy or dispose', aged ? 'summary-tile-alert' : '')
+        ].join('');
+
+        $('feRows').innerHTML = rows.map(g => {
+          const sug = [g.redeploy && `${g.redeploy} redeploy`, g.dispose && `${g.dispose} dispose`].filter(Boolean).join(' · ');
+          return `<tr data-href="/pages/stock/client.html?c=${g.client}&country=${g.hub.country}" tabindex="0">
+            <td>${clientCell(g.client)}</td>
+            <td>${escapeHtml(g.hub.name)}</td>
+            <td class="num">${g.devices}</td>
+            <td class="num">${Math.round(g.days / g.devices)}d</td>
+            <td class="num">${g.aged ? `<span class="days-aged">${g.aged}</span>` : '<span class="text-muted">0</span>'}</td>
+            <td class="num">${g.perDay ? `${money(g.cur, g.perDay)}${g.rate.fx ? `<div class="stock-sub" title="${escapeHtml(g.rate.fx.source)} · ${g.rate.fx.on}">from ${money(g.rate.local.cur, g.rate.local.perDay)} at ${g.rate.fx.rate.toFixed(4)}</div>` : ''}` : '<span class="text-muted">Not billable</span>'}</td>
+            <td class="num">${money(g.cur, g.monthly)}</td>
+            <td class="num"><strong>${money(g.cur, g.accrued)}</strong></td>
+            <td>${sug || '<span class="text-muted">Keep</span>'}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No billed storage matches</td></tr>';
+        $('feCount').textContent = `${rows.length} rows · Daily rate is the hub country's fee in its local currency (standard or contract exception), converted to the paying entity's currency at the contract's FX source; fee / month = 30 days. Client-site stock isn't billed. Click a row for that client's devices.`;
+      }
+
+      const go = row => { window.location.href = row.dataset.href; };
+      $('feRows').addEventListener('click', e => { const r = e.target.closest('tr[data-href]'); if (r) go(r); });
+      $('feRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-href]'); if (r && e.key === 'Enter') go(r); });
+      ['feClient', 'feHub', 'feAged'].forEach(id => $(id).addEventListener('change', render));
+
+      $('feExport').addEventListener('click', () => {
+        const head = ['Client', 'Hub', 'Currency', 'Devices billed', 'Stored 90+ days', 'Rate per day', 'Fee per month', 'Accrued to date'];
+        const lines = filtered().map(g => [stockClient(g.client).name, g.hub.name, g.cur, g.devices, g.aged, g.perDay.toFixed(2), g.monthly.toFixed(2), g.accrued.toFixed(2)]);
+        const csv = [head, ...lines].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'storage-fees.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

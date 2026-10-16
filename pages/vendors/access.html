@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courier X · Access - Vendors - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/vendors/list.html" class="breadcrumb-link">Vendors</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Courier X</span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit">Courier X</h1>
+            <div class="vendor-header-tags">
+              <span class="tag type-courier">Courier</span>
+              <span class="badge badge-success">Active</span>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/vendors/detail.html" class="tab-link">Overview</a>
+          <a href="/pages/vendors/access.html" class="tab-link active">Access</a>
+        </nav>
+        
+        <div class="access-method">
+          <span class="form-label" style="margin: 0;">Access method</span>
+          <div class="segmented-control" id="accessMethod">
+            <button class="segment-button" data-method="portal">Portal</button>
+            <button class="segment-button" data-method="integration">Integration</button>
+            <button class="segment-button active" data-method="both">Both</button>
+          </div>
+          <span class="access-method-help" id="accessHelp">Vendor staff use the portal and systems send updates by integration.</span>
+        </div>
+        
+        <!-- Portal users -->
+        <section class="card mb-lg" id="portalCard">
+          <div class="card-header">
+            <h3 class="card-title">Portal users <span class="tab-count">5</span></h3>
+            <button class="btn btn-primary btn-sm" id="openInvite">Invite portal user</button>
+          </div>
+          <div class="card-body doc-body">
+            <table class="table doc-table" id="portalUsers">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Countries</th>
+                  <th class="num">Assigned jobs</th>
+                  <th>Status</th>
+                  <th>Last active</th>
+                  <th style="width: 40px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Ahmad Faizal<div class="user-cell-email">ahmad.f@courierx.com</div></td>
+                  <td>Courier</td>
+                  <td class="flag-list"><span class="flag">🇸🇬</span><span class="flag">🇲🇾</span></td>
+                  <td class="num">18</td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-muted">12 min ago</td>
+                  <td><button class="btn-icon">⋯</button></td>
+                </tr>
+                <tr>
+                  <td>Lim Wei Ming<div class="user-cell-email">weiming.lim@courierx.com</div></td>
+                  <td>Warehouse</td>
+                  <td class="flag-list"><span class="flag">🇸🇬</span></td>
+                  <td class="num">9</td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-muted">2h ago</td>
+                  <td><button class="btn-icon">⋯</button></td>
+                </tr>
+                <tr>
+                  <td>Rajesh Kumar<div class="user-cell-email">rajesh.k@courierx.com</div></td>
+                  <td>Courier</td>
+                  <td class="flag-list"><span class="flag">🇲🇾</span></td>
+                  <td class="num">11</td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-muted">Yesterday</td>
+                  <td><button class="btn-icon">⋯</button></td>
+                </tr>
+                <tr>
+                  <td>Sophie Tran<div class="user-cell-email">sophie.tran@courierx.com</div></td>
+                  <td>Courier</td>
+                  <td class="flag-list"><span class="flag">🇦🇺</span></td>
+                  <td class="num text-muted">0</td>
+                  <td><span class="badge badge-info badge-sm">Invited</span></td>
+                  <td class="text-muted">Never · invited 14 Oct</td>
+                  <td><button class="btn-icon">⋯</button></td>
+                </tr>
+                <tr>
+                  <td>Daniel Ho<div class="user-cell-email">daniel.ho@courierx.com</div></td>
+                  <td>Warehouse</td>
+                  <td class="flag-list"><span class="flag">🇸🇬</span></td>
+                  <td class="num text-muted">0</td>
+                  <td><span class="badge badge-error badge-sm">Suspended</span></td>
+                  <td class="text-muted">2 Sep 2026</td>
+                  <td><button class="btn-icon">⋯</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        
+        <!-- Integration -->
+        <section class="card mb-lg" id="integrationCard">
+          <div class="card-header">
+            <h3 class="card-title">Integration</h3>
+            <a href="/pages/integrations/list.html" class="link-sm">Open in Integrations</a>
+          </div>
+          <div class="card-body">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-label">Connection status</div>
+                <div class="detail-value"><span class="integration-status integration-healthy">Connected</span></div>
+              </div>
+              <div>
+                <div class="detail-label">Last update received</div>
+                <div class="detail-value">4 min ago · Tracking for ORD-30412</div>
+              </div>
+              <div style="grid-column: span 2;">
+                <div class="detail-label" style="margin-bottom: var(--space-sm);">Updates accepted</div>
+                <ul class="updates-list">
+                  <li class="update-on"><span class="update-mark">✓</span>Status</li>
+                  <li class="update-on"><span class="update-mark">✓</span>Tracking</li>
+                  <li class="update-on"><span class="update-mark">✓</span>Proof of delivery</li>
+                  <li class="update-off"><span class="update-mark"></span>QC report</li>
+                  <li class="update-off"><span class="update-mark"></span>Repair evidence</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Invite portal user panel -->
+  <div class="side-panel" id="invitePanel">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title">Invite portal user</h3>
+        <div class="device-panel-meta">Courier X</div>
+      </div>
+      <button class="side-panel-close" id="closeInvite">&times;</button>
+    </div>
+    
+    <form class="side-panel-body" id="inviteForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="inviteEmail">Email <span class="required">*</span></label>
+        <input type="email" class="form-input" id="inviteEmail" placeholder="name@courierx.com" required>
+        <div class="form-error" id="emailError" hidden>Enter a valid email address.</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="inviteRole">Role</label>
+        <select class="form-select" id="inviteRole">
+          <option>Courier</option>
+          <option>Warehouse</option>
+          <option>Technician</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <span class="form-label">Countries covered</span>
+        <div class="check-grid">
+          <label class="check-option"><input type="checkbox" name="country" value="🇸🇬" checked> 🇸🇬 Singapore</label>
+          <label class="check-option"><input type="checkbox" name="country" value="🇲🇾"> 🇲🇾 Malaysia</label>
+          <label class="check-option"><input type="checkbox" name="country" value="🇦🇺"> 🇦🇺 Australia</label>
+          <label class="check-option"><input type="checkbox" name="country" value="🇺🇸"> 🇺🇸 United States</label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <span class="form-label">Work order types allowed</span>
+        <div class="check-grid">
+          <label class="check-option"><input type="checkbox" checked> Deliveries</label>
+          <label class="check-option"><input type="checkbox" checked> Pickups</label>
+          <label class="check-option"><input type="checkbox"> Returns</label>
+          <label class="check-option"><input type="checkbox"> Redeployments</label>
+        </div>
+      </div>
+      
+      <div class="scope-note">
+        <span>🔒</span>
+        <span><strong>Access scope: assigned work orders only.</strong> The user only sees work orders assigned to Courier X in the countries and types above.</span>
+      </div>
+    </form>
+    
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" id="cancelInvite" type="button">Cancel</button>
+      <button class="btn btn-primary" id="sendInvite" type="submit" form="inviteForm">Send invite</button>
+    </div>
+  </div>
+  
+  <div class="side-panel-overlay" id="invitePanelOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/vendor-access.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

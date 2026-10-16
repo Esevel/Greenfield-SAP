@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onboarding - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/onboarding.html" class="breadcrumb-link">Onboarding</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current" id="onbCrumb"></span>
+        </nav>
+        
+        <div class="info-line" id="onbMissing" hidden>
+          Onboarding request not found. <a href="/pages/tracker/onboarding.html">Back to Onboarding</a>
+        </div>
+        
+        <div id="onbMain">
+          <div class="asset-header">
+            <div>
+              <h1 class="page-title-edit" id="onbTitle"></h1>
+              <div class="asset-header-meta" id="onbMeta"></div>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-secondary">Message client admin</button>
+              <button class="btn btn-primary">Update status</button>
+            </div>
+          </div>
+          
+          <div id="onbAlerts"></div>
+          
+          <ol class="stage-stepper" id="onbStepper"></ol>
+          
+          <div class="edit-layout">
+            <div class="edit-form-column">
+              <section class="card mb-lg">
+                <div class="card-header"><h3 class="card-title">Onboarding details</h3></div>
+                <div class="card-body">
+                  <div class="detail-grid" id="onbDetails"></div>
+                </div>
+              </section>
+              
+              <section class="card mb-lg">
+                <div class="card-header">
+                  <h3 class="card-title">Package devices <span class="tab-count" id="onbCount"></span></h3>
+                </div>
+                <div class="card-body doc-body">
+                  <table class="table doc-table">
+                    <thead><tr><th>Device</th><th>Status</th><th>Vendor delivery</th></tr></thead>
+                    <tbody id="onbDevices"></tbody>
+                  </table>
+                  <div class="kit-dispatch" id="onbDispatch" hidden></div>
+                </div>
+              </section>
+            </div>
+            
+            <div class="edit-sidebar-column">
+              <div class="card mb-lg">
+                <div class="card-header"><h3 class="card-title">SLA milestones</h3></div>
+                <div class="card-body" id="onbSla"></div>
+              </div>
+              
+              <div class="card mb-lg">
+                <div class="card-header"><h3 class="card-title">Assigned</h3></div>
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-row"><span class="info-label">Owner</span>
+                      <span class="owner-picker"><span class="card-avatar" id="onbOwnerAvatar"></span><select class="form-select owner-dropdown" id="onbOwner" aria-label="Owner"><option>Qonit</option><option>Marcus</option><option>Jia Ling</option><option>Aisha</option><option>Ben</option></select></span>
+                    </div>
+                    <div class="info-row"><span class="info-label">Client admin</span><span class="info-value" id="onbClientAdmin"></span></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card handover-card">
+                <div class="card-header"><h3 class="card-title">Handover notes</h3></div>
+                <div class="card-body">
+                  <form class="add-note" novalidate>
+                    <textarea class="form-textarea" placeholder="Note for the next owner or shift..." aria-label="Handover note"></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+                  </form>
+                  <div class="handover-feed" id="onbNoteFeed"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/tracker-sla.js"></script>
+  <script src="/scripts/tracker-onboarding.js"></script>
+  <script src="/scripts/request-handover.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repairs · Quotes - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Repairs</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="repairs"></nav>
+        
+        <div class="tracker-controls">
+          <div class="asset-toolbar">
+            <div class="filter-chips stock-filters">
+              <div class="segmented-control segmented-sm" id="rqState">
+                <button type="button" class="segment-button active" data-s="open">Needs action</button>
+                <button type="button" class="segment-button" data-s="sent">Awaiting client</button>
+                <button type="button" class="segment-button" data-s="decided">Decided</button>
+                <button type="button" class="segment-button" data-s="">All</button>
+              </div>
+              <label class="filter-select"><span>Client</span><select id="rqClient"></select></label>
+            </div>
+          </div>
+          <nav class="segmented-control view-toggle">
+            <a href="/pages/tracker/repairs.html" class="segment-button">Board</a>
+            <a href="/pages/tracker/repairs-list.html" class="segment-button">List</a>
+            <a href="/pages/tracker/repair-quotes.html" class="segment-button active">Quotes <span class="tab-count tab-count-alert" id="rqBadge"></span></a>
+          </nav>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table invoice-table quotes-table">
+            <thead class="catalogue-table-header">
+              <tr><th>Repair</th><th>Client</th><th>Device</th><th>Findings</th><th class="num">Quote</th><th>Sent</th><th>Decision</th><th>Status</th></tr>
+            </thead>
+            <tbody id="rqRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="rqCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/repair-quote-data.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const clientName = id => WH_CLIENTS.find(c => c.id === id).name;
+      const fmt = s => { const [y, m, d] = s.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+      const days = s => Math.round((new Date('2026-10-16') - new Date(s.slice(0, 10))) / 864e5);
+      const needsAction = q => q.state === 'draft' || q.state === 'expired';
+      let state = 'open';
+      $('rqClient').innerHTML = '<option value="">All</option>' + WH_CLIENTS.filter(c => REPAIR_QUOTES.some(q => q.client === c.id)).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      const inState = (q, s) => !s || (s === 'open' ? needsAction(q) : q.state === s);
+
+      function render() {
+        const rows = REPAIR_QUOTES.filter(q => inState(q, state) && (!$('rqClient').value || q.client === $('rqClient').value));
+        document.querySelectorAll('#rqState .segment-button').forEach(b => {
+          b.classList.toggle('active', b.dataset.s === state);
+          const n = REPAIR_QUOTES.filter(q => inState(q, b.dataset.s)).length;
+          b.innerHTML = `${b.textContent.replace(/ \d+$/, '')} <span class="tab-count${b.dataset.s === 'open' && n ? ' tab-count-alert' : ''}">${n}</span>`;
+        });
+        $('rqBadge').textContent = REPAIR_QUOTES.filter(needsAction).length;
+        $('rqRows').innerHTML = rows.map(q => {
+          const [l, c] = QUOTE_STATE[q.state];
+          const t = quoteTotals(q);
+          const wait = q.state === 'sent' ? days(q.sent) : 0;
+          return `<tr data-id="${q.id}" tabindex="0">
+            <td class="card-id">${q.id}<div class="stock-sub">${escapeHtml(q.facility)}</div></td>
+            <td>${escapeHtml(clientName(q.client))}<div class="stock-sub">${escapeHtml(q.user)}</div></td>
+            <td><div class="model-name">${escapeHtml(q.device)}</div><div class="asset-serial">${escapeHtml(q.serial)}</div></td>
+            <td class="cn-reason">${escapeHtml(q.findings.split('. ')[0])}.</td>
+            <td class="num"><strong>${fmtAmount(q.cur, t.total)}</strong></td>
+            <td>${q.sent ? `${fmt(q.sent)}<div class="stock-sub">to ${escapeHtml(q.sentTo)}</div>${wait ? `<div class="stock-sub ${wait >= 3 ? 'text-error' : ''}">${wait} days waiting</div>` : ''}` : '<span class="text-muted">Not sent</span>'}</td>
+            <td>${q.decision ? `<span class="tag decision-${q.decision.choice}">${QUOTE_DECISIONS[q.decision.choice]}</span><div class="stock-sub">${escapeHtml(q.decision.by)}</div>` : '<span class="text-muted">—</span>'}</td>
+            <td><span class="badge ${c} badge-sm">${l}</span></td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No quotes here</td></tr>';
+        $('rqCount').textContent = `${rows.length} shown · Quotes expire after ${QUOTE_VALID_DAYS} days without a decision. Clients decide in their portal: repair, replace or write off.`;
+      }
+      const go = r => { window.location.href = `/pages/tracker/work-order.html?id=${r.dataset.id}#quote`; };
+      $('rqRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
+      $('rqRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
+      $('rqState').addEventListener('click', e => { const b = e.target.closest('.segment-button'); if (b) { state = b.dataset.s; render(); } });
+      $('rqClient').addEventListener('change', render);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

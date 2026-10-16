@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Needs action - Billing - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Needs action</h1>
+          <p class="page-description">Open disputes, draft credit notes, ledger anomalies and requested reversals.</p>
+        </div>
+
+        <nav class="tab-strip billing-tabs" aria-label="Billing">
+          <a href="/pages/billing/ledger.html" class="tab-link">Ledger</a>
+          <a href="/pages/billing/invoices.html" class="tab-link">Invoices</a>
+          <a href="/pages/billing/invoices.html?tab=credits" class="tab-link">Credit notes</a>
+          <a href="/pages/billing/needs-action.html" class="tab-link active">Needs action <span class="tab-count" id="billingActionCount"></span></a>
+        </nav>
+        
+        <div class="saved-note" id="dsSaved" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <label class="filter-select"><span>Type</span><select id="naType"><option value="">All action types</option><option value="dispute">Open disputes</option><option value="credit">Draft credit notes</option><option value="anomaly">Ledger anomalies</option><option value="reversal">Requested reversals</option></select></label>
+            <label class="filter-select"><span>Client</span><select id="dsClient"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table invoice-table">
+            <thead class="catalogue-table-header">
+              <tr><th>Type</th><th>Item</th><th>Client</th><th>Context</th><th>Reason / issue</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="dsRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="dsCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel side-panel-wide" id="dsPanel" role="dialog" aria-modal="true" aria-labelledby="dsTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="dsTitle"></h3>
+        <div class="device-panel-meta" id="dsMeta"></div>
+      </div>
+      <button class="side-panel-close" id="dsClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="panel-section">
+        <h4 class="panel-section-title">Client's reason</h4>
+        <blockquote class="client-quote" id="dsReason"></blockquote>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Disputed line</h4>
+        <div class="info-grid" id="dsLine"></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Investigation notes <span class="text-muted note-internal">Internal · not shown to client</span></h4>
+        <ul class="location-history" id="dsNotes"></ul>
+        <div class="note-add" id="dsNoteAdd">
+          <textarea class="form-textarea" id="dsNote" rows="2" placeholder="What you checked and found"></textarea>
+          <button type="button" class="btn btn-secondary btn-sm" id="dsAddNote">Add note</button>
+        </div>
+      </div>
+      <div class="panel-section" id="dsResolveSection">
+        <h4 class="panel-section-title">Resolution</h4>
+        <div class="form-group">
+          <span class="form-label">Outcome</span>
+          <div class="segmented-control segmented-sm" id="dsOutcome">
+            <button type="button" class="segment-button active" data-o="credit">Client is right · credit</button>
+            <button type="button" class="segment-button" data-o="reject">Charge stands</button>
+          </div>
+        </div>
+        <div id="dsCreditFields">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="dsAmount">Credit amount</label>
+              <div class="fee-input pay-amount"><span class="cur-code" id="dsCur"></span><input type="number" class="form-input" id="dsAmount" min="0.01" step="0.01"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="dsApply">Apply credit to</label>
+              <select class="form-select" id="dsApply"></select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="dsMessage">Message to client</label>
+          <textarea class="form-textarea" id="dsMessage" rows="3" placeholder="Shown to the client admin in their portal"></textarea>
+        </div>
+        <div class="form-error" id="dsError" hidden></div>
+        <div class="readonly-note" id="dsResolveNote"></div>
+      </div>
+      <div class="panel-section" id="dsClosedSection" hidden>
+        <h4 class="panel-section-title">Resolution sent to client</h4>
+        <div class="resolution-box" id="dsResolution"></div>
+      </div>
+    </div>
+    <div class="side-panel-footer" id="dsFooter"></div>
+  </div>
+  <div class="side-panel-overlay" id="dsOverlay"></div>
+
+  <div class="side-panel" id="naPanel" role="dialog" aria-modal="true" aria-labelledby="naTitle">
+    <div class="side-panel-header">
+      <div><h3 class="side-panel-title" id="naTitle"></h3><div class="device-panel-meta" id="naMeta"></div></div>
+      <button class="side-panel-close" id="naClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body"><div class="info-grid" id="naInfo"></div><div class="saved-note" id="naSaved" hidden></div></div>
+    <div class="side-panel-footer" id="naFooter"></div>
+  </div>
+  <div class="side-panel-overlay" id="naOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/dispute-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/billing-needs-action.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

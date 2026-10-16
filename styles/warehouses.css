@@ -1,0 +1,167 @@
+/* Warehouses styles */
+
+/* Lets row overflow menus extend past the table edge */
+.table-container.menu-visible {
+  overflow: visible;
+}
+
+.warehouses-table td,
+.warehouses-table th {
+  white-space: nowrap;
+  padding-left: var(--space-sm);
+  padding-right: var(--space-sm);
+}
+
+/* Let names and dates wrap so 9 columns fit at 1440px */
+.warehouses-table td:first-child,
+.warehouses-table td:nth-child(8),
+.warehouses-table thead th {
+  white-space: normal;
+}
+
+.warehouses-table td:first-child {
+  min-width: 150px;
+}
+
+.warehouses-table .num {
+  text-align: right;
+}
+
+.warehouses-table tbody tr {
+  cursor: pointer;
+}
+
+.warehouses-table tbody tr:hover,
+.warehouses-table tbody tr.selected {
+  background-color: var(--color-background);
+}
+
+.warehouses-table tbody tr.row-muted td {
+  color: var(--color-text-muted);
+}
+
+.tag-hub {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+}
+
+.tag-client-loc {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #9333ea;
+}
+
+.wh-form .segmented-control {
+  display: flex;
+}
+
+.wh-form .segment-button {
+  flex: 1;
+}
+
+.wh-form .form-textarea {
+  min-height: 72px;
+}
+
+/* Hub assignments matrix */
+.assign-matrix th,
+.assign-matrix td {
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-left: var(--space-xs);
+  padding-right: var(--space-xs);
+}
+
+.assign-matrix th:first-child,
+.assign-matrix td:first-child {
+  padding-left: var(--space-md);
+}
+
+.assign-matrix .client-cell span {
+  white-space: normal;
+}
+
+.assign-col-sub {
+  font-size: 11px;
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-muted);
+}
+
+.assign-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-md);
+  border: var(--border-width) solid transparent;
+}
+
+.assign-select {
+  width: 100%;
+  max-width: 160px;
+  padding: 3px 4px;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: inherit;
+  background: transparent;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.assign-cell:hover .assign-select,
+.assign-select:focus {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.assign-hub {
+  background-color: rgba(59, 130, 246, 0.07);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.assign-none {
+  background-color: rgba(168, 85, 247, 0.07);
+  color: #7e22ce;
+}
+
+.assign-na {
+  color: var(--color-text-muted);
+}
+
+.assign-cell.dirty {
+  border-color: var(--color-warning);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.assign-note {
+  padding-left: 6px;
+  font-size: 11px;
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-muted);
+}
+
+.assign-note.warn {
+  color: var(--color-warning);
+}
+
+.assign-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.assign-pill {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 8px;
+  font-size: 11px;
+  border-radius: var(--border-radius-sm);
+}
+
+.assign-pill.assign-na {
+  border: var(--border-width) solid var(--color-border);
+}

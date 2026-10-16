@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REP-0871 · Work order - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/repairs.html" class="breadcrumb-link">Repairs</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">REP-0871</span>
+        </nav>
+        
+        <div class="asset-header">
+          <div>
+            <h1 class="page-title-edit">REP-0871 · Dell XPS 15</h1>
+            <div class="asset-header-meta">
+              <span class="asset-serial">8HJ2KL9</span>
+              <span class="meta-sep">·</span>
+              <span>TechGlobal Inc</span>
+              <span class="meta-sep">·</span>
+              <span class="badge badge-warning">Awaiting part</span>
+              <span class="sla-pill sla-risk" data-sla-pill="REP-0871">At risk</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <a href="/pages/assets/detail.html" class="btn btn-secondary">Open asset</a>
+            <button class="btn btn-primary">Update status</button>
+          </div>
+        </div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Repair details</h3></div>
+              <div class="card-body">
+                <div class="detail-grid">
+                  <div><div class="detail-label">Diagnosis</div><div class="detail-value">Logic board failure</div></div>
+                  <div><div class="detail-label">Repair facility</div><div class="detail-value">Dell Service Centre Singapore</div></div>
+                  <div><div class="detail-label">Courier</div><div class="detail-value">DHL Express · <a href="#" class="link-sm">4821 0937 55</a></div></div>
+                  <div><div class="detail-label">Expected return</div><div class="detail-value date-late">14 Oct · 2 days late</div></div>
+                  <div><div class="detail-label">Coverage</div><div class="detail-value">Dell ProSupport, in warranty</div></div>
+                  <div><div class="detail-label">Loaner</div><div class="detail-value">Issued 9 Oct · PW0KX2RT</div></div>
+                </div>
+              </div>
+            </section>
+            
+            <section class="card mb-lg quote-card" id="quoteCard"></section>
+            
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Timeline</h3></div>
+              <div class="card-body">
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Alert sent</strong></div>
+                    <div class="timeline-meta">15 Oct, 09:00 · System</div>
+                    <div class="timeline-text">Technician and client admin notified that the repair is behind schedule.</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Status changed</strong></div>
+                    <div class="timeline-meta">11 Oct, 11:15 · Dell Service Centre</div>
+                    <div class="before-after"><span class="strikethrough">Diagnosing</span> → <strong>Awaiting part</strong></div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Received at facility</strong></div>
+                    <div class="timeline-meta">10 Oct, 14:30 · DHL Express</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Repair created</strong></div>
+                    <div class="timeline-meta">9 Oct, 14:00 · Jia Ling</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          
+          <div class="edit-sidebar-column">
+            <section class="card mb-lg" id="woBilling" data-wo="REP-0871"></section>
+            
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">SLA milestones</h3></div>
+              <div class="card-body" data-sla-item="REP-0871"></div>
+            </div>
+            
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Assigned</h3></div>
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-row"><span class="info-label">Owner</span>
+                    <span class="owner-picker"><span class="card-avatar">JL</span><select class="form-select owner-dropdown" aria-label="Owner"><option>Qonit</option><option>Marcus</option><option selected>Jia Ling</option><option>Aisha</option><option>Ben</option></select></span>
+                  </div>
+                  <div class="info-row"><span class="info-label">Technician</span><span class="info-value">Kelvin Tan · Dell</span></div>
+                  <div class="info-row"><span class="info-label">Client admin</span><span class="info-value">Ravi Shah</span></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card handover-card">
+              <div class="card-header"><h3 class="card-title">Handover notes</h3></div>
+              <div class="card-body">
+                <form class="add-note" novalidate>
+                  <textarea class="form-textarea" placeholder="Note for the next owner or shift..." aria-label="Handover note"></textarea>
+                  <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+                </form>
+                <div class="handover-feed">
+                  <div class="handover-item"><div class="card-avatar">JL</div><div><div class="activity-header"><strong>Jia Ling</strong><span class="activity-time">Today, 08:30</span></div><div class="activity-message">Logic board back-ordered, vendor ETA Friday. Loaner sent.</div></div></div>
+                  <div class="handover-item"><div class="card-avatar">M</div><div><div class="activity-header"><strong>Marcus</strong><span class="activity-time">11 Oct, 11:15</span></div><div class="activity-message">Vendor diagnosis: board fault, not covered by accidental damage</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/request-handover.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/tracker-sla.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/repair-quote-data.js"></script>
+  <script src="/scripts/repair-quote.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/dispute-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/work-order-billing.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

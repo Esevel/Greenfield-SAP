@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Clients</h1>
+          <p class="page-description">Each client's contract: plan, billing entities, currency, fees and caps. Open a client to see or amend its terms.</p>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/clients/list.html" class="tab-link active">Clients</a>
+          <a href="/pages/clients/caps.html" class="tab-link">Procurement caps</a>
+        </nav>
+        
+        <div class="inventory-summary stock-summary stock-summary-4" id="clTiles"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="clSearch" placeholder="Search clients or entities..." aria-label="Search clients">
+            </div>
+            <label class="filter-select"><span>Plan</span><select id="fTier"></select></label>
+            <label class="filter-select"><span>Status</span><select id="fStatus"></select></label>
+            <label class="filter-select"><span>Currency</span><select id="fCur"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table clients-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Client</th>
+                <th>Plan tier</th>
+                <th>Current version</th>
+                <th>Effective date</th>
+                <th>Status</th>
+                <th>Invoice currencies</th>
+                <th>Billing entities</th>
+              </tr>
+            </thead>
+            <tbody id="clRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="clCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const fmt = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
+      const all = WH_CLIENTS.map(c => ({ c, k: CONTRACTS[c.id] }));
+      const curs = [...new Set(all.flatMap(r => contractCurrencies(r.k.terms)))].sort();
+      $('fTier').innerHTML = '<option value="">All</option>' + PLAN_TIERS.map(t => `<option>${t}</option>`).join('');
+      $('fStatus').innerHTML = '<option value="">All</option>' + Object.entries(CONTRACT_STATUS).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      $('fCur').innerHTML = '<option value="">All</option>' + curs.map(c => `<option>${c}</option>`).join('');
+
+      function render() {
+        const q = $('clSearch').value.trim().toLowerCase();
+        const rows = all.filter(({ c, k }) => (!q || c.name.toLowerCase().includes(q) || k.terms.entities.some(e => e.name.toLowerCase().includes(q)))
+          && (!$('fTier').value || k.tier === $('fTier').value)
+          && (!$('fStatus').value || k.status === $('fStatus').value)
+          && (!$('fCur').value || contractCurrencies(k.terms).includes($('fCur').value)));
+
+        const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
+        const count = s => all.filter(r => r.k.status === s).length;
+        const renewSoon = all.filter(r => r.k.status !== 'expired' && r.k.end <= '2027-01-31').length;
+        $('clTiles').innerHTML = [
+          tile('Active', count('active')),
+          tile('Amendment pending', count('amendment'), 'Waiting for client admin acceptance', count('amendment') ? 'summary-tile-alert' : ''),
+          tile('Expired', count('expired'), 'Billing continues on last accepted terms', count('expired') ? 'summary-tile-breached' : ''),
+          tile('Renewing by Jan 2027', renewSoon)
+        ].join('');
+
+        $('clRows').innerHTML = rows.map(({ c, k }) => {
+          const v = activeVersion(k);
+          const p = pendingVersion(k);
+          const [sLabel, sCls] = CONTRACT_STATUS[k.status];
+          const ents = k.terms.entities;
+          return `<tr data-id="${c.id}" tabindex="0">
+            <td><div class="client-cell"><div class="client-logo">${c.logo}</div><span>${escapeHtml(c.name)}</span></div></td>
+            <td>${k.tier}</td>
+            <td>v${v.v}${p ? `<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : 'awaiting acceptance'}</div>` : ''}</td>
+            <td>${fmt(v.effective)}<div class="stock-sub">Term ends ${fmt(k.end)}</div></td>
+            <td><span class="badge ${sCls} badge-sm">${sLabel}</span></td>
+            <td>${contractCurrencies(k.terms).map(c => `<span class="cur-pill">${c}</span>`).join(' ')}</td>
+            <td>${ents.length} <span class="text-muted">· ${ents.map(e => `${WH_COUNTRIES[e.country][0]} ${e.currency}`).join(' · ')}</span></td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="7" class="text-muted sla-empty">No clients match</td></tr>';
+        $('clCount').textContent = `${rows.length} of ${all.length} clients`;
+      }
+
+      const go = row => { window.location.href = `/pages/clients/detail.html?c=${row.dataset.id}`; };
+      $('clRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
+      $('clRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
+      ['fTier', 'fStatus', 'fCur'].forEach(id => $(id).addEventListener('change', render));
+      $('clSearch').addEventListener('input', render);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

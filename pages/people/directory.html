@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>People · Directory - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/people.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="peopleHeader" data-view="directory"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="dSearch" placeholder="Search name, email or role..." aria-label="Search people">
+            </div>
+            <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
+            <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
+            <label class="filter-select"><span>Status</span><select id="fState"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table people-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Employee</th>
+                <th>Client</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Country</th>
+                <th>Devices</th>
+                <th>Status</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="dRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="dCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/people-header.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      $('fClient').innerHTML = '<option value="">All</option>' + [...new Set(PEOPLE.map(p => p.client))].map(id => `<option value="${id}">${peopleClientName(id)}</option>`).join('');
+      $('fCountry').innerHTML = '<option value="">All</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][1]}</option>`).join('');
+      $('fState').innerHTML = '<option value="">All</option>' + Object.entries(PERSON_STATE).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+
+      function stateCell(p) {
+        const [label, cls] = PERSON_STATE[p.state];
+        const sub = p.state === 'joining' ? `Starts ${peopleFmt(p.start, false)}` : p.state === 'leaving' || p.state === 'left' ? `${p.state === 'left' ? 'Left' : 'Leaves'} ${peopleFmt(p.end, false)}` : '';
+        return `<span class="badge ${cls} badge-sm">${label}</span>${sub ? `<div class="stock-sub">${sub}</div>` : ''}`;
+      }
+
+      function render() {
+        const q = $('dSearch').value.trim().toLowerCase();
+        const rows = PEOPLE.filter(p => (!q || `${p.name} ${p.email} ${p.role}`.toLowerCase().includes(q))
+          && (!$('fClient').value || p.client === $('fClient').value)
+          && (!$('fCountry').value || p.cc === $('fCountry').value)
+          && (!$('fState').value || p.state === $('fState').value))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        $('dRows').innerHTML = rows.map(p => `<tr data-id="${p.id}" tabindex="0">
+            <td><div class="jn-name">${escapeHtml(p.name)}</div><div class="stock-sub">${escapeHtml(p.email)}</div></td>
+            <td>${peopleClientName(p.client)}</td>
+            <td>${escapeHtml(p.role)}</td>
+            <td>${escapeHtml(p.dept)}</td>
+            <td><span class="flag">${WH_COUNTRIES[p.cc][0]}</span> ${WH_COUNTRIES[p.cc][1]}</td>
+            <td>${assetIconsHtml(p.assets)}</td>
+            <td>${stateCell(p)}</td>
+            <td class="text-muted">${escapeHtml(p.source)}</td>
+          </tr>`).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No people match</td></tr>';
+        $('dCount').textContent = `${rows.length} of ${PEOPLE.length} people`;
+      }
+
+      const go = row => { window.location.href = `/pages/people/person.html?id=${row.dataset.id}`; };
+      $('dRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
+      $('dRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
+      ['fClient', 'fCountry', 'fState'].forEach(id => $(id).addEventListener('change', render));
+      $('dSearch').addEventListener('input', render);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

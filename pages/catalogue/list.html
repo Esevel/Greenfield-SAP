@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <div>
+              <h1 class="page-title">Catalogue</h1>
+              <p class="page-description">Manage product models and specifications</p>
+            </div>
+            <div class="flex gap-md">
+              <button class="btn btn-secondary">Import</button>
+              <button class="btn btn-secondary">Export</button>
+              <button class="btn btn-primary">Add model</button>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/catalogue/list.html" class="tab-link active">Models</a>
+          <a href="/pages/catalogue/markup.html" class="tab-link">Default markup</a>
+        </nav>
+        
+        <!-- Toolbar -->
+        <div class="catalogue-toolbar">
+          <div class="toolbar-left">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" placeholder="Search models...">
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle" id="brandFilter">
+                <span>Brand</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu" id="brandFilterMenu">
+                <a href="#" class="dropdown-menu-item">All brands</a>
+                <a href="#" class="dropdown-menu-item">Apple</a>
+                <a href="#" class="dropdown-menu-item">Dell</a>
+                <a href="#" class="dropdown-menu-item">Lenovo</a>
+                <a href="#" class="dropdown-menu-item">Logitech</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle" id="categoryFilter">
+                <span>Category</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu" id="categoryFilterMenu">
+                <a href="#" class="dropdown-menu-item">All categories</a>
+                <a href="#" class="dropdown-menu-item">Laptops</a>
+                <a href="#" class="dropdown-menu-item">Monitors</a>
+                <a href="#" class="dropdown-menu-item">Accessories</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle" id="statusFilter">
+                <span>Status</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu" id="statusFilterMenu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Active</a>
+                <a href="#" class="dropdown-menu-item">Draft</a>
+                <a href="#" class="dropdown-menu-item">End of life</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle" id="countryFilter">
+                <span>Country</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu" id="countryFilterMenu">
+                <a href="#" class="dropdown-menu-item">All countries</a>
+                <a href="#" class="dropdown-menu-item">United States</a>
+                <a href="#" class="dropdown-menu-item">United Kingdom</a>
+                <a href="#" class="dropdown-menu-item">Germany</a>
+                <a href="#" class="dropdown-menu-item">France</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle" id="savedViews">
+                <span>Saved views</span>
+                <span>▼</span>
+              </button>
+              <div class="dropdown-menu" id="savedViewsMenu">
+                <a href="#" class="dropdown-menu-item">All models</a>
+                <a href="#" class="dropdown-menu-item">Active laptops</a>
+                <a href="#" class="dropdown-menu-item">Low stock items</a>
+                <a href="#" class="dropdown-menu-item">Recently updated</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="toolbar-right">
+            <button class="btn btn-secondary btn-sm" id="columnVisibility">
+              <span>⚙</span>
+              <span>Columns</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Catalogue Table -->
+        <div class="table-container catalogue-table-container">
+          <table class="table catalogue-table catalogue-list-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th class="col-checkbox">
+                  <input type="checkbox" id="selectAll" class="table-checkbox">
+                </th>
+                <th class="col-model">Model</th>
+                <th class="col-brand">Brand</th>
+                <th class="col-category">Category</th>
+                <th class="col-specs">Key specs</th>
+                <th class="col-countries">Countries live</th>
+                <th class="col-stock">Client stock</th>
+                <th class="col-status">Status</th>
+                <th class="col-updated">Last updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="catalogue-row" data-row-id="1">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💻</div>
+                    </div>
+                    <div class="model-info">
+                      <a href="/pages/catalogue/model/overview.html" class="model-name" style="text-decoration: none; color: var(--color-text-primary);">MacBook Pro 14" M3</a>
+                      <div class="model-warnings">
+                        <span class="warning-indicator" data-tooltip="Stock below minimum threshold (< 10 units)">⚠️</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>Apple</td>
+                <td>Laptops</td>
+                <td class="text-muted">M3 · 16GB · 512GB</td>
+                <td>4 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 8 · at client sites 4">12</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">2 hours ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="2">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💻</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Dell XPS 15</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Dell</td>
+                <td>Laptops</td>
+                <td class="text-muted">i7-13700H · 32GB · 1TB</td>
+                <td>7 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 24 · at client sites 12">36</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">1 day ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="3">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💻</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Lenovo ThinkPad X1 Carbon Gen 11</div>
+                      <div class="model-warnings">
+                        <span class="warning-indicator warning-price" data-tooltip="Missing price information for 2 countries">💰</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>Lenovo</td>
+                <td>Laptops</td>
+                <td class="text-muted">i7-1355U · 16GB · 512GB</td>
+                <td>5 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 18 · at client sites 9">27</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">3 hours ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="4">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🖥️</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Dell UltraSharp 27" 4K</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Dell</td>
+                <td>Monitors</td>
+                <td class="text-muted">4K · IPS · USB-C</td>
+                <td>6 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 14 · at client sites 6">20</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">5 days ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="5">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⌨️</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Logitech MX Keys</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Logitech</td>
+                <td>Accessories</td>
+                <td class="text-muted">Wireless · Backlit · Multi-device</td>
+                <td>7 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 45 · at client sites 15">60</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">1 week ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="6">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💻</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">MacBook Air 13" M2</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Apple</td>
+                <td>Laptops</td>
+                <td class="text-muted">M2 · 8GB · 256GB</td>
+                <td>6 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 32 · at client sites 18">50</span>
+                </td>
+                <td><span class="badge badge-info">Draft</span></td>
+                <td class="text-muted">2 days ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="7">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💻</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Dell Latitude 7430</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Dell</td>
+                <td>Laptops</td>
+                <td class="text-muted">i5-1245U · 16GB · 512GB</td>
+                <td>4 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 11 · at client sites 7">18</span>
+                </td>
+                <td><span class="badge badge-error">End of life</span></td>
+                <td class="text-muted">3 weeks ago</td>
+              </tr>
+              
+              <tr class="catalogue-row" data-row-id="8">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox">
+                </td>
+                <td class="col-model">
+                  <div class="model-cell">
+                    <div class="model-thumbnail">
+                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">🖱️</div>
+                    </div>
+                    <div class="model-info">
+                      <div class="model-name">Logitech MX Master 3S</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Logitech</td>
+                <td>Accessories</td>
+                <td class="text-muted">Wireless · 8K DPI · USB-C</td>
+                <td>7 / 7</td>
+                <td>
+                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 38 · at client sites 22">60</span>
+                </td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td class="text-muted">4 days ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+          <button class="pagination-button pagination-prev" disabled>Previous</button>
+          <button class="pagination-button active">1</button>
+          <button class="pagination-button">2</button>
+          <button class="pagination-button">3</button>
+          <button class="pagination-button">4</button>
+          <button class="pagination-button">5</button>
+          <button class="pagination-button pagination-next">Next</button>
+        </div>
+        
+        <!-- Bulk Action Bar -->
+        <div class="bulk-action-bar" id="bulkActionBar">
+          <div class="bulk-action-content">
+            <span class="bulk-selection-count" id="selectionCount">0 selected</span>
+            <div class="bulk-actions">
+              <button class="btn btn-secondary btn-sm">Set status</button>
+              <button class="btn btn-secondary btn-sm">Export</button>
+              <button class="btn btn-secondary btn-sm" id="clearSelection">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/catalogue.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

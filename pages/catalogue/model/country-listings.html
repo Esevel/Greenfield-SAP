@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14" M3 · Country listings - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="country-listings"></div>
+        
+        <div class="toolbar-with-description">
+          <div class="toolbar-description">
+            <p>Vendor-supplied cost and our retail price by country. A custom client contract adjustment applies to retail; the selling price never falls below vendor cost.</p>
+          </div>
+          <button class="btn btn-primary">Add listing</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table country-listings-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>Local SKU</th>
+                <th>Currency</th>
+                <th>Designated vendor</th>
+                <th>Vendor cost</th>
+                <th>Retail price</th>
+                <th>Retail spread</th>
+                <th>Checkout estimate</th>
+                <th>Available</th>
+                <th style="width: 40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="countryListingRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="pricingPanel">
+    <div class="side-panel-header">
+      <h3 class="side-panel-title" id="listingTitle">Country listing</h3>
+      <button class="side-panel-close" id="closePricingPanel">&times;</button>
+    </div>
+    
+    <div class="side-panel-body">
+      <div class="panel-section">
+          <h4 class="panel-section-title">Vendor-provided prices</h4>
+          <div class="info-grid" id="listingPrice"></div>
+      </div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Vendor and stock</h4>
+        <div class="info-grid" id="listingSupply"></div>
+      </div>
+      
+      <div class="panel-section">
+        <h4 class="panel-section-title">Checkout estimate</h4>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-label">Vendor A lead time</span>
+            <span class="info-value"><a href="/pages/vendors/supplier.html?v=vendorA" class="link-sm">2–3 days</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Hub buffer · Singapore Hub</span>
+            <span class="info-value"><a href="/pages/warehouses/list.html" class="link-sm">0 days</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Delivery · Courier X</span>
+            <span class="info-value"><a href="/pages/vendors/detail.html" class="link-sm">1–2 days</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Delay notices</span>
+            <span class="info-value"><a href="/pages/holidays/calendars.html" class="link-sm">None</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Client sees</span>
+            <span class="info-value"><strong>Delivered in 4–5 days</strong></span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: var(--space-md);">
+          <label class="toggle-switch-label">
+            <span class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></span>
+            <span>Override the estimate (reason required)</span>
+          </label>
+        </div>
+        <div class="readonly-note">Each part is edited where it lives: the vendor's page, Warehouses, the courier's page and the Operating calendar.</div>
+      </div>
+      
+      <div class="panel-section"><div class="readonly-note">Client selling prices are calculated from vendor retail plus the contract percentage adjustment. They cannot be overridden on this page, and never fall below vendor cost.</div></div>
+    </div>
+    
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" id="cancelPricingPanel">Cancel</button>
+      <button class="btn btn-secondary" id="closeListing">Close</button>
+    </div>
+  </div>
+  
+  <div class="side-panel-overlay" id="panelOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/billing-settings-data.js"></script>
+  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/catalogue-country-listings.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amendment - Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/clients/list.html" class="breadcrumb-link">Clients</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="#" class="breadcrumb-link" id="amClientCrumb"></a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current" id="amCrumb"></span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit" id="amTitle"></h1>
+            <div class="vendor-header-tags" id="amTags"></div>
+          </div>
+          <div class="header-actions" id="amActions"></div>
+        </div>
+        
+        <div class="saved-note" id="amSaved" hidden></div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg">
+              <div class="card-header">
+                <h3 class="card-title" id="amCompareTitle">Changes</h3>
+                <label class="sla-check"><input type="checkbox" id="amOnlyChanged" checked> Only show changes</label>
+              </div>
+              <div class="card-body doc-body">
+                <table class="table doc-table compare-table">
+                  <thead><tr><th>Term</th><th id="amColA">Current</th><th id="amColB">Proposed</th></tr></thead>
+                  <tbody id="amRows"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+          
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg" id="amPublishCard" hidden>
+              <div class="card-header"><h3 class="card-title">Publish to client</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label" for="amEffective">Effective date</label>
+                  <input type="date" class="form-input" id="amEffective">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="amNote">Note to client</label>
+                  <textarea class="form-textarea" id="amNote" rows="3" placeholder="Why the terms are changing"></textarea>
+                </div>
+                <div class="form-error" id="amError" hidden></div>
+                <button type="button" class="btn btn-primary am-wide" id="amPublish">Publish</button>
+                <div class="readonly-note">Publishing locks these terms until the client admin accepts. To change them after that, withdraw and create a new draft.</div>
+              </div>
+            </div>
+            
+            <div class="card mb-lg" id="amDetailsCard"></div>
+            <div class="card" id="amAcceptCard"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>  <script src="/scripts/billing-settings-data.js"></script>  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/client-amendment.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

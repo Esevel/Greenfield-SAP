@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Sync inbox - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/all.html" class="breadcrumb-link">Tracker</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Sync inbox</span>
+        </nav>
+        
+        <div class="page-header">
+          <h1 class="page-title">Sync inbox</h1>
+          <p class="page-description">Proof of delivery and return receipts from couriers. A matched document completes its work order step, which creates the billable charge.</p>
+        </div>
+        
+        <div class="inventory-summary stock-summary stock-summary-4" id="siTiles"></div>
+        <div class="saved-note" id="siSaved" hidden></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="segmented-control segmented-sm" id="siState">
+              <button type="button" class="segment-button active" data-s="todo">Needs action</button>
+              <button type="button" class="segment-button" data-s="matched">Matched</button>
+              <button type="button" class="segment-button" data-s="ignored">Ignored</button>
+              <button type="button" class="segment-button" data-s="">All</button>
+            </div>
+            <label class="filter-select"><span>Type</span>
+              <select id="siKind"><option value="">All</option><option value="pod">Proof of delivery</option><option value="return">Return receipt</option></select>
+            </label>
+            <label class="filter-select"><span>Source</span><select id="siSource"></select></label>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table catalogue-table sync-table">
+            <thead class="catalogue-table-header">
+              <tr><th>Received</th><th>Type / source</th><th>Tracking / ref</th><th>Recipient</th><th>Document</th><th>Work order</th><th>Status</th></tr>
+            </thead>
+            <tbody id="siRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="siCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="siPanel" role="dialog" aria-modal="true" aria-labelledby="siTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="siTitle"></h3>
+        <div class="device-panel-meta" id="siMeta"></div>
+      </div>
+      <button class="side-panel-close" id="siClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="panel-section">
+        <h4 class="panel-section-title">Document</h4>
+        <div class="doc-preview" id="siDoc"></div>
+        <div class="info-grid" id="siInfo"></div>
+      </div>
+      <div class="panel-section" id="siMatchSection">
+        <h4 class="panel-section-title">Match to work order</h4>
+        <div id="siSuggest"></div>
+        <div class="form-group">
+          <label class="form-label" for="siWo">Work order</label>
+          <select class="form-select" id="siWo"></select>
+        </div>
+        <div class="form-error" id="siError" hidden></div>
+        <div class="readonly-note">Matching completes the step with this document as evidence. The charge it creates shows in the billing ledger with this document as its source.</div>
+      </div>
+      <div class="saved-note" id="siDone" hidden></div>
+      <div class="panel-section" id="siBillSection" hidden>
+        <h4 class="panel-section-title">Charges from this step</h4>
+        <div id="siCharges"></div>
+      </div>
+      <div class="panel-section" id="siUnmatchSection" hidden>
+        <h4 class="panel-section-title">Unmatch</h4>
+        <div class="form-group">
+          <label class="form-label" for="siReason">Reason</label>
+          <textarea class="form-textarea" id="siReason" rows="2" placeholder="Wrong work order, wrong recipient, not actually delivered"></textarea>
+        </div>
+        <div class="form-error" id="siUError" hidden></div>
+        <div class="readonly-note">Reopens the step. Unbilled charges get a reversing entry; invoiced charges get a draft credit note for approval.</div>
+      </div>
+    </div>
+    <div class="side-panel-footer" id="siFooter"></div>
+  </div>
+  <div class="side-panel-overlay" id="siOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/ops-inputs.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const clientName = id => (id ? WH_CLIENTS.find(c => c.id === id).name : '—');
+      let state = 'todo';
+      let current = null;
+      $('siSource').innerHTML = '<option value="">All</option>' + Object.entries(SYNC_SOURCES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+
+      const inState = (e, s) => !s || (s === 'todo' ? ['suggested', 'unmatched'].includes(e.state) : e.state === s);
+
+      function render() {
+        const rows = SYNC_EVENTS.filter(e => inState(e, state) && (!$('siKind').value || e.kind === $('siKind').value) && (!$('siSource').value || e.source === $('siSource').value));
+        const n = s => SYNC_EVENTS.filter(e => e.state === s).length;
+        const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
+        $('siTiles').innerHTML = [
+          tile('Unmatched', n('unmatched'), 'No work order found', n('unmatched') ? 'summary-tile-breached' : ''),
+          tile('Confirm match', n('suggested'), 'One likely work order', n('suggested') ? 'summary-tile-alert' : ''),
+          tile('Matched (48h)', n('matched'), 'Steps completed automatically'),
+          tile('Sources', Object.keys(SYNC_SOURCES).length, 'Courier APIs, webhooks and email')
+        ].join('');
+        document.querySelectorAll('#siState .segment-button').forEach(b => {
+          b.classList.toggle('active', b.dataset.s === state);
+          const c = SYNC_EVENTS.filter(e => inState(e, b.dataset.s)).length;
+          b.innerHTML = `${b.textContent.replace(/ \d+$/, '')} <span class="tab-count${b.dataset.s === 'todo' && c ? ' tab-count-alert' : ''}">${c}</span>`;
+        });
+        $('siRows').innerHTML = rows.map(e => {
+          const [l, c] = SYNC_STATE[e.state];
+          return `<tr data-id="${e.id}" tabindex="0">
+            <td class="text-muted">${e.at}</td>
+            <td>${SYNC_KINDS[e.kind]}<div class="stock-sub">${SYNC_SOURCES[e.source]}</div></td>
+            <td class="asset-serial">${escapeHtml(e.ref)}</td>
+            <td>${escapeHtml(e.recipient)} <span class="flag">${WH_COUNTRIES[e.cc][0]}</span></td>
+            <td>${e.doc ? `📄 ${escapeHtml(e.doc)}` : '<span class="text-muted">Event only</span>'}</td>
+            <td>${e.wo ? `<a href="/pages/tracker/work-order.html" class="link-sm">${e.wo}</a><div class="stock-sub">${escapeHtml(e.step)}${e.state === 'suggested' ? ' · suggested' : ''}</div>` : '<span class="text-muted">—</span>'}</td>
+            <td><span class="badge ${c} badge-sm">${l}</span>${e.why && e.state !== 'matched' ? `<div class="stock-sub">${escapeHtml(e.why)}</div>` : ''}${e.state === 'matched' ? chargeSub(e) : ''}</td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="7" class="text-muted sla-empty">${state === 'todo' ? 'Inbox clear. Every courier document is matched to a work order.' : 'Nothing here'}</td></tr>`;
+        $('siCount').textContent = `${rows.length} shown · Couriers send events with a tracking number; a match on the work order's tracking number completes the step automatically.`;
+      }
+
+      const chargesFor = e => activeCharges(e.wo, e.step);
+      function chargeSub(e) {
+        const ch = chargesFor(e);
+        if (!ch.length) return `<div class="stock-sub">${stepEvent(e.wo, e.step) ? 'No charge' : 'Not a billable step'}</div>`;
+        const byCur = sumByCurrency(ch.map(x => ({ cur: x.cur, amount: x.amount })));
+        return `<div class="stock-sub">${ch.length} charge${ch.length > 1 ? 's' : ''} · ${Object.entries(byCur).map(([c, v]) => fmtAmount(c, v)).join(', ')}</div>`;
+      }
+      function chargeList(e) {
+        const ch = LEDGER.filter(x => x.wo === e.wo && x.step === e.step && x.kind !== 'reversal');
+        if (!ch.length) return `<div class="text-muted">${stepEvent(e.wo, e.step) ? 'No charge posted.' : `${escapeHtml(e.step)} isn't a billable step, so nothing was charged.`}</div>`;
+        return ch.map(x => `<div class="pay-line">
+            <div><a href="/pages/billing/ledger.html?entry=${x.id}" class="link-sm">${x.id}</a> · <strong>${fmtAmount(x.cur, x.amount)}</strong>${x.reversedBy ? ' <span class="tag kind-reversed">Reversed</span>' : ''}${x.credited ? ` <span class="tag kind-pending">Credit ${x.credited}</span>` : ''}${x.anomaly ? ' <span class="tag kind-anomaly">Anomaly</span>' : ''}</div>
+            <div class="entity-meta">${escapeHtml(x.asset)}</div>
+            <div class="entity-meta">${escapeHtml(entityById(CONTRACTS[x.client].terms, x.entity).name)} · ${escapeHtml(x.basis ? x.basis.why : '')}</div>
+            ${x.basis ? `<div class="entity-meta">${escapeHtml(chargeBasisText(x))}</div>` : ''}
+            ${x.status === 'invoiced' ? `<div class="entity-meta">Invoiced on ${x.invoice}</div>` : ''}
+          </div>`).join('');
+      }
+
+      function open(e) {
+        current = e;
+        const [l, c] = SYNC_STATE[e.state];
+        $('siTitle').textContent = `${SYNC_KINDS[e.kind]} · ${e.ref}`;
+        $('siMeta').innerHTML = `${SYNC_SOURCES[e.source]} · ${e.at} · <span class="badge ${c} badge-sm">${l}</span>`;
+        $('siDoc').innerHTML = e.doc ? `<div class="doc-thumb">📄</div><div><strong>${escapeHtml(e.doc)}</strong><div class="stock-sub">Stored with the work order and the billing charge</div></div>` : '<div class="text-muted">No document attached. Event data only.</div>';
+        $('siInfo').innerHTML = [['Recipient', `${escapeHtml(e.recipient)} · ${WH_COUNTRIES[e.cc][1]}`], ['Signed by', escapeHtml(e.signedBy || '—')], ['Client', escapeHtml(clientName(e.client))]]
+          .map(([a, b]) => `<div class="info-row"><span class="info-label">${a}</span><span class="info-value">${b}</span></div>`).join('');
+        const done = e.state === 'matched' || e.state === 'ignored';
+        $('siMatchSection').hidden = done;
+        $('siDone').hidden = !done;
+        $('siDone').innerHTML = e.state === 'matched' ? `✓ Matched to <a href="/pages/tracker/work-order.html?wo=${e.wo}">${e.wo}</a> · ${escapeHtml(e.step)} completed` : e.state === 'ignored' ? `Ignored · ${escapeHtml(e.why || '')}` : '';
+        $('siBillSection').hidden = e.state !== 'matched';
+        $('siUnmatchSection').hidden = e.state !== 'matched';
+        if (e.state === 'matched') $('siCharges').innerHTML = chargeList(e);
+        $('siReason').value = '';
+        $('siUError').hidden = true;
+        $('siFooter').innerHTML = e.state === 'matched' ? '<button class="btn btn-secondary" type="button" id="siUnmatch">Unmatch and correct charges</button>'
+          : e.state === 'ignored' ? '<button class="btn btn-secondary" type="button" id="siClose2">Close</button>'
+          : '<button class="btn btn-secondary" type="button" id="siIgnore">Ignore</button><button class="btn btn-primary" type="button" id="siMatch">Match and complete step</button>';
+        $('siSuggest').innerHTML = e.state === 'suggested' ? `<div class="suggest-card"><strong>Suggested: ${e.wo}</strong> · ${escapeHtml(e.step)}<div class="stock-sub">${escapeHtml(e.why)}</div></div>` : '';
+        const options = [...(e.state === 'suggested' ? [{ wo: e.wo, who: clientName(e.client), step: e.step, cc: e.cc }] : []), ...SYNC_OPEN_ORDERS.filter(o => o.cc === e.cc)];
+        $('siWo').innerHTML = '<option value="">Choose a work order…</option>' + options.map(o => `<option value="${o.wo}" ${e.wo === o.wo ? 'selected' : ''}>${o.wo} · ${escapeHtml(o.who)} · ${escapeHtml(o.step)}</option>`).join('');
+        $('siError').hidden = true;
+        $('siPanel').classList.add('open');
+        $('siOverlay').classList.add('show');
+      }
+      const close = () => { $('siPanel').classList.remove('open'); $('siOverlay').classList.remove('show'); current = null; };
+
+      const note = t => { $('siSaved').textContent = `✓ ${t}`; $('siSaved').hidden = false; };
+      $('siFooter').addEventListener('click', ev => {
+        const id = ev.target.id;
+        const e = current;
+        if (id === 'siClose2') return close();
+        if (id === 'siMatch') {
+          const wo = $('siWo').value;
+          if (!wo) { $('siError').textContent = 'Choose a work order.'; $('siError').hidden = false; return; }
+          const o = SYNC_OPEN_ORDERS.find(x => x.wo === wo);
+          Object.assign(e, { state: 'matched', wo, step: o ? o.step : e.step, client: o ? o.client : e.client, why: '' });
+          if (stepEvent(wo, e.step) === 'retrieval') {
+            // Retrieval is charged per device when the hub records intake, not on the courier receipt
+            const rows = RECEIVING.filter(r => r.wo === wo && r.status === 'expected');
+            rows.forEach(r => { r.status = 'arrived'; });
+            saveBilling();
+            note(`${e.ref} matched to ${wo}. ${rows.length ? `${rows.length} device${rows.length > 1 ? 's' : ''} marked arrived in Receiving` : 'Devices already at the hub'}; retrieval is charged per device at intake.`);
+          } else {
+            const log = completeStep({ wo, step: e.step, source: `Sync inbox · ${SYNC_SOURCES[e.source]} · ${e.ref}`, doc: e.doc, cc: e.cc, client: e.client });
+            note(`${e.ref} matched to ${wo}. ${e.step} completed. ${postingSummary(log)}.`);
+          }
+          close();
+          return render();
+        }
+        if (id === 'siIgnore') {
+          Object.assign(e, { state: 'ignored', why: e.why || 'Ignored by staff' });
+          saveBilling();
+          note(`${e.ref} ignored. It won't complete any step.`);
+          close();
+          return render();
+        }
+        if (id === 'siUnmatch') {
+          const reason = $('siReason').value.trim();
+          if (!reason) { $('siUError').textContent = 'Add a reason.'; $('siUError').hidden = false; return; }
+          const { wo, step, ref } = e;
+          const out = correctStep(wo, step, reason, `Sync inbox · unmatched ${ref}`);
+          note(`${ref} unmatched from ${wo}. ${step} reopened; ${correctionSummary(out)}.`);
+          close();
+          state = 'todo';
+          return render();
+        }
+      });
+      $('siRows').addEventListener('click', ev => {
+        if (ev.target.closest('a')) return;
+        const r = ev.target.closest('tr[data-id]');
+        if (r) open(SYNC_EVENTS.find(e => e.id === r.dataset.id));
+      });
+      $('siState').addEventListener('click', ev => { const b = ev.target.closest('.segment-button'); if (b) { state = b.dataset.s; render(); } });
+      ['siKind', 'siSource'].forEach(id => $(id).addEventListener('change', render));
+      $('siClose').addEventListener('click', close);
+      $('siOverlay').addEventListener('click', close);
+      render();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OFF-2055 · Offboarding - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/offboarding.html" class="breadcrumb-link">Offboarding</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">OFF-2055</span>
+        </nav>
+        
+        <div class="asset-header">
+          <div>
+            <h1 class="page-title-edit">OFF-2055 · Tom Fielding</h1>
+            <div class="asset-header-meta">
+              <span>Digital Solutions</span>
+              <span class="meta-sep">·</span>
+              <span><span class="flag">🇬🇧</span> United Kingdom</span>
+              <span class="meta-sep">·</span>
+              <span class="badge badge-warning">Scheduled</span>
+              <span class="sla-pill sla-breached" data-sla-pill="OFF-2055">Breached</span>
+              <span class="ticket-chip">INC0039</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Reschedule pickup</button>
+            <button class="btn btn-primary">Update status</button>
+          </div>
+        </div>
+        
+        <div class="vendor-alert">
+          <span><strong>Blocked: awaiting courier.</strong> DHL Express missed pickups on 13 Oct and 14 Oct. The Collected milestone is past its target.</span>
+          <a href="/pages/tracker/all.html" class="btn btn-secondary btn-sm">View all at-risk requests</a>
+        </div>
+        
+        <!-- Stage progress -->
+        <ol class="stage-stepper">
+          <li class="done"><span class="stage-dot">✓</span><span class="stage-name">Notified</span><span class="stage-date">10 Oct</span></li>
+          <li class="current"><span class="stage-dot">2</span><span class="stage-name">Scheduled</span><span class="stage-date">Since 12 Oct</span></li>
+          <li><span class="stage-dot">3</span><span class="stage-name">Picked Up</span></li>
+          <li><span class="stage-dot">4</span><span class="stage-name">In Transit</span></li>
+          <li><span class="stage-dot">5</span><span class="stage-name">Received</span></li>
+          <li><span class="stage-dot">6</span><span class="stage-name">QC Completed</span></li>
+          <li><span class="stage-dot">7</span><span class="stage-name">Disposition Decided</span></li>
+        </ol>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column">
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Offboarding details</h3></div>
+              <div class="card-body">
+                <div class="detail-grid">
+                  <div><div class="detail-label">Employee</div><div class="detail-value">Tom Fielding · Account Executive</div></div>
+                  <div><div class="detail-label">Last working day</div><div class="detail-value">10 Oct 2026</div></div>
+                  <div><div class="detail-label">Pickup address</div><div class="detail-value">Building reception, 1 Canada Square, London E14 5AB</div></div>
+                  <div><div class="detail-label">Pickup window</div><div class="detail-value date-late">14 Oct, 09:00–13:00 · missed</div></div>
+                  <div><div class="detail-label">Courier</div><div class="detail-value">DHL Express · <a href="#" class="link-sm">4821 0921 07</a></div></div>
+                  <div><div class="detail-label">Destination</div><div class="detail-value">Digital Solutions · London office<div class="text-muted" style="font-size: var(--font-size-xs);">No assigned hub in the UK, so devices return to a client site (no Esevel fees). <a href="/pages/warehouses/assignments.html" class="link-sm">Hub assignments</a></div></div></div>
+                  <div><div class="detail-label">Source</div><div class="detail-value">Workday termination · synced 10 Oct</div></div>
+                  <div><div class="detail-label">Data wipe</div><div class="detail-value">Remote lock sent 10 Oct · wipe on receipt</div></div>
+                </div>
+              </div>
+            </section>
+            
+            <section class="card mb-lg">
+              <div class="card-header">
+                <h3 class="card-title">Devices to collect <span class="tab-count">3</span></h3>
+              </div>
+              <div class="card-body doc-body">
+                <table class="table doc-table">
+                  <thead>
+                    <tr><th>Device</th><th>Serial</th><th>Owner</th><th>Planned disposition</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>💻 Dell Latitude 7440</td>
+                      <td><a href="/pages/assets/detail.html" class="asset-serial">7GH4LM2</a></td>
+                      <td>Digital Solutions</td>
+                      <td>Return to client site · redeploy later</td>
+                      <td><span class="badge badge-warning badge-sm">Awaiting pickup</span></td>
+                    </tr>
+                    <tr>
+                      <td>🎧 Jabra Evolve2 65</td>
+                      <td><a href="/pages/assets/detail.html" class="asset-serial">JB65-0093321</a></td>
+                      <td>Digital Solutions</td>
+                      <td>Return to client site</td>
+                      <td><span class="badge badge-warning badge-sm">Awaiting pickup</span></td>
+                    </tr>
+                    <tr>
+                      <td>🔌 USB-C dock WD19S</td>
+                      <td><a href="/pages/assets/detail.html" class="asset-serial">CN-0WD19S-88412</a></td>
+                      <td>Digital Solutions</td>
+                      <td>Return to client site</td>
+                      <td><span class="badge badge-warning badge-sm">Awaiting pickup</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            
+            <section class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Timeline</h3></div>
+              <div class="card-body">
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Pickup missed</strong><span class="channel-tag channel-api">API</span></div>
+                    <div class="timeline-meta">14 Oct, 13:05 · DHL Express</div>
+                    <div class="timeline-text">Driver did not arrive in window. Second missed attempt, escalated to account manager.</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Handover note</strong><span class="channel-tag">UI</span></div>
+                    <div class="timeline-meta">13 Oct, 18:40 · Ben</div>
+                    <div class="timeline-text">Recipient confirmed devices are with building reception until Friday.</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Pickup missed</strong><span class="channel-tag channel-api">API</span></div>
+                    <div class="timeline-meta">13 Oct, 13:02 · DHL Express</div>
+                    <div class="timeline-text">Rebooked for 14 Oct, 09:00–13:00.</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Status changed</strong><span class="channel-tag">UI</span></div>
+                    <div class="timeline-meta">12 Oct, 09:00 · Qonit</div>
+                    <div class="before-after"><span class="strikethrough">Notified</span> → <strong>Scheduled</strong></div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-head"><strong>Offboarding created</strong><span class="channel-tag channel-itsm">ITSM sync</span><span class="tag tag-client-initiated">Client-initiated</span></div>
+                    <div class="timeline-meta">10 Oct, 17:22 · Workday via ServiceNow INC0039</div>
+                    <div class="timeline-text">Termination effective 10 Oct. 3 devices assigned.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">SLA milestones</h3></div>
+              <div class="card-body" data-sla-item="OFF-2055"></div>
+            </div>
+            
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Assigned</h3></div>
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-row"><span class="info-label">Owner</span>
+                    <span class="owner-picker"><span class="card-avatar">Q</span><select class="form-select owner-dropdown" aria-label="Owner"><option selected>Qonit</option><option>Marcus</option><option>Jia Ling</option><option>Aisha</option><option>Ben</option></select></span>
+                  </div>
+                  <div class="info-row"><span class="info-label">Stage owner</span><span class="info-value"><span class="owner-tag owner-courier">Courier</span></span></div>
+                  <div class="info-row"><span class="info-label">Courier</span><span class="info-value"><a href="/pages/vendors/list.html" class="link-sm">DHL Express</a></span></div>
+                  <div class="info-row"><span class="info-label">Client admin</span><span class="info-value">Ravi Shah</span></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card handover-card">
+              <div class="card-header"><h3 class="card-title">Handover notes</h3></div>
+              <div class="card-body">
+                <form class="add-note" novalidate>
+                  <textarea class="form-textarea" placeholder="Note for the next owner or shift..." aria-label="Handover note"></textarea>
+                  <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+                </form>
+                <div class="handover-feed">
+                  <div class="handover-item"><div class="card-avatar">Q</div><div><div class="activity-header"><strong>Qonit</strong><span class="activity-time">Today, 10:12</span></div><div class="activity-message">DHL missed second pickup window, escalated to account manager</div></div></div>
+                  <div class="handover-item"><div class="card-avatar">B</div><div><div class="activity-header"><strong>Ben</strong><span class="activity-time">Yesterday, 18:40</span></div><div class="activity-message">Recipient confirmed devices are with building reception until Friday</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/request-handover.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/tracker-sla.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

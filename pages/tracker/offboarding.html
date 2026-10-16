@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Offboarding - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Tracker</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="offboarding"></nav>
+        
+        <div class="tracker-controls">
+          <div class="asset-toolbar">
+            <div class="filter-chips">
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All clients</a>
+                  <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                  <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                  <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                  <a href="#" class="dropdown-menu-item">MediaWorks</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Country <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All countries</a>
+                  <a href="#" class="dropdown-menu-item">Singapore</a>
+                  <a href="#" class="dropdown-menu-item">Malaysia</a>
+                  <a href="#" class="dropdown-menu-item">Australia</a>
+                  <a href="#" class="dropdown-menu-item">United States</a>
+                  <a href="#" class="dropdown-menu-item">United Kingdom</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Owner <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All owners</a>
+                  <a href="#" class="dropdown-menu-item">Esevel Ops</a>
+                  <a href="#" class="dropdown-menu-item">Courier</a>
+                  <a href="#" class="dropdown-menu-item">Client Admin</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">SLA status <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All</a>
+                  <a href="#" class="dropdown-menu-item">On track</a>
+                  <a href="#" class="dropdown-menu-item">At risk</a>
+                  <a href="#" class="dropdown-menu-item">Breached</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Priority <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All</a>
+                  <a href="#" class="dropdown-menu-item">Urgent</a>
+                  <a href="#" class="dropdown-menu-item">High</a>
+                  <a href="#" class="dropdown-menu-item">Normal</a>
+                  <a href="#" class="dropdown-menu-item">Low</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Blocked <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All</a>
+                  <a href="#" class="dropdown-menu-item">Blocked only</a>
+                  <a href="#" class="dropdown-menu-item">Not blocked</a>
+                </div>
+              </div>
+              
+              <div class="dropdown">
+                <button class="dropdown-toggle filter-chip">Source <span class="filter-chip-caret">▼</span></button>
+                <div class="dropdown-menu">
+                  <a href="#" class="dropdown-menu-item">All sources</a>
+                  <a href="#" class="dropdown-menu-item">Platform</a>
+                  <a href="#" class="dropdown-menu-item">HRIS</a>
+                  <a href="#" class="dropdown-menu-item">ITSM</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <nav class="segmented-control view-toggle">
+            <a href="/pages/tracker/offboarding.html" class="segment-button active">Board</a>
+            <a href="#" class="segment-button">List</a>
+          </nav>
+        </div>
+        
+        <div class="board">
+          <!-- Notified -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Notified <span class="board-count">3</span></div>
+              <span class="board-avg">Avg 0.6 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2061</span><span class="ticket-chip">INC0042</span></div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Daniel Ortiz · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-client">Client Admin</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">RS</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2060</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Wei Jie Lim · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 18 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2058</span></div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">Chloe Nguyen · <span class="flag">🇦🇺</span></div>
+                <div class="card-tags"><span class="owner-tag owner-client">Client Admin</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Scheduled -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Scheduled <span class="board-count">3</span></div>
+              <span class="board-avg">Avg 1.2 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card blocked" href="#">
+                <div class="card-top"><span class="card-id">OFF-2055</span></div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">Tom Fielding · <span class="flag">🇬🇧</span></div>
+                <span class="blocked-flag">⛔ Blocked: awaiting courier</span>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-breached">Breached</span></div>
+                <div class="card-bottom"><span>ETA overdue · 14 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2054</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Nurul Aisyah · <span class="flag">🇲🇾</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2052</span></div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Sarah Kim · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 19 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Picked Up -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Picked Up <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 0.8 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card blocked" href="#">
+                <div class="card-top"><span class="card-id">OFF-2049</span><span class="ticket-chip">INC0057</span></div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">Mei Lin Tan · <span class="flag">🇸🇬</span></div>
+                <span class="blocked-flag">⛔ Blocked: awaiting courier</span>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2047</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Priya Raman · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- In Transit (over target) -->
+          <section class="board-column">
+            <div class="board-column-header over-target">
+              <div class="board-column-title">In Transit <span class="board-count">4</span></div>
+              <span class="board-avg" data-tooltip="Avg 3.4 days · target 2">⚠ Avg 3.4 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2044</span></div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Marcus Bell · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-breached">Breached</span></div>
+                <div class="card-bottom"><span>ETA overdue · 13 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2043</span></div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">Hannah Clarke · <span class="flag">🇬🇧</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2041</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Arjun Mehta · <span class="flag">🇲🇾</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2039</span></div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">Jack Wilson · <span class="flag">🇦🇺</span></div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">RS</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Received -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Received <span class="board-count">3</span></div>
+              <span class="board-avg">Avg 0.9 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2036</span></div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Emily Zhang · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2035</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Kenji Sato · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 16 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2033</span></div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">Olivia Hart · <span class="flag">🇬🇧</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-risk">At risk</span></div>
+                <div class="card-bottom"><span>ETA 15 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- QC Completed -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">QC Completed <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 1.1 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2030</span></div>
+                <div class="card-client">MediaWorks</div>
+                <div class="card-recipient">Grace Lee · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 17 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2028</span></div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">Siti Rahman · <span class="flag">🇲🇾</span></div>
+                <div class="card-tags"><span class="owner-tag owner-client">Client Admin</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>ETA 18 Oct</span><span class="card-avatar">M</span></div>
+              </a>
+            </div>
+          </section>
+          
+          <!-- Disposition Decided -->
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Disposition Decided <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 1.5 days</span>
+            </div>
+            <div class="board-cards">
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2024</span></div>
+                <div class="card-client">TechGlobal Inc</div>
+                <div class="card-recipient">Ryan Cooper · <span class="flag">🇺🇸</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>Redeploy · 15 Oct</span><span class="card-avatar">JL</span></div>
+              </a>
+              <a class="board-card" href="#">
+                <div class="card-top"><span class="card-id">OFF-2021</span></div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">Ben Carter · <span class="flag">🇬🇧</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>Dispose · 14 Oct</span><span class="card-avatar">Q</span></div>
+              </a>
+            </div>
+          </section>
+        </div>
+        
+        <div class="board-footnote">Average time in stage over the last 30 days. Stages update from the courier, HRIS and ITSM integrations.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script>
+    // Single prototype detail page for all offboarding cards
+    document.querySelectorAll('.board-card').forEach(card => { card.href = '/pages/tracker/offboarding-detail.html'; });
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

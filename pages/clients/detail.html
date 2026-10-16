@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client - Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/clients/list.html" class="breadcrumb-link">Clients</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current" id="cdCrumb"></span>
+        </nav>
+        
+        <div class="page-header-edit">
+          <div class="header-left-section">
+            <h1 class="page-title-edit" id="cdTitle"></h1>
+            <div class="vendor-header-tags" id="cdTags"></div>
+          </div>
+          <div class="header-actions">
+            <label class="filter-select"><span>Version</span><select id="cdVersion"></select></label>
+            <span id="cdActions" class="cd-actions"></span>
+          </div>
+        </div>
+        
+        <div class="saved-note" id="cdSaved" hidden></div>
+        <div class="version-banner" id="cdBanner" hidden></div>
+        
+        <div class="tab-strip" id="cdTabs"></div>
+        
+        <div class="edit-layout">
+          <div class="edit-form-column" id="cdSections"></div>
+          
+          <div class="edit-sidebar-column">
+            <div class="card mb-lg">
+              <div class="card-header"><h3 class="card-title">Version history</h3></div>
+              <div class="card-body">
+                <ul class="location-history" id="cdHistory"></ul>
+              </div>
+            </div>
+            <div class="card" id="cdNav">
+              <div class="card-header"><h3 class="card-title">On this page</h3></div>
+              <div class="card-body">
+                <nav class="section-nav" id="cdSectionNav"></nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/sla-standard.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>  <script src="/scripts/billing-settings-data.js"></script>  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/managed-users-data.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/dispute-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/client-billable-users.js"></script>
+  <script src="/scripts/client-detail.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

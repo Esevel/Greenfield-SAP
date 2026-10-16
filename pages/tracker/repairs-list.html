@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Repairs (list) - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Repairs</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="repairs"></nav>
+        
+        <div class="tracker-controls">
+        <div class="asset-toolbar">
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All clients</a>
+                <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item">MediaWorks</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Facility <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All facilities</a>
+                <a href="#" class="dropdown-menu-item">FixPoint London</a>
+                <a href="#" class="dropdown-menu-item">iFix Kuala Lumpur</a>
+                <a href="#" class="dropdown-menu-item">Dell Service Centre Singapore</a>
+                <a href="#" class="dropdown-menu-item">Apple AASP Sydney</a>
+                <a href="#" class="dropdown-menu-item">TechCare New Jersey</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">SLA status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All</a>
+                <a href="#" class="dropdown-menu-item">On track</a>
+                <a href="#" class="dropdown-menu-item">At risk</a>
+              </div>
+            </div>
+          </div>
+        </div>
+          <nav class="segmented-control view-toggle">
+            <a href="/pages/tracker/repairs.html" class="segment-button">Board</a>
+            <a href="/pages/tracker/repairs-list.html" class="segment-button active">List</a>
+            <a href="/pages/tracker/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
+          </nav>
+        </div>
+        
+        <div class="table-container asset-table-container">
+          <table class="table catalogue-table repairs-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Repair ID</th>
+                <th>Client</th>
+                <th>Asset</th>
+                <th>Diagnosis</th>
+                <th>Repair facility</th>
+                <th>Courier and tracking</th>
+                <th>Expected return</th>
+                <th>SLA</th>
+                <th>Alerts</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row-at-risk">
+                <td class="card-id">REP-0871</td>
+                <td>TechGlobal Inc</td>
+                <td><div class="model-name">Dell XPS 15</div><div class="asset-serial">8HJ2KL9</div></td>
+                <td>Logic board failure</td>
+                <td>Dell Service Centre Singapore</td>
+                <td>DHL Express<a href="#" class="tracking-link">Track 4821 0937 55 ↗</a></td>
+                <td class="date-late">14 Oct · 2 days late</td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="alert-sent" data-tooltip="Technician and client admin notified">🔔 Alert sent</span></td>
+                <td><span class="badge badge-warning badge-sm">Awaiting part</span></td>
+              </tr>
+              <tr class="row-at-risk">
+                <td class="card-id">REP-0869</td>
+                <td>MediaWorks</td>
+                <td><div class="model-name">MacBook Pro 14" M3</div><div class="asset-serial">C02XK4W5MD6T</div></td>
+                <td>Keyboard keys unresponsive</td>
+                <td>iFix Kuala Lumpur</td>
+                <td>Courier X<a href="#" class="tracking-link">Track CX-77104 ↗</a></td>
+                <td class="date-late">15 Oct · 1 day late</td>
+                <td><span class="sla-pill sla-risk">At risk</span></td>
+                <td><span class="alert-sent" data-tooltip="Technician and client admin notified">🔔 Alert sent</span></td>
+                <td><span class="badge badge-warning badge-sm">Repair delayed</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0874</td>
+                <td>Digital Solutions</td>
+                <td><div class="model-name">Lenovo ThinkPad X1 Carbon</div><div class="asset-serial">PF3QW8ZN</div></td>
+                <td>Loose lid hinge, screen flicker</td>
+                <td>FixPoint London</td>
+                <td>Courier X<a href="#" class="tracking-link">Track CX-77089 ↗</a></td>
+                <td>19 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-info badge-sm">In repair</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0873</td>
+                <td>Acme Tech</td>
+                <td><div class="model-name">MacBook Air 13" M2</div><div class="asset-serial">FVFHG2LMQ6L4</div></td>
+                <td>Battery not holding charge</td>
+                <td>Apple AASP Sydney</td>
+                <td>DHL Express<a href="#" class="tracking-link">Track 4821 1102 84 ↗</a></td>
+                <td>17 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-success badge-sm">Return shipped</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0876</td>
+                <td>TechGlobal Inc</td>
+                <td><div class="model-name">Dell UltraSharp U2723QE</div><div class="asset-serial">CN-0H8W2K-74512</div></td>
+                <td>Dead pixels, backlight bleed</td>
+                <td>TechCare New Jersey</td>
+                <td>FedEx<a href="#" class="tracking-link">Track 7790 2214 6608 ↗</a></td>
+                <td>22 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-muted badge-sm">Diagnosing</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0877</td>
+                <td>Acme Tech</td>
+                <td><div class="model-name">MacBook Pro 14" M3</div><div class="asset-serial">C02XK4P7MD6T</div></td>
+                <td>Cracked display</td>
+                <td>iFix Kuala Lumpur</td>
+                <td>Courier X<a href="#" class="tracking-link">Track CX-77162 ↗</a></td>
+                <td>23 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-muted badge-sm">In transit to facility</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0872</td>
+                <td>MediaWorks</td>
+                <td><div class="model-name">Logitech MX Master 3S</div><div class="asset-serial">2241LZ0A9C11</div></td>
+                <td>Scroll wheel sensor fault</td>
+                <td>Dell Service Centre Singapore</td>
+                <td>DHL Express<a href="#" class="tracking-link">Track 4821 0988 12 ↗</a></td>
+                <td>18 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-success badge-sm">Ready to ship</span></td>
+              </tr>
+              <tr>
+                <td class="card-id">REP-0878</td>
+                <td>Digital Solutions</td>
+                <td><div class="model-name">Jabra Evolve2 65</div><div class="asset-serial">JB65-0093407</div></td>
+                <td>Mic not detected</td>
+                <td>FixPoint London</td>
+                <td>Courier X<a href="#" class="tracking-link">Track CX-77170 ↗</a></td>
+                <td>24 Oct</td>
+                <td><span class="sla-pill sla-ok">On track</span></td>
+                <td class="text-muted">—</td>
+                <td><span class="badge badge-info badge-sm">Received at facility</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count">Showing 8 of 8 open repairs · Alerts go out automatically when a repair passes its expected return date</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script>
+    // Single prototype work order page for all repairs; tracking links don't trigger the row
+    document.querySelectorAll('.repairs-table tbody tr').forEach(row => {
+      row.addEventListener('click', e => {
+        if (e.target.closest('a')) return;
+        window.location.href = '/pages/tracker/work-order.html';
+      });
+    });
+    document.querySelectorAll('.tracking-link').forEach(link => link.addEventListener('click', e => e.preventDefault()));
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

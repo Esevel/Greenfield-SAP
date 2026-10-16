@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset console - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <div class="flex-between">
+            <div>
+              <h1 class="page-title">Asset console</h1>
+              <p class="page-description">Every deployed and stored device across clients and countries</p>
+            </div>
+            <div class="flex gap-md">
+              <button class="btn btn-secondary">Export</button>
+              <button class="btn btn-primary">Add asset</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-toolbar">
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Search by model, serial or assignee...">
+          </div>
+          
+          <div class="filter-chips">
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All clients</a>
+                <a href="#" class="dropdown-menu-item">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item">FinanceExperts</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Country <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All countries</a>
+                <a href="#" class="dropdown-menu-item">Singapore</a>
+                <a href="#" class="dropdown-menu-item">United States</a>
+                <a href="#" class="dropdown-menu-item">United Kingdom</a>
+                <a href="#" class="dropdown-menu-item">Germany</a>
+                <a href="#" class="dropdown-menu-item">Malaysia</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Category <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All categories</a>
+                <a href="#" class="dropdown-menu-item">Laptops</a>
+                <a href="#" class="dropdown-menu-item">Monitors</a>
+                <a href="#" class="dropdown-menu-item">Peripherals</a>
+                <a href="#" class="dropdown-menu-item">Accessories</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Status <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All statuses</a>
+                <a href="#" class="dropdown-menu-item">Deployed</a>
+                <a href="#" class="dropdown-menu-item">In storage</a>
+                <a href="#" class="dropdown-menu-item">In repair</a>
+                <a href="#" class="dropdown-menu-item">In transit</a>
+                <a href="#" class="dropdown-menu-item">Retired</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Grade <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All grades</a>
+                <a href="#" class="dropdown-menu-item">A (New)</a>
+                <a href="#" class="dropdown-menu-item">B (Good)</a>
+                <a href="#" class="dropdown-menu-item">C (Fair)</a>
+                <a href="#" class="dropdown-menu-item">D (Poor)</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Warranty <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All</a>
+                <a href="#" class="dropdown-menu-item">Active</a>
+                <a href="#" class="dropdown-menu-item">Expiring soon</a>
+                <a href="#" class="dropdown-menu-item">Expired</a>
+                <a href="#" class="dropdown-menu-item">None</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip">Tag <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-menu-item">All tags</a>
+                <a href="#" class="dropdown-menu-item">Engineering</a>
+                <a href="#" class="dropdown-menu-item">Sales</a>
+                <a href="#" class="dropdown-menu-item">Loaner</a>
+                <a href="#" class="dropdown-menu-item">VIP</a>
+                <a href="#" class="dropdown-menu-item">Refresh due</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container asset-table-container">
+          <table class="table catalogue-table asset-table">
+            <thead class="catalogue-table-header">
+              <tr>
+                <th>Asset</th>
+                <th>Client · Country</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Grade</th>
+                <th>Warranty · Age</th>
+                <th>Assigned to</th>
+                <th>Tags</th>
+                <th>Location</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💻</div></div>
+                    <div class="model-info">
+                      <div class="model-name">MacBook Pro 14" M3</div>
+                      <div class="asset-serial">C02XK4M9MD6T</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div><div class="asset-sub"><span class="flag">🇸🇬</span> Singapore</div></td>
+                <td>Laptops</td>
+                <td><span class="badge badge-success">Deployed</span></td>
+                <td>A (New)</td>
+                <td><span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to Mar 2028</span><div class="asset-sub">7 months</div></td>
+                <td>Priya Raman</td>
+                <td><span class="asset-tag">Engineering</span></td>
+                <td><span class="asset-loc loc-employee">With employee</span></td>
+                <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💻</div></div>
+                    <div class="model-info">
+                      <div class="model-name">Dell XPS 15</div>
+                      <div class="asset-serial">8HJ2KL3</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div><div class="asset-sub"><span class="flag">🇺🇸</span> United States</div></td>
+                <td>Laptops</td>
+                <td><span class="badge badge-success">Deployed</span></td>
+                <td>B (Good)</td>
+                <td><span class="badge badge-warning badge-sm">Expiring</span> <span class="text-muted">in 21 days</span><div class="asset-sub">2 yrs 10 mo</div></td>
+                <td>Daniel Ortiz</td>
+                <td><span class="asset-tag">Sales</span><span class="asset-tag">Refresh due</span></td>
+                <td><span class="asset-loc loc-employee">With employee</span></td>
+                <td class="source-label">Client-supplied</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💻</div></div>
+                    <div class="model-info">
+                      <a href="/pages/assets/detail.html" class="model-name" style="text-decoration: none; display: block;">Lenovo ThinkPad X1 Carbon</a>
+                      <div class="asset-serial">PF3QW8ZN</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div><div class="asset-sub"><span class="flag">🇬🇧</span> United Kingdom</div></td>
+                <td>Laptops</td>
+                <td><span class="badge badge-warning">In repair</span></td>
+                <td>C (Fair)</td>
+                <td><span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to Jan 2027</span><div class="asset-sub">1 yr 9 mo</div></td>
+                <td>Hannah Clarke</td>
+                <td><span class="asset-tag">VIP</span></td>
+                <td><span class="asset-loc loc-other">Repair partner · London</span></td>
+                <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">💻</div></div>
+                    <div class="model-info">
+                      <div class="model-name">MacBook Air 13" M2</div>
+                      <div class="asset-serial">FVFHG2LMQ6L4</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div><div class="asset-sub"><span class="flag">🇲🇾</span> Malaysia</div></td>
+                <td>Laptops</td>
+                <td><span class="badge badge-info">In storage</span></td>
+                <td>B (Good)</td>
+                <td><span class="badge badge-muted badge-sm">Expired</span> <span class="text-muted">Aug 2026</span><div class="asset-sub">3 yrs 2 mo</div></td>
+                <td class="text-muted">—</td>
+                <td><span class="asset-tag">Loaner</span></td>
+                <td><span class="asset-loc loc-hub">Kuala Lumpur Hub</span></td>
+                <td class="source-label">Returned</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🖥</div></div>
+                    <div class="model-info">
+                      <div class="model-name">Dell UltraSharp U2723QE</div>
+                      <div class="asset-serial">CN-0H8W2K-74261</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">FE</div><span>FinanceExperts</span></div><div class="asset-sub"><span class="flag">🇩🇪</span> Germany</div></td>
+                <td>Monitors</td>
+                <td><span class="badge badge-success">Deployed</span></td>
+                <td>A (New)</td>
+                <td><span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to Jun 2029</span><div class="asset-sub">4 months</div></td>
+                <td>Lukas Becker</td>
+                <td><span class="asset-tag">Engineering</span></td>
+                <td><span class="asset-loc loc-employee">With employee</span></td>
+                <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">🖱</div></div>
+                    <div class="model-info">
+                      <div class="model-name">Logitech MX Master 3S</div>
+                      <div class="asset-serial">2241LZ0A7K58</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div><div class="asset-sub"><span class="flag">🇺🇸</span> United States</div></td>
+                <td>Peripherals</td>
+                <td><span class="badge badge-success">Deployed</span></td>
+                <td>A (New)</td>
+                <td><span class="text-muted">None</span><div class="asset-sub">11 months</div></td>
+                <td>Daniel Ortiz</td>
+                <td><span class="asset-tag">Sales</span></td>
+                <td><span class="asset-loc loc-employee">With employee</span></td>
+                <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">⌨️</div></div>
+                    <div class="model-info">
+                      <div class="model-name">Apple Magic Keyboard</div>
+                      <div class="asset-serial">F0T3290XJ1MH</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">MW</div><span>MediaWorks</span></div><div class="asset-sub"><span class="flag">🇸🇬</span> Singapore</div></td>
+                <td>Peripherals</td>
+                <td><span class="badge badge-info">In transit</span></td>
+                <td>A (New)</td>
+                <td><span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to Oct 2027</span><div class="asset-sub">1 week</div></td>
+                <td>Mei Lin Tan</td>
+                <td class="text-muted">—</td>
+                <td><span class="asset-loc loc-other">In transit → employee</span></td>
+                <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #d4d4d4 0%, #a3a3a3 100%);">🎧</div></div>
+                    <div class="model-info">
+                      <div class="model-name">Jabra Evolve2 65</div>
+                      <div class="asset-serial">JB65-0093321</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div><div class="asset-sub"><span class="flag">🇬🇧</span> United Kingdom</div></td>
+                <td>Peripherals</td>
+                <td><span class="badge badge-muted">Retired</span></td>
+                <td>D (Poor)</td>
+                <td><span class="badge badge-muted badge-sm">Expired</span> <span class="text-muted">Feb 2025</span><div class="asset-sub">4 yrs 1 mo</div></td>
+                <td class="text-muted">—</td>
+                <td><span class="asset-tag">Refresh due</span></td>
+                <td><span class="asset-loc loc-site">Client site · London office</span></td>
+                <td class="source-label">Client-supplied</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-count">Showing 8 of 1,284 assets</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/assets-list.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

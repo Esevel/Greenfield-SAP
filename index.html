@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Prototype Index</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-xl);
+    }
+    
+    .index-container {
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    .index-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .index-title {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-md);
+    }
+    
+    .index-subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-secondary);
+    }
+    
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: var(--space-lg);
+    }
+    
+    .screen-card {
+      background-color: var(--color-surface);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-lg);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+    
+    .screen-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .screen-card-title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .screen-card-description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+    
+    .screen-section {
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .screen-section-title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-sm);
+      border-bottom: 2px solid var(--color-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="index-container">
+    <div class="index-header">
+      <h1 class="index-title">Admin Portal Prototype</h1>
+      <p class="index-subtitle">Clickable screen directory</p>
+    </div>
+    
+    <div class="screen-section">
+      <h2 class="screen-section-title">Available Screens</h2>
+      <div class="screen-grid">
+        <a href="/pages/dashboard.html" class="screen-card">
+          <h3 class="screen-card-title">Dashboard</h3>
+          <p class="screen-card-description">Main overview with statistics and recent activity</p>
+        </a>
+        
+        <a href="/pages/people/directory.html" class="screen-card">
+          <h3 class="screen-card-title">People</h3>
+          <p class="screen-card-description">Client employee directory, person page, Joiners and Leavers queues</p>
+        </a>
+        
+        <a href="/pages/catalogue/list.html" class="screen-card">
+          <h3 class="screen-card-title">Catalogue</h3>
+          <p class="screen-card-description">Product models and default markup</p>
+        </a>
+        
+        <a href="/pages/assets/list.html" class="screen-card">
+          <h3 class="screen-card-title">Asset console</h3>
+          <p class="screen-card-description">All devices across clients with filters</p>
+        </a>
+        
+        <a href="/pages/stock/list.html" class="screen-card">
+          <h3 class="screen-card-title">Stock</h3>
+          <p class="screen-card-description">Stock by client, restock queue, receiving and storage fees</p>
+        </a>
+        
+        <a href="/pages/tracker/all.html" class="screen-card">
+          <h3 class="screen-card-title">Tracker</h3>
+          <p class="screen-card-description">All requests by SLA risk, boards per service type, sync inbox, repair quotes</p>
+        </a>
+        
+        <a href="/pages/vendors/list.html" class="screen-card">
+          <h3 class="screen-card-title">Vendors</h3>
+          <p class="screen-card-description">Couriers, 3PLs, repair, suppliers and ITAD partners</p>
+        </a>
+        
+        <a href="/pages/reports/service-reports.html" class="screen-card">
+          <h3 class="screen-card-title">Service reports</h3>
+          <p class="screen-card-description">Monthly client service reports with SLA compliance</p>
+        </a>
+      </div>
+    </div>
+    
+    <div class="screen-section">
+      <h2 class="screen-section-title">Commercial</h2>
+      <div class="screen-grid">
+        <a href="/pages/clients/list.html" class="screen-card">
+          <h3 class="screen-card-title">Clients</h3>
+          <p class="screen-card-description">Contracts with versions, entities, fees, billable users, caps and amendments</p>
+        </a>
+        
+        <a href="/pages/billing/ledger.html" class="screen-card">
+          <h3 class="screen-card-title">Billing</h3>
+          <p class="screen-card-description">Ledger, invoices, credit notes and actions needing review</p>
+        </a>
+        
+        <a href="/pages/billing/invoices.html" class="screen-card">
+          <h3 class="screen-card-title">Invoices</h3>
+          <p class="screen-card-description">Invoices and credit notes with lifecycle and payment actions</p>
+        </a>
+
+        <a href="/pages/billing/needs-action.html" class="screen-card">
+          <h3 class="screen-card-title">Needs action</h3>
+          <p class="screen-card-description">Disputes, draft credits and ledger exceptions</p>
+        </a>
+        
+        <a href="/pages/clients/caps.html" class="screen-card">
+          <h3 class="screen-card-title">Procurement caps</h3>
+          <p class="screen-card-description">Clients tab: spend against cap per client with Set cap</p>
+        </a>
+      </div>
+    </div>
+    
+    <div class="screen-section">
+      <h2 class="screen-section-title">Settings</h2>
+      <div class="screen-grid">
+        <a href="/pages/warehouses/list.html" class="screen-card">
+          <h3 class="screen-card-title">Warehouses</h3>
+          <p class="screen-card-description">Esevel hubs, client locations and hub assignments</p>
+        </a>
+        
+        <a href="/pages/sla-config/standard.html" class="screen-card">
+          <h3 class="screen-card-title">SLA configuration</h3>
+          <p class="screen-card-description">Standard SLAs per country and client exceptions</p>
+        </a>
+        
+        <a href="/pages/holidays/calendars.html" class="screen-card">
+          <h3 class="screen-card-title">Operating calendar</h3>
+          <p class="screen-card-description">Public holidays, closures and operating hours per country</p>
+        </a>
+        
+        <a href="/pages/integrations/list.html" class="screen-card">
+          <h3 class="screen-card-title">Integrations</h3>
+          <p class="screen-card-description">Client HRIS/IdP and ITSM connections with health and drift</p>
+        </a>
+        
+        <a href="/pages/settings/billing.html" class="screen-card">
+          <h3 class="screen-card-title">Billing settings</h3>
+          <p class="screen-card-description">Standard fees per country, tax and duties, FX</p>
+        </a>
+      </div>
+    </div>
+    
+    <div class="screen-section">
+      <h2 class="screen-section-title">Coming Soon</h2>
+      <div class="screen-grid">
+        <div class="screen-card" style="opacity: 0.5; cursor: default;">
+          <h3 class="screen-card-title">Orders</h3>
+          <p class="screen-card-description">Order processing and fulfillment</p>
+        </div>
+        
+        <div class="screen-card" style="opacity: 0.5; cursor: default;">
+          <h3 class="screen-card-title">Staff users</h3>
+          <p class="screen-card-description">Esevel staff logins, roles and approver permissions</p>
+        </div>
+        
+        <div class="screen-card" style="opacity: 0.5; cursor: default;">
+          <h3 class="screen-card-title">Cap alerts</h3>
+          <p class="screen-card-description">Cap alerts and checkout warnings</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

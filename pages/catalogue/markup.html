@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue · Default markup - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Catalogue</h1>
+          <p class="page-description">Manage product models and specifications</p>
+        </div>
+        
+        <nav class="tab-strip">
+          <a href="/pages/catalogue/list.html" class="tab-link">Models</a>
+          <a href="/pages/catalogue/markup.html" class="tab-link active">Default markup</a>
+        </nav>
+        
+        <div class="info-line">Suggested percentage adjustments to retail for custom client contracts. Standard clients pay retail; an adjustment applies only when explicitly added to the client contract. Negative adjustments are allowed, but the final client price never falls below vendor cost. Staff only.</div>
+        <div class="saved-note" id="mkSaved" hidden></div>
+        
+        <div class="mk-layout">
+          <section class="card">
+            <div class="card-header">
+              <h3 class="card-title">Retail adjustment by category and volume tier</h3>
+              <label class="sla-check"><input type="checkbox" id="mkPast"> Show past versions</label>
+            </div>
+            <div class="card-body doc-body">
+              <table class="table doc-table mk-grid">
+                <thead id="mkHead"></thead>
+                <tbody id="mkRows"></tbody>
+              </table>
+            </div>
+          </section>
+          
+          <section class="card">
+            <div class="card-header"><h3 class="card-title">Country adjustments</h3></div>
+            <div class="card-body doc-body">
+              <table class="table doc-table">
+                <thead><tr><th>Country</th><th>Category</th><th class="num">Adjustment</th><th>Effective</th></tr></thead>
+                <tbody id="mkCountry"></tbody>
+              </table>
+              <div class="readonly-note mk-note">Contributes to the suggested contract adjustment for that category and country.</div>
+            </div>
+          </section>
+        </div>
+        
+        <section class="card mk-history-card" id="mkHistoryCard" hidden>
+          <div class="card-header"><h3 class="card-title">Past versions</h3></div>
+          <div class="card-body doc-body">
+            <table class="table doc-table">
+              <thead><tr><th>Category</th><th>Tier</th><th class="num">Markup</th><th>Effective</th><th>Changed by</th></tr></thead>
+              <tbody id="mkHistory"></tbody>
+            </table>
+          </div>
+        </section>
+        
+        <div class="table-footer-count" id="mkCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <div class="side-panel" id="mkPanel" role="dialog" aria-modal="true" aria-labelledby="mkTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="mkTitle"></h3>
+        <div class="device-panel-meta" id="mkMeta"></div>
+      </div>
+      <button class="side-panel-close" id="mkClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="mkValue">Vendor retail adjustment %</label>
+          <input type="number" class="form-input" id="mkValue" min="-100" max="100" step="0.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="mkFrom">Effective from</label>
+          <input type="date" class="form-input" id="mkFrom">
+        </div>
+      </div>
+      <div class="form-error" id="mkError" hidden></div>
+      <div class="readonly-note" id="mkImpact"></div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Version history</h4>
+        <ul class="location-history" id="mkVersions"></ul>
+      </div>
+    </div>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" type="button" id="mkCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="mkSave">Save new version</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="mkOverlay"></div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/billing-settings-data.js"></script>
+  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/catalogue-markup.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracker · Storage - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header tracker-header">
+          <h1 class="page-title">Tracker</h1>
+          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html?type=storage" class="btn btn-primary">Raise request</a></span>
+        </div>
+        
+        <nav id="trackerTabs" data-active="storage"></nav>
+        
+        <div class="board board-fit">
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Collection <span class="board-count">2</span></div>
+              <span class="board-avg">Avg 2.6 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">STO-0142</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">3 × Dell UltraSharp U2723QE</div>
+                <div class="card-client">CloudSystems</div>
+                <div class="card-recipient">From client site · Denver office · <span class="flag">🇺🇸</span></div>
+                <div class="card-step">In transit · ETA 18 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To US West Hub</span><span class="card-avatar">AI</span></div>
+              </div>
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">STO-0144</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
+                <div class="card-subject">MacBook Pro 14" M3 + charger</div>
+                <div class="card-client">Acme Tech</div>
+                <div class="card-recipient">From employee · Leo Tan (leaver) · <span class="flag">🇸🇬</span></div>
+                <div class="card-step">Pickup 17 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>To Singapore Hub</span><span class="card-avatar">Q</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Received at hub <span class="board-count">1</span></div>
+              <span class="board-avg">Avg 0.6 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">STO-0139</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">2 × Lenovo ThinkPad X1 Carbon</div>
+                <div class="card-client">Digital Solutions</div>
+                <div class="card-recipient">At Sydney Hub · <span class="flag">🇦🇺</span></div>
+                <div class="card-step step-done">✓ Collected 15 Oct</div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+                <div class="card-bottom"><span>Intake check today</span><span class="card-avatar">JL</span></div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="board-column">
+            <div class="board-column-header">
+              <div class="board-column-title">Stored <span class="board-count">1</span></div>
+              <span class="board-avg">Last 7 days</span>
+            </div>
+            <div class="board-cards">
+              <div class="board-card">
+                <div class="card-top"><span class="card-id">STO-0136</span><span class="raised-by">Raised by client</span></div>
+                <div class="card-subject">MacBook Air 13" M2</div>
+                <div class="card-client">BrightPath Education</div>
+                <div class="card-recipient">Singapore Hub · Bay B-12 · <span class="flag">🇸🇬</span></div>
+                <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">Met</span></div>
+                <div class="card-bottom"><span>Storage fees from 14 Oct</span><span class="card-avatar">M</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        
+        <div class="board-footnote">Storage always goes to the client's assigned hub, and storage fees start at intake. To take a device out of storage, raise a Redeployment or Disposal.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

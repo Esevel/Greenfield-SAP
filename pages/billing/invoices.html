@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoices - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Invoices</h1>
+          <p class="page-description">Every invoice issued to clients, and drafts for the current billing run. Each line links back to its ledger entry.</p>
+        </div>
+        
+        <nav class="tab-strip billing-tabs" id="ivTabs">
+          <a href="/pages/billing/ledger.html" class="tab-link">Ledger</a>
+          <a href="/pages/billing/invoices.html" class="tab-link" data-tab="invoices">Invoices <span class="tab-count" id="ivTabCount"></span></a>
+          <a href="?tab=credits" class="tab-link" data-tab="credits">Credit notes <span class="tab-count" id="cnTabCount"></span></a>
+          <a href="/pages/billing/needs-action.html" class="tab-link">Needs action <span class="tab-count" id="billingActionCount"></span></a>
+        </nav>
+        
+        <!-- Invoices -->
+        <div id="tab-invoices" hidden>
+          <div class="ledger-tiles" id="ivTiles"></div>
+          <div class="asset-toolbar">
+            <div class="filter-chips stock-filters">
+              <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="ivSearch" placeholder="Invoice, PO or client..." aria-label="Search invoices">
+              </div>
+              <label class="filter-select"><span>Client</span><select id="ivClient"></select></label>
+              <label class="filter-select"><span>Entity</span><select id="ivEntity"></select></label>
+              <label class="filter-select"><span>Status</span><select id="ivStatus"></select></label>
+              <label class="filter-select"><span>Issued</span>
+                <select id="ivIssued"><option value="">Any time</option><option value="2026-10">Oct 2026</option><option value="2026-09">Sep 2026</option><option value="none">Not issued</option></select>
+              </label>
+              <label class="filter-select"><span>Currency</span><select id="ivCur"></select></label>
+              <label class="sla-check"><input type="checkbox" id="ivOverdue"> Overdue only</label>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="table catalogue-table invoice-table">
+              <thead class="catalogue-table-header">
+                <tr><th>Invoice</th><th>Client · entity</th><th>Period</th><th>Issued</th><th>Due</th><th class="num">Total</th><th class="num">Balance</th><th>Status</th></tr>
+              </thead>
+              <tbody id="ivRows"></tbody>
+            </table>
+          </div>
+          <div class="table-footer-count" id="ivCount"></div>
+        </div>
+        
+        <!-- Credit notes -->
+        <div id="tab-credits" hidden>
+          <div class="saved-note" id="cnSaved" hidden></div>
+          <div class="asset-toolbar">
+            <div class="filter-chips stock-filters">
+              <label class="filter-select"><span>Client</span><select id="cnClient"></select></label>
+              <label class="filter-select"><span>Status</span><select id="cnStatus"></select></label>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="table catalogue-table invoice-table">
+              <thead class="catalogue-table-header">
+                <tr><th>Credit note</th><th>Client · entity</th><th>Against</th><th>Reason</th><th class="num">Amount</th><th>Issued</th><th>Applied to</th><th>Status</th></tr>
+              </thead>
+              <tbody id="cnRows"></tbody>
+            </table>
+          </div>
+          <div class="table-footer-count">Credit notes come from charge corrections or resolved disputes. Draft notes need approval; issued notes can be applied to the client's next invoice or an outstanding one.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/dispute-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const tab = new URLSearchParams(location.search).get('tab') === 'credits' ? 'credits' : 'invoices';
+      const clientName = id => WH_CLIENTS.find(c => c.id === id).name;
+      const entName = (client, id) => CONTRACTS[client].terms.entities.find(e => e.id === id).name;
+      document.querySelectorAll('#ivTabs .tab-link').forEach(a => a.classList.toggle('active', a.dataset.tab === tab));
+      $(`tab-${tab}`).hidden = false;
+      $('ivTabCount').textContent = INVOICES.filter(i => i.status !== 'draft').length;
+      $('cnTabCount').textContent = CREDIT_NOTES.length;
+
+      const clientOpts = list => '<option value="">All</option>' + WH_CLIENTS.filter(c => list.some(x => x.client === c.id)).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+      /* Invoices */
+      $('ivClient').innerHTML = clientOpts(INVOICES);
+      $('ivStatus').innerHTML = '<option value="">All</option>' + Object.entries(INVOICE_STATE).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      $('ivCur').innerHTML = '<option value="">All</option>' + [...new Set(INVOICES.map(i => i.cur))].sort().map(c => `<option>${c}</option>`).join('');
+      function entityOpts() {
+        const c = $('ivClient').value;
+        $('ivEntity').innerHTML = '<option value="">All</option>' + (c ? CONTRACTS[c].terms.entities.map(e => `<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('') : '');
+        $('ivEntity').disabled = !c;
+      }
+
+      function renderInvoices() {
+        const q = $('ivSearch').value.trim().toLowerCase();
+        const rows = INVOICES.filter(i => {
+          const s = invoiceState(i);
+          return (!q || `${i.id} ${i.po} ${clientName(i.client)} ${i.lines.map(l => l.po).join(' ')}`.toLowerCase().includes(q))
+            && (!$('ivClient').value || i.client === $('ivClient').value)
+            && (!$('ivEntity').value || i.entity === $('ivEntity').value)
+            && (!$('ivStatus').value || s === $('ivStatus').value)
+            && (!$('ivIssued').value || ($('ivIssued').value === 'none' ? !i.issued : i.issued.startsWith($('ivIssued').value)))
+            && (!$('ivCur').value || i.cur === $('ivCur').value)
+            && (!$('ivOverdue').checked || s === 'overdue');
+        }).sort((a, b) => {
+          const rank = i => ({ overdue: 0, issued: 1, draft: 2, paid: 3, cancelled: 4 }[invoiceState(i)]);
+          return rank(a) - rank(b) || (b.issued || '').localeCompare(a.issued || '') || b.id.localeCompare(a.id);
+        });
+
+        const open = INVOICES.filter(i => ['issued', 'overdue'].includes(invoiceState(i)));
+        const overdue = open.filter(i => invoiceState(i) === 'overdue');
+        const outstanding = sumByCurrency(open.map(i => ({ cur: i.cur, amount: invoiceTotals(i).balance })));
+        const drafts = INVOICES.filter(i => i.status === 'draft').length;
+        $('ivTiles').innerHTML = `
+          <div class="summary-tile ledger-tile-wide">
+            <div class="summary-tile-label">Outstanding by currency</div>
+            <div class="cur-tiles">${Object.entries(outstanding).sort(([a], [b]) => a.localeCompare(b)).map(([c, v]) => `<div class="cur-tile"><span class="cur-code">${c}</span><span>${fmtAmount(c, v).slice(4)}</span></div>`).join('')}</div>
+            <div class="summary-tile-sub">${open.length} issued, unpaid</div>
+          </div>
+          <div class="summary-tile ${overdue.length ? 'summary-tile-breached' : ''}"><div class="summary-tile-label">Overdue</div><div class="summary-tile-value">${overdue.length}</div><div class="summary-tile-sub">Past due date</div></div>
+          <div class="summary-tile"><div class="summary-tile-label">Drafts</div><div class="summary-tile-value">${drafts}</div><div class="summary-tile-sub">October run, from the ledger</div></div>
+          <div class="summary-tile"><div class="summary-tile-label">Open disputes</div><div class="summary-tile-value">${[...new Set(INVOICES.flatMap(invoiceDisputes))].length}</div><div class="summary-tile-sub">Lines under dispute</div></div>`;
+
+        $('ivRows').innerHTML = rows.map(i => {
+          const s = invoiceState(i);
+          const [l, c] = INVOICE_STATE[s];
+          const t = invoiceTotals(i);
+          const disputes = invoiceDisputes(i).length;
+          const late = s === 'overdue' ? daysBetween(i.due, INVOICE_TODAY) : 0;
+          return `<tr data-id="${i.id}" tabindex="0" class="${s === 'cancelled' ? 'row-reversed' : ''}">
+            <td><span class="asset-serial">${i.id}</span>${disputes ? ' <span class="tag kind-pending">Dispute</span>' : ''}${i.po ? `<div class="stock-sub">${escapeHtml(i.po)}</div>` : ''}</td>
+            <td>${escapeHtml(clientName(i.client))}<div class="stock-sub">${escapeHtml(entName(i.client, i.entity))}</div></td>
+            <td>${escapeHtml(i.period)}</td>
+            <td>${i.issued ? billingDate(i.issued) : '<span class="text-muted">—</span>'}</td>
+            <td>${i.due ? billingDate(i.due) : '<span class="text-muted">—</span>'}${late ? `<div class="stock-sub text-error">${late} day${late === 1 ? '' : 's'} late</div>` : ''}</td>
+            <td class="num">${fmtAmount(i.cur, t.total)}</td>
+            <td class="num"><strong>${s === 'cancelled' || s === 'draft' ? '—' : fmtAmount(i.cur, Math.max(0, t.balance))}</strong></td>
+            <td><span class="badge ${c} badge-sm">${l}</span></td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No invoices match</td></tr>';
+        $('ivCount').textContent = `${rows.length} shown · Amounts in each invoice's currency, never combined. Payment terms ${INVOICE_TERMS_DAYS} days unless the contract says otherwise.`;
+      }
+
+      const go = row => { window.location.href = `/pages/billing/invoice.html?id=${row.dataset.id}`; };
+      $('ivRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
+      $('ivRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
+      $('ivClient').addEventListener('change', () => { entityOpts(); renderInvoices(); });
+      ['ivEntity', 'ivStatus', 'ivIssued', 'ivCur', 'ivOverdue'].forEach(id => $(id).addEventListener('change', renderInvoices));
+      $('ivSearch').addEventListener('input', renderInvoices);
+      entityOpts();
+
+      /* Credit notes */
+      $('cnClient').innerHTML = clientOpts(CREDIT_NOTES);
+      $('cnStatus').innerHTML = '<option value="">All</option>' + Object.entries(CREDIT_STATE).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      function renderCredits() {
+        const rows = CREDIT_NOTES.filter(c => (!$('cnClient').value || c.client === $('cnClient').value) && (!$('cnStatus').value || c.status === $('cnStatus').value));
+        $('cnRows').innerHTML = rows.map(c => {
+          const [l, cls] = CREDIT_STATE[c.status];
+          const link = id => (invoiceById(id) ? `<a href="/pages/billing/invoice.html?id=${id}" class="link-sm">${id}</a>` : `<span class="asset-serial">${id}</span>`);
+          return `<tr>
+            <td><span class="asset-serial">${c.id}</span>${[
+              c.dispute && `From <a href="/pages/billing/needs-action.html?id=${c.dispute}" class="link-sm">${c.dispute}</a>`,
+              c.ledger && `<a href="/pages/billing/ledger.html?entry=${c.ledger}" class="link-sm">Charge ${c.ledger}</a>`
+            ].filter(Boolean).map(x => `<div class="stock-sub">${x}</div>`).join('')}</td>
+            <td>${escapeHtml(clientName(c.client))}<div class="stock-sub">${escapeHtml(entName(c.client, c.entity))}</div></td>
+            <td>${link(c.against)}</td>
+            <td class="cn-reason">${escapeHtml(c.reason)}</td>
+            <td class="num"><strong>−${fmtAmount(c.cur, c.amount)}</strong></td>
+            <td>${c.issued ? billingDate(c.issued) : '<span class="text-muted">—</span>'}${c.approvedBy ? `<div class="stock-sub">${escapeHtml(c.approvedBy)}</div>` : ''}</td>
+            <td>${c.appliedTo ? link(c.appliedTo) : '<span class="text-muted">—</span>'}</td>
+            <td><span class="badge ${cls} badge-sm">${l}</span>${c.status === 'draft' && !c.dispute ? `<div><button type="button" class="btn btn-secondary btn-sm cn-approve" data-approve="${c.id}">Approve</button></div>` : ''}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No credit notes match</td></tr>';
+      }
+      ['cnClient', 'cnStatus'].forEach(id => $(id).addEventListener('change', renderCredits));
+      $('cnRows').addEventListener('click', e => {
+        const b = e.target.closest('[data-approve]');
+        if (!b) return;
+        const c = CREDIT_NOTES.find(x => x.id === b.dataset.approve);
+        approveCredit(c);
+        $('cnSaved').textContent = `✓ ${c.id} approved and issued. Apply it from ${c.against} or the client's next invoice.`;
+        $('cnSaved').hidden = false;
+        renderCredits();
+      });
+
+      renderInvoices();
+      renderCredits();
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>
