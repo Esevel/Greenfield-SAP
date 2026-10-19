@@ -15,6 +15,7 @@ function collectFiles(directory, extension) {
 
 const htmlFiles = [
   resolve(projectRoot, 'index.html'),
+  resolve(projectRoot, 'login.html'),
   ...collectFiles(resolve(projectRoot, 'pages'), '.html'),
   ...collectFiles(resolve(projectRoot, 'templates'), '.html')
 ];
@@ -32,6 +33,9 @@ export default defineConfig({
   root: projectRoot,
   plugins: [{
     name: 'emit-classic-scripts',
+    transformIndexHtml(html) {
+      return html.replace('</head>', '  <script src="/scripts/auth.js"></script>\n</head>');
+    },
     generateBundle() {
       for (const filePath of scriptFiles) {
         this.emitFile({
