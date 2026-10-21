@@ -292,9 +292,39 @@ function trackerTimestamp(value = new Date()) {
   return new Date(value).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function trackerSampleAuditEntries(itemId) {
+  const item = TRACKER_ITEMS.find(entry => entry.id === itemId);
+  if (!item) return [];
+  const entries = [{
+    itemId,
+    action: 'Request created',
+    detail: `${item.type === 'onboarding' ? 'Onboarding' : item.type === 'offboarding' ? 'Offboarding' : item.type === 'repair' ? 'Repair' : 'Tracker'} request opened`,
+    actor: item.owner?.[1] || 'System',
+    timestamp: item.start,
+    when: trackerTimestamp(item.start)
+  }];
+  trackerSla(item).active.forEach(step => {
+    if (step.state !== 'done' || !step.doneAt) return;
+    entries.push({
+      itemId,
+      action: 'Milestone completed',
+      detail: step.m.label,
+      actor: item.owner?.[1] || 'System',
+      timestamp: step.doneAt,
+      when: trackerTimestamp(step.doneAt)
+    });
+  });
+  return entries;
+}
+
 function trackerAuditEntries(itemId) {
   const entries = readTrackerStorage(TRACKER_AUDIT_STORAGE, []);
-  return Array.isArray(entries) ? entries.filter(entry => entry.itemId === itemId) : [];
+  const saved = Array.isArray(entries) ? entries.filter(entry => entry.itemId === itemId) : [];
+  return [...saved, ...trackerSampleAuditEntries(itemId)].sort((a, b) => {
+    const timeA = Date.parse(a.timestamp || a.when) || 0;
+    const timeB = Date.parse(b.timestamp || b.when) || 0;
+    return timeB - timeA;
+  });
 }
 
 function renderTrackerAudit(itemId) {
@@ -311,7 +341,8 @@ function renderTrackerAudit(itemId) {
 function recordTrackerAudit(itemId, action, detail = '') {
   const entries = readTrackerStorage(TRACKER_AUDIT_STORAGE, []);
   const list = Array.isArray(entries) ? entries : [];
-  list.unshift({ itemId, action, detail, actor: 'You', when: trackerTimestamp() });
+  const now = new Date();
+  list.unshift({ itemId, action, detail, actor: 'You', timestamp: now.toISOString(), when: trackerTimestamp(now) });
   trackerSave(TRACKER_AUDIT_STORAGE, list);
   renderTrackerAudit(itemId);
 }
