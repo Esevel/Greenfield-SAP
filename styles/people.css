@@ -12,6 +12,31 @@
   background-color: var(--color-background);
 }
 
+.people-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.people-pagination .pagination {
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.people-pagination-summary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 640px) {
+  .people-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 .queue-banner {
   display: flex;
   align-items: center;

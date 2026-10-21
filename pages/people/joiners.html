@@ -24,6 +24,10 @@
         
         <div class="asset-toolbar">
           <div class="filter-chips stock-filters">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="search" class="search-input" id="jnSearch" placeholder="Search name, email, role or department..." aria-label="Search people by name, email, role or department">
+            </div>
             <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
             <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
             <label class="filter-select"><span>Completeness</span>
@@ -58,6 +62,7 @@
           </table>
         </div>
         <div class="table-footer-count" id="jnCount"></div>
+        <div class="people-pagination" id="jnPagination"></div>
       </div>
     </main>
   </div>
@@ -122,6 +127,7 @@
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/stock-data.js"></script>
   <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/people-list.js"></script>
   <script src="/scripts/people-header.js"></script>
   <script src="/scripts/people-joiners.js"></script>
   <script src="/scripts/main.js"></script>
