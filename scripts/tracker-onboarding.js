@@ -71,6 +71,8 @@ function renderOnboardingDetail() {
   const client = onbClient(i);
   const [pillCls, pillText] = HEALTH_PILL[s.health];
   const days = onbDaysToStart(i);
+  const deliveryDates = (i.lines || []).map(line => line.received || line.eta).filter(Boolean).sort();
+  const expectedDelivery = i.onb.expectedDelivery || deliveryDates.at(-1) || '';
   document.title = `${i.id} · Onboarding - Admin Portal`;
   $('onbCrumb').textContent = i.id;
   $('onbTitle').textContent = `${i.id} · ${i.onb.employee}`;
@@ -99,6 +101,7 @@ function renderOnboardingDetail() {
     <div><div class="detail-label">Employee</div><div class="detail-value">${escapeHtml(i.onb.employee)} · ${escapeHtml(i.onb.role)}</div></div>
     <div><div class="detail-label">Start date</div><div class="detail-value${onbStartsSoon(i, s) ? ' onb-soon-text' : ''}">${onbFmtDay(i.onb.startDate)}${days >= 0 ? ` · in ${days} day${days === 1 ? '' : 's'}` : ''}</div></div>
     <div><div class="detail-label">Package</div><div class="detail-value">${escapeHtml(i.onb.pkg)}</div></div>
+    <div><div class="detail-label">Expected delivery date</div><div class="detail-value">${expectedDelivery ? onbFmtDay(expectedDelivery) + ' ' + new Date(`${expectedDelivery}T00:00:00`).getFullYear() : 'To be confirmed'}</div></div>
     <div><div class="detail-label">Delivery route</div><div class="detail-value">${SLA_ROUTES[s.route].label} <span class="text-muted">· chosen at checkout</span></div></div>
     <div><div class="detail-label">Delivery address</div><div class="detail-value${i.onb.address ? '' : ' onb-missing'}">${i.onb.address ? escapeHtml(i.onb.address) : 'Missing · requested from client'}</div></div>
     <div><div class="detail-label">Current status</div><div class="detail-value" data-tracker-current-status>${escapeHtml(s.cur ? s.cur.m.label : 'Complete')}</div></div>
