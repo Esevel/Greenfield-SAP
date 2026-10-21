@@ -18,7 +18,7 @@ function initClientCatalogues() {
       const c = clients[row.client];
       const vendor = listingData.countries[row.country];
       const price = modelClientPrice(row.client, model, row.country, row.tier);
-      const adjustment = price.hasContractPrice ? `${price.adjustment > 0 ? '+' : ''}${price.adjustment}% · Client contract` : '<span class="text-muted">—</span>';
+      const adjustment = price.hasContractPrice ? `${price.adjustment > 0 ? '+' : ''}${price.adjustment}% · Client contract` : '-';
       const marketplace = !row.offered ? '<span class="badge badge-muted badge-sm">Not offered</span>' : row.hidden ? '<span class="badge badge-muted badge-sm">Hidden by client</span>' : '<span class="badge badge-success badge-sm">Visible</span>';
       return `<tr>
         <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}</span></div></td>
@@ -27,7 +27,7 @@ function initClientCatalogues() {
         <td class="num">${money(vendor.currency, vendor.cost)}</td>
         <td class="num">${money(vendor.currency, vendor.retail)}</td>
         <td>${escapeHtml(adjustment)}</td>
-        <td class="num"><strong>${price.hasContractPrice ? money(price.currency, price.price) : 'Uses retail'}</strong><div class="stock-sub">${money(vendor.currency, price.localPrice)}${price.currency !== vendor.currency ? ` local · ${money(price.currency, price.price)} billed${price.fx ? ` · ${price.fx.rate.toFixed(4)} ${escapeHtml(price.fx.source)}` : ''}` : ''}</div>${price.floorApplied ? '<div><span class="badge badge-warning badge-sm">Vendor cost floor</span></div>' : ''}</td>
+        <td class="num"><strong>${money(price.currency, price.price)}</strong><div class="stock-sub">${money(vendor.currency, price.localPrice)}${price.currency !== vendor.currency ? ` local · ${money(price.currency, price.price)} billed${price.fx ? ` · ${price.fx.rate.toFixed(4)} ${escapeHtml(price.fx.source)}` : ''}` : ''}</div>${price.floorApplied ? '<div><span class="badge badge-warning badge-sm">Vendor cost floor</span></div>' : ''}</td>
         <td><label class="toggle-switch" aria-label="Offer ${escapeHtml(c.name)} this model"><input type="checkbox" data-offer="${row.client}" ${row.offered ? 'checked' : ''}><span class="toggle-slider"></span></label></td>
         <td><a href="/pages/clients/detail.html?c=${row.client}#sec-pricing" class="link-sm">Contract pricing</a></td>
       </tr>`;
