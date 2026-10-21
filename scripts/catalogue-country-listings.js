@@ -18,6 +18,7 @@ function initCountryListings() {
         <td><strong>${money(listing.currency, listing.retail)}</strong></td>
         <td class="text-muted">${spread.toFixed(1)}%</td>
         <td class="text-muted">Managed on vendor, warehouse, courier and calendar pages</td>
+        <td class="num"><strong>${listing.stock}</strong><span class="text-muted"> units</span></td>
         <td><label class="toggle-switch"><input type="checkbox" data-available="${cc}" ${listing.available ? 'checked' : ''}><span class="toggle-slider"></span></label></td>
         <td><button type="button" class="btn-icon" aria-label="View ${countryMeta(cc)[1]} vendor listing">›</button></td>
       </tr>`;
