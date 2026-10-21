@@ -2,11 +2,16 @@
 
 function initRequestHandover() {
   const initials = name => (name === 'Unassigned' ? '?' : name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase());
+  const trackerItemId = () => document.querySelector('[data-sla-item]')?.dataset.slaItem;
 
   document.querySelectorAll('.owner-picker').forEach(picker => {
     const select = picker.querySelector('select');
     const avatar = picker.querySelector('.card-avatar');
-    select.addEventListener('change', () => { avatar.textContent = initials(select.value); });
+    select.addEventListener('change', () => {
+      avatar.textContent = initials(select.value);
+      const itemId = trackerItemId();
+      if (itemId && window.recordTrackerAudit) window.recordTrackerAudit(itemId, 'Owner changed', `Assigned to ${select.value}`);
+    });
   });
 
   document.querySelectorAll('.handover-card').forEach(card => {
@@ -17,6 +22,14 @@ function initRequestHandover() {
       e.preventDefault();
       const text = input.value.trim();
       if (!text) return;
+
+      const itemId = trackerItemId();
+      if (itemId && window.appendTrackerHandoverNote) {
+        window.appendTrackerHandoverNote(itemId, text);
+        if (window.recordTrackerAudit) window.recordTrackerAudit(itemId, 'Handover note added', text);
+        input.value = '';
+        return;
+      }
 
       const item = document.createElement('div');
       item.className = 'handover-item';
