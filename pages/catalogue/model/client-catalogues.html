@@ -20,9 +20,10 @@
         
         <div class="toolbar-with-description">
           <div class="toolbar-description">
-            <p>Contract-calculated price and marketplace availability for this model.</p>
+            <p>Contract-adjusted price and marketplace availability for this model.</p>
           </div>
           <div class="toolbar-actions">
+            <button type="button" class="btn btn-primary" id="addClientCatalogue">Add client catalogue</button>
             <div class="search-bar search-bar-sm">
               <span class="search-icon">🔍</span>
               <input type="text" class="search-input" id="clientCatalogueSearch" placeholder="Search clients...">
@@ -30,10 +31,6 @@
             <label class="filter-select"><span>Offer status</span><select id="clientCatalogueFilter"><option value="">All</option><option value="offered">Offered</option><option value="not-offered">Not offered</option></select></label>
             <a class="btn btn-secondary" href="/pages/catalogue/model/country-listings.html">Country listings</a>
           </div>
-        </div>
-        
-        <div class="info-line">
-          Contract price is calculated from vendor cost plus the contract adjustment; prices are floored at vendor cost. A dash means no client-specific adjustment is set. Catalogue defaults are suggestions and are not applied automatically. This page controls whether the model is offered; it does not set prices.
         </div>
         
         <div class="table-container">
@@ -48,7 +45,7 @@
                 <th>Adjustment</th>
                 <th>Contract price</th>
                 <th>Offered to client</th>
-                <th>Contract</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="clientCatalogueRows"></tbody>
@@ -57,6 +54,34 @@
         <div class="table-footer-count" id="clientCatalogueCount"></div>
       </div>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="clientCatalogueModal" role="presentation">
+    <form class="modal client-catalogue-modal" id="clientCatalogueForm" role="dialog" aria-modal="true" aria-labelledby="clientCatalogueModalTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="clientCatalogueModalTitle">Add client catalogue</h2>
+        <button type="button" class="modal-close" data-client-catalogue-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Choose the catalogue scope and confirm its price details. Vendor cost is populated from the country listing.</p>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label" for="newCatalogueClient">Client</label><select class="form-select" id="newCatalogueClient" required></select></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueCountry">Country</label><select class="form-select" id="newCatalogueCountry" required></select></div>
+          <div class="form-group form-group-span-2"><label class="form-label" for="newCatalogueTier">Volume tier</label><select class="form-select" id="newCatalogueTier" required></select></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueBilling">Billing entity and invoice currency</label><input class="form-input" id="newCatalogueBilling" readonly></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueCost">Vendor cost</label><input class="form-input" id="newCatalogueCost" readonly></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueRetail">Retail price</label><input class="form-input" id="newCatalogueRetail" readonly></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueAdjustment">Adjustment (%)</label><input class="form-input" id="newCatalogueAdjustment" type="number" min="-100" max="1000" step="0.01" required></div>
+          <div class="form-group"><label class="form-label" id="newCataloguePriceLabel" for="newCataloguePrice">Contract price</label><input class="form-input" id="newCataloguePrice" type="number" min="0" step="0.01" required></div>
+          <div class="form-group form-group-span-2"><label class="checkbox-label"><input type="checkbox" id="newCatalogueOffered" checked> Offered to client</label></div>
+        </div>
+        <div class="form-error" id="clientCatalogueError" role="alert" hidden></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-client-catalogue-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="clientCatalogueSave">Add catalogue</button>
+      </div>
+    </form>
   </div>
   
   <script src="/scripts/navigation.js"></script>
