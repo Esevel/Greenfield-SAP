@@ -14,6 +14,7 @@ function initLeavers() {
   const panel = $('lvPanel');
   const overlay = $('lvOverlay');
   let current = null;
+  let page = 1;
   let nextWo = 2070;
 
   $('fClient').innerHTML = '<option value="">All</option>' + [...new Set(leavers().map(p => p.client))].map(id => `<option value="${id}">${peopleClientName(id)}</option>`).join('');
@@ -26,11 +27,14 @@ function initLeavers() {
 
   function render() {
     const f = { client: $('fClient').value, cc: $('fCountry').value, status: $('fStatus').value };
-    const rows = leavers().filter(p => (!f.client || p.client === f.client) && (!f.cc || p.cc === f.cc)
+    const rows = leavers().filter(p => peopleMatchesSearch(p, $('lvSearch').value)
+      && (!f.client || p.client === f.client) && (!f.cc || p.cc === f.cc)
       && (f.status === 'open' ? p.leaver.status !== 'created' : !f.status || p.leaver.status === f.status))
       .sort((a, b) => a.end.localeCompare(b.end));
 
-    $('lvRows').innerHTML = rows.map(p => {
+    const pagination = peoplePageSlice(rows, page);
+    page = pagination.page;
+    $('lvRows').innerHTML = pagination.rows.map(p => {
       const l = p.leaver;
       const [sLabel, sCls] = LEAVER_STATUS[l.status];
       const m = RETRIEVAL_METHODS[l.method];
@@ -47,7 +51,8 @@ function initLeavers() {
       </tr>`;
     }).join('') || `<tr><td colspan="9" class="text-muted sla-empty">${f.status === 'open' ? 'No open leavers. Departures appear here from HRIS or when the client schedules one.' : 'No leavers match'}</td></tr>`;
 
-    $('lvCount').textContent = `${rows.length} shown · ${openLeavers().length} open · Sorted by departure date · Once a work order is created, track it in Tracker › Offboarding`;
+    $('lvCount').textContent = `${rows.length} matching leavers · ${openLeavers().length} open · Sorted by departure date · Once a work order is created, track it in Tracker › Offboarding`;
+    renderPeoplePagination($('lvPagination'), pagination, nextPage => { page = nextPage; render(); });
     renderPeopleHeader();
   }
 
@@ -127,7 +132,8 @@ function initLeavers() {
     const row = e.target.closest('tr[data-id]');
     if (row && e.key === 'Enter' && e.target === row) open(personById(row.dataset.id));
   });
-  ['fClient', 'fCountry', 'fStatus'].forEach(id => $(id).addEventListener('change', render));
+  ['fClient', 'fCountry', 'fStatus'].forEach(id => $(id).addEventListener('change', () => { page = 1; render(); }));
+  $('lvSearch').addEventListener('input', () => { page = 1; render(); });
 
   // Outcome, method and reminder update in place so typed address/date aren't lost
   $('lvAssets').addEventListener('change', e => {

@@ -107,10 +107,11 @@ See [`docs/AGENTS.md`](docs/AGENTS.md) for complete architecture documentation a
 ## Important Notes
 
 This is a **prototype**, not a production application:
-- No real authentication or authorization
+- Demo sign-in is client-side only and does not provide real authentication or authorization
+- Sign in at `/login.html` with the seeded demo account `demo@esevel.site`
+- Do not use this client-side login to protect sensitive data; production auth requires a trusted backend or identity provider
 - No API calls or data fetching
-- No form validation or submission
-- No state persistence
+- No business form submissions or data persistence
 - Interactions are demonstrative only
 - Data is static and hardcoded
 

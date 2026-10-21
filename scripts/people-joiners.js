@@ -20,6 +20,7 @@ function initJoiners() {
   const panel = $('jnPanel');
   const overlay = $('jnOverlay');
   let current = null;
+  let page = 1;
   let nextWo = 1201;
 
   $('fClient').innerHTML = '<option value="">All</option>' + [...new Set(joiners().map(p => p.client))].map(id => `<option value="${id}">${peopleClientName(id)}</option>`).join('');
@@ -34,7 +35,8 @@ function initJoiners() {
 
   function render() {
     const f = { client: $('fClient').value, cc: $('fCountry').value, comp: $('fComp').value, status: $('fStatus').value };
-    const rows = joiners().filter(p => (!f.client || p.client === f.client)
+    const rows = joiners().filter(p => peopleMatchesSearch(p, $('jnSearch').value)
+      && (!f.client || p.client === f.client)
       && (!f.cc || p.cc === f.cc)
       && (f.status === 'open' ? p.joiner.status !== 'created' : !f.status || p.joiner.status === f.status)
       && (!f.comp || (f.comp === 'complete' ? joinerComplete(p) : f.comp === 'incomplete' ? !joinerComplete(p) : !p[f.comp])))
@@ -44,7 +46,9 @@ function initJoiners() {
         || (a.risk ? RISK_ORDER[a.risk.level] : 3) - (b.risk ? RISK_ORDER[b.risk.level] : 3)
         || a.p.start.localeCompare(b.p.start));
 
-    $('jnRows').innerHTML = rows.map(({ p, risk }) => {
+    const pagination = peoplePageSlice(rows, page);
+    page = pagination.page;
+    $('jnRows').innerHTML = pagination.rows.map(({ p, risk }) => {
       const j = p.joiner;
       const [label, cls] = JOINER_STATUS[j.status];
       const locked = j.status === 'created';
@@ -62,7 +66,8 @@ function initJoiners() {
     }).join('') || `<tr><td colspan="9" class="text-muted sla-empty">${f.status === 'open' ? 'No open joiners. New hires appear here when they sync from HRIS or the client adds them.' : 'No joiners match'}</td></tr>`;
 
     const atRisk = openJoiners().filter(p => joinerRisk(p).level !== 'ok').length;
-    $('jnCount').textContent = `${rows.length} shown · ${openJoiners().length} open, ${atRisk} tight or at risk · Once a work order is created, track it in Tracker › Onboarding`;
+    $('jnCount').textContent = `${rows.length} matching joiners · ${openJoiners().length} open, ${atRisk} tight or at risk · Once a work order is created, track it in Tracker › Onboarding`;
+    renderPeoplePagination($('jnPagination'), pagination, nextPage => { page = nextPage; render(); });
     renderPeopleHeader();
   }
 
@@ -153,7 +158,8 @@ function initJoiners() {
     const row = e.target.closest('tr[data-id]');
     if (row && e.key === 'Enter' && e.target === row) open(personById(row.dataset.id));
   });
-  ['fClient', 'fCountry', 'fComp', 'fStatus'].forEach(id => $(id).addEventListener('change', render));
+  ['fClient', 'fCountry', 'fComp', 'fStatus'].forEach(id => $(id).addEventListener('change', () => { page = 1; render(); }));
+  $('jnSearch').addEventListener('input', () => { page = 1; render(); });
 
   $('jnPkg').addEventListener('change', () => { current.joiner.pkg = $('jnPkg').value; renderPanel(); render(); });
 

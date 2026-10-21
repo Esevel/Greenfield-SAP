@@ -117,6 +117,20 @@
   gap: var(--space-lg);
 }
 
+.client-catalogue-modal {
+  max-width: 720px;
+}
+
+@media (max-width: 640px) {
+  .client-catalogue-modal .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .client-catalogue-modal .form-group-span-2 {
+    grid-column: auto;
+  }
+}
+
 .form-group-span-2 {
   grid-column: span 2;
 }

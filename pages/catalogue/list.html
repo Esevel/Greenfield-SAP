@@ -6,6 +6,7 @@
   <title>Catalogue - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
 </head>
 <body>
   <div class="app-container">
@@ -30,7 +31,7 @@
         </div>
         
         <nav class="tab-strip">
-          <a href="/pages/catalogue/list.html" class="tab-link active">Models</a>
+          <a href="/pages/catalogue/list.html" class="tab-link active" aria-current="page">Models</a>
           <a href="/pages/catalogue/markup.html" class="tab-link">Default markup</a>
         </nav>
         
@@ -78,7 +79,6 @@
                 <a href="#" class="dropdown-menu-item">All statuses</a>
                 <a href="#" class="dropdown-menu-item">Active</a>
                 <a href="#" class="dropdown-menu-item">Draft</a>
-                <a href="#" class="dropdown-menu-item">End of life</a>
               </div>
             </div>
             
@@ -110,12 +110,6 @@
             </div>
           </div>
           
-          <div class="toolbar-right">
-            <button class="btn btn-secondary btn-sm" id="columnVisibility">
-              <span>⚙</span>
-              <span>Columns</span>
-            </button>
-          </div>
         </div>
         
         <!-- Catalogue Table -->
@@ -148,9 +142,6 @@
                     </div>
                     <div class="model-info">
                       <a href="/pages/catalogue/model/overview.html" class="model-name" style="text-decoration: none; color: var(--color-text-primary);">MacBook Pro 14" M3</a>
-                      <div class="model-warnings">
-                        <span class="warning-indicator" data-tooltip="Stock below minimum threshold (< 10 units)">⚠️</span>
-                      </div>
                     </div>
                   </div>
                 </td>
@@ -291,31 +282,6 @@
                 </td>
                 <td><span class="badge badge-info">Draft</span></td>
                 <td class="text-muted">2 days ago</td>
-              </tr>
-              
-              <tr class="catalogue-row" data-row-id="7">
-                <td class="col-checkbox">
-                  <input type="checkbox" class="row-checkbox">
-                </td>
-                <td class="col-model">
-                  <div class="model-cell">
-                    <div class="model-thumbnail">
-                      <div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💻</div>
-                    </div>
-                    <div class="model-info">
-                      <div class="model-name">Dell Latitude 7430</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Dell</td>
-                <td>Laptops</td>
-                <td class="text-muted">i5-1245U · 16GB · 512GB</td>
-                <td>4 / 7</td>
-                <td>
-                  <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 11 · at client sites 7">18</span>
-                </td>
-                <td><span class="badge badge-error">End of life</span></td>
-                <td class="text-muted">3 weeks ago</td>
               </tr>
               
               <tr class="catalogue-row" data-row-id="8">

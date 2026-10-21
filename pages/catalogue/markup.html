@@ -26,16 +26,16 @@
         
         <nav class="tab-strip">
           <a href="/pages/catalogue/list.html" class="tab-link">Models</a>
-          <a href="/pages/catalogue/markup.html" class="tab-link active">Default markup</a>
+          <a href="/pages/catalogue/markup.html" class="tab-link active" aria-current="page">Default markup</a>
         </nav>
         
-        <div class="info-line">Suggested percentage adjustments to retail for custom client contracts. Standard clients pay retail; an adjustment applies only when explicitly added to the client contract. Negative adjustments are allowed, but the final client price never falls below vendor cost. Staff only.</div>
+        <div class="info-line">Suggested percentage adjustments to vendor cost for custom client contracts. An adjustment applies only when explicitly added to the client contract. Negative adjustments are allowed, but the final client price never falls below vendor cost. Staff only.</div>
         <div class="saved-note" id="mkSaved" hidden></div>
         
         <div class="mk-layout">
           <section class="card">
             <div class="card-header">
-              <h3 class="card-title">Retail adjustment by category and volume tier</h3>
+              <h3 class="card-title">Vendor cost adjustment by category and volume tier</h3>
               <label class="sla-check"><input type="checkbox" id="mkPast"> Show past versions</label>
             </div>
             <div class="card-body doc-body">
@@ -84,7 +84,7 @@
     <div class="side-panel-body">
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label" for="mkValue">Vendor retail adjustment %</label>
+          <label class="form-label" for="mkValue">Vendor cost adjustment %</label>
           <input type="number" class="form-input" id="mkValue" min="-100" max="100" step="0.5">
         </div>
         <div class="form-group">

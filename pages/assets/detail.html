@@ -74,7 +74,7 @@
                 </div>
               </div>
             </section>
-            
+
             <!-- Internal -->
             <section class="card mb-lg" id="internal">
               <div class="card-header">
@@ -409,6 +409,17 @@
                 <button class="btn btn-secondary paired-action">Unpair</button>
               </div>
             </div>
+            <section class="card mb-lg" id="relatedTickets">
+              <div class="card-header"><h3 class="card-title">Related tickets</h3></div>
+              <div class="card-body doc-body">
+                <div class="table-container">
+                  <table class="table doc-table">
+                    <thead><tr><th>Ticket</th><th>Type</th><th>Status</th><th>Opened</th><th>Owner</th></tr></thead>
+                    <tbody id="assetRelatedTickets"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </div>
@@ -417,6 +428,10 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/tracker-sla.js"></script>
   <script src="/scripts/asset-detail.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock · Warehouses - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    <main class="main-content">
+      <div id="header-container"></div>
+      <div class="page-content">
+        <div id="stockHeader" data-view="warehouses"></div>
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="search-bar"><span class="search-icon">🔍</span><input type="search" class="search-input" id="warehouseSearch" placeholder="Search warehouses, clients or models..." aria-label="Search warehouses, clients or models"></div>
+            <label class="filter-select"><span>Country</span><select id="warehouseCountry"></select></label>
+          </div>
+        </div>
+        <div class="inventory-summary stock-summary stock-summary-4" id="warehouseStockTiles"></div>
+        <div class="table-container">
+          <table class="table catalogue-table stock-clients-table">
+            <thead class="catalogue-table-header"><tr><th>Warehouse</th><th>Type</th><th>Country</th><th class="num">Clients</th><th class="num">Units in stock</th><th class="num">Reserved</th><th class="num">Available</th></tr></thead>
+            <tbody id="stockWarehouseRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="stockWarehouseCount"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/stock-header.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const params = new URLSearchParams(location.search);
+      const selectedWarehouse = params.get('warehouse');
+      const expanded = new Set(selectedWarehouse ? [selectedWarehouse] : []);
+      $('warehouseCountry').innerHTML = '<option value="">All countries</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][0]} ${WH_COUNTRIES[cc][1]}</option>`).join('');
+
+      const stockForWarehouse = warehouse => {
+        const grouped = new Map();
+        STOCK_LINES.filter(line => line.loc === warehouse.id).forEach(line => {
+          const key = `${line.client}|${line.model}`;
+          const current = grouped.get(key) || { client: line.client, model: line.model, onHand: 0, reserved: 0, available: 0 };
+          current.onHand += line.onHand;
+          current.reserved += line.reserved;
+          current.available += stockAvailable(line);
+          grouped.set(key, current);
+        });
+        return [...grouped.values()].sort((a, b) => stockClient(a.client).name.localeCompare(stockClient(b.client).name) || STOCK_MODELS[a.model].name.localeCompare(STOCK_MODELS[b.model].name));
+      };
+
+      function render() {
+        const query = $('warehouseSearch').value.trim().toLowerCase();
+        const country = $('warehouseCountry').value;
+        const warehouses = WAREHOUSES.filter(warehouse => warehouse.status === 'Active' && (!country || warehouse.country === country))
+          .map(warehouse => ({ warehouse, stock: stockForWarehouse(warehouse) }))
+          .filter(({ warehouse, stock }) => !query || `${warehouse.name} ${WH_COUNTRIES[warehouse.country][1]} ${stock.map(row => `${stockClient(row.client).name} ${STOCK_MODELS[row.model].name}`).join(' ')}`.toLowerCase().includes(query));
+        const totals = warehouses.reduce((sum, { stock }) => stock.reduce((out, line) => ({
+          units: out.units + line.onHand,
+          reserved: out.reserved + line.reserved,
+          available: out.available + line.available,
+          clients: out.clients.add(line.client)
+        }), sum), { units: 0, reserved: 0, available: 0, clients: new Set() });
+        const tile = (label, value, sub = '') => `<div class="summary-tile"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
+        $('warehouseStockTiles').innerHTML = [
+          tile('Warehouses', warehouses.length),
+          tile('Units in stock', totals.units),
+          tile('Reserved', totals.reserved),
+          tile('Available', totals.available, `${totals.clients.size} clients`)
+        ].join('');
+        $('stockWarehouseRows').innerHTML = warehouses.map(({ warehouse, stock }) => {
+          const open = expanded.has(String(warehouse.id));
+          const units = stock.reduce((sum, line) => sum + line.onHand, 0);
+          const reserved = stock.reduce((sum, line) => sum + line.reserved, 0);
+          const available = units - reserved;
+          const breakdown = stock.length ? `<tr class="expanded-content-row"><td colspan="7"><table class="breakdown-table">
+            <thead><tr><th>Client</th><th>Model</th><th class="num">In stock</th><th class="num">Reserved</th><th class="num">Available</th></tr></thead>
+            <tbody>${stock.map(line => `<tr><td>${clientCell(line.client)}</td><td>${modelCell(line.model)}</td><td class="num">${line.onHand}</td><td class="num">${line.reserved}</td><td class="num"><strong>${line.available}</strong></td></tr>`).join('')}</tbody>
+          </table></td></tr>` : `<tr class="expanded-content-row"><td colspan="7"><div class="text-muted" style="padding: var(--space-sm);">No stock recorded in this warehouse.</div></td></tr>`;
+          return `<tr class="stock-warehouse-row ${open ? 'open' : ''}" data-warehouse="${warehouse.id}" tabindex="0" aria-expanded="${open}">
+            <td><button type="button" class="expand-button" aria-label="${open ? 'Hide' : 'Show'} stock for ${escapeHtml(warehouse.name)}">${open ? '▼' : '▶'}</button> <strong>${escapeHtml(warehouse.name)}</strong></td>
+            <td>${isHub(warehouse) ? '<span class="tag tag-loc-hub">Esevel hub</span>' : '<span class="tag tag-loc-site">Client site</span>'}</td>
+            <td><span class="flag">${WH_COUNTRIES[warehouse.country][0]}</span> ${WH_COUNTRIES[warehouse.country][1]}</td>
+            <td class="num">${new Set(stock.map(line => line.client)).size}</td>
+            <td class="num">${units}</td><td class="num">${reserved}</td><td class="num"><strong>${available}</strong></td>
+          </tr>${open ? breakdown : ''}`;
+        }).join('') || '<tr><td colspan="7" class="text-muted sla-empty">No warehouses match.</td></tr>';
+        $('stockWarehouseCount').textContent = `${warehouses.length} warehouses · Expand a warehouse to see available units grouped by client and model`;
+      }
+
+      $('stockWarehouseRows').addEventListener('click', event => {
+        const row = event.target.closest('tr[data-warehouse]');
+        if (!row) return;
+        const id = row.dataset.warehouse;
+        expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+        render();
+      });
+      $('stockWarehouseRows').addEventListener('keydown', event => {
+        const row = event.target.closest('tr[data-warehouse]');
+        if (row && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          const id = row.dataset.warehouse;
+          expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+          render();
+        }
+      });
+      $('warehouseSearch').addEventListener('input', render);
+      $('warehouseCountry').addEventListener('change', render);
+      render();
+      if (selectedWarehouse) document.querySelector(`[data-warehouse="${CSS.escape(selectedWarehouse)}"]`)?.scrollIntoView({ block: 'center' });
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

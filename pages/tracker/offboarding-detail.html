@@ -34,14 +34,15 @@
               <span class="meta-sep">·</span>
               <span><span class="flag">🇬🇧</span> United Kingdom</span>
               <span class="meta-sep">·</span>
-              <span class="badge badge-warning">Scheduled</span>
+              <span class="badge badge-warning" data-tracker-status-badge>Scheduled</span>
               <span class="sla-pill sla-breached" data-sla-pill="OFF-2055">Breached</span>
               <span class="ticket-chip">INC0039</span>
             </div>
           </div>
           <div class="header-actions">
             <button class="btn btn-secondary">Reschedule pickup</button>
-            <button class="btn btn-primary">Update status</button>
+            <button class="btn btn-secondary" type="button" data-tracker-milestone-action="skip">Skip milestone</button>
+            <button class="btn btn-primary" type="button" data-tracker-milestone-action="complete">Complete Current Milestone</button>
           </div>
         </div>
         
@@ -51,7 +52,7 @@
         </div>
         
         <!-- Stage progress -->
-        <ol class="stage-stepper">
+        <ol class="stage-stepper" data-tracker-stepper>
           <li class="done"><span class="stage-dot">✓</span><span class="stage-name">Notified</span><span class="stage-date">10 Oct</span></li>
           <li class="current"><span class="stage-dot">2</span><span class="stage-name">Scheduled</span><span class="stage-date">Since 12 Oct</span></li>
           <li><span class="stage-dot">3</span><span class="stage-name">Picked Up</span></li>

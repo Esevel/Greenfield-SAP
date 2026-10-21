@@ -10,7 +10,7 @@ const onbClient = i => WH_CLIENTS.find(c => c.id === i.client);
 const onbIdx = key => slaType('onboarding').milestones.findIndex(m => m.key === key);
 // Not yet delivered and starting within ONB_SOON_DAYS
 // Milestone position of the current step (hub-only steps are skipped on direct routes)
-const onbAt = s => s.cur.i;
+const onbAt = s => s.cur ? s.cur.i : s.active.length;
 const onbStartsSoon = (i, s) => onbAt(s) < onbIdx('setup') && onbDaysToStart(i) <= ONB_SOON_DAYS;
 
 function onbDeviceStatus(s) {
@@ -71,6 +71,8 @@ function renderOnboardingDetail() {
   const client = onbClient(i);
   const [pillCls, pillText] = HEALTH_PILL[s.health];
   const days = onbDaysToStart(i);
+  const deliveryDates = (i.lines || []).map(line => line.received || line.eta).filter(Boolean).sort();
+  const expectedDelivery = i.onb.expectedDelivery || deliveryDates.at(-1) || '';
   document.title = `${i.id} · Onboarding - Admin Portal`;
   $('onbCrumb').textContent = i.id;
   $('onbTitle').textContent = `${i.id} · ${i.onb.employee}`;
@@ -79,7 +81,7 @@ function renderOnboardingDetail() {
     <span><span class="flag">${WH_COUNTRIES[i.cc][0]}</span> ${WH_COUNTRIES[i.cc][1]}</span><span class="meta-sep">·</span>
     <span class="tag-package">${escapeHtml(i.onb.pkg)}</span>
     ${routeTagHtml(s)}
-    <span class="badge badge-info">${s.cur.m.label}</span>
+    <span class="badge badge-info" data-tracker-status-badge>${s.cur ? s.cur.m.label : 'Complete'}</span>
     <span class="sla-pill ${pillCls}">${pillText}</span>`;
 
   const alerts = [];
@@ -99,9 +101,10 @@ function renderOnboardingDetail() {
     <div><div class="detail-label">Employee</div><div class="detail-value">${escapeHtml(i.onb.employee)} · ${escapeHtml(i.onb.role)}</div></div>
     <div><div class="detail-label">Start date</div><div class="detail-value${onbStartsSoon(i, s) ? ' onb-soon-text' : ''}">${onbFmtDay(i.onb.startDate)}${days >= 0 ? ` · in ${days} day${days === 1 ? '' : 's'}` : ''}</div></div>
     <div><div class="detail-label">Package</div><div class="detail-value">${escapeHtml(i.onb.pkg)}</div></div>
+    <div><div class="detail-label">Expected delivery date</div><div class="detail-value">${expectedDelivery ? onbFmtDay(expectedDelivery) + ' ' + new Date(`${expectedDelivery}T00:00:00`).getFullYear() : 'To be confirmed'}</div></div>
     <div><div class="detail-label">Delivery route</div><div class="detail-value">${SLA_ROUTES[s.route].label} <span class="text-muted">· chosen at checkout</span></div></div>
     <div><div class="detail-label">Delivery address</div><div class="detail-value${i.onb.address ? '' : ' onb-missing'}">${i.onb.address ? escapeHtml(i.onb.address) : 'Missing · requested from client'}</div></div>
-    <div><div class="detail-label">Current status</div><div class="detail-value">${escapeHtml(i.stage)}</div></div>
+    <div><div class="detail-label">Current status</div><div class="detail-value" data-tracker-current-status>${escapeHtml(s.cur ? s.cur.m.label : 'Complete')}</div></div>
     <div><div class="detail-label">Raised</div><div class="detail-value">${new Date(i.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · Workday new-hire sync</div></div>`;
 
   const [devCls, devText] = onbDeviceStatus(s);
@@ -150,6 +153,7 @@ function renderOnboardingDetail() {
   const card = $('onbSla');
   card.dataset.slaItem = i.id;
   renderMilestoneCard(card);
+  initTrackerDetailActions();
 }
 
 if (document.getElementById('onbBoard')) renderOnboardingBoard(document.getElementById('onbBoard'));

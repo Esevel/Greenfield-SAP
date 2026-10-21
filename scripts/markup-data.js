@@ -58,7 +58,7 @@ function modelClientPrice(clientId, model, country, tier) {
   const terms = CONTRACTS[clientId].terms;
   const exception = terms.pricing.markup.find(m => m.category === MODEL_VENDOR_LISTINGS[model].category && m.tier === tier);
   const adjustment = exception ? exception.markup : 0;
-  const beforeFloor = listing.retail * (1 + adjustment / 100);
+  const beforeFloor = exception ? listing.cost * (1 + adjustment / 100) : listing.retail;
   const localPrice = Math.round(Math.max(listing.cost, beforeFloor) * 100) / 100;
   const billing = payingEntity(terms, country);
   const fx = fxQuote(terms, listing.currency, billing.entity.currency);
@@ -67,4 +67,4 @@ function modelClientPrice(clientId, model, country, tier) {
   return { listing, tier, adjustment, adjustmentSource: exception ? 'Client contract' : '', hasContractPrice: !!exception, localPrice, price, currency: billing.entity.currency, vendorCost, entity: billing.entity, fx, floorApplied: !!exception && beforeFloor < listing.cost };
 }
 
-// Pricing is sourced from MODEL_VENDOR_LISTINGS; contract exceptions and catalogue defaults are percentage adjustments.
+// Contract pricing uses retail without a client adjustment; configured percentage adjustments apply to vendor cost and are floored at cost.

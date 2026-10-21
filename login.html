@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Sign in · Admin Portal</title>
+  <link rel="stylesheet" href="/styles/auth.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-card" aria-labelledby="login-title">
+      <a class="auth-brand" href="/" aria-label="Admin Portal home">
+        <span class="auth-brand-mark" aria-hidden="true">G</span>
+        <span>Greenfield <span class="auth-brand-light">Admin</span></span>
+      </a>
+
+      <div class="auth-intro">
+        <p class="auth-eyebrow">WORKSPACE ACCESS</p>
+        <h1 id="login-title">Welcome back</h1>
+        <p>Sign in to continue to your admin workspace.</p>
+      </div>
+
+      <form id="loginForm" class="auth-form" novalidate>
+        <label for="username">Username</label>
+        <input id="username" name="username" type="email" autocomplete="username" value="demo@esevel.site" required>
+
+        <div class="auth-password-label">
+          <label for="password">Password</label>
+        </div>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <p id="loginError" class="auth-error" role="alert" aria-live="polite"></p>
+        <button class="auth-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
+      </form>
+
+      <p class="auth-footnote">Demo account: <strong>demo@esevel.site</strong></p>
+    </section>
+    <p class="auth-legal">Greenfield Admin Portal <span>·</span> Prototype access</p>
+  </main>
+</body>
+</html>

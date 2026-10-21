@@ -2,7 +2,7 @@
 // (client custom value, else country default). Needs hub-data.js and sla-data.js.
 
 const SLA_AT_RISK = 0.75;
-const TRACKER_NOW = new Date('2026-10-16T13:00:00');
+const TRACKER_NOW = new Date();
 // Prototype simplification: a business day counts as 24h of elapsed time
 const HOURS = { h: 1, d: 24 };
 
@@ -87,7 +87,7 @@ const TRACKER_ITEMS = [
     stage: 'QC and wipe', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Wipe certificate generated, QC bench slot tomorrow AM'], href: '/pages/tracker/redeployments.html' },
   { id: 'ORD-30455', client: 'acme', type: 'stock', cc: 'SG', start: '2026-10-16T07:00', done: ['2026-10-16T08:00'],
     stage: 'Picking', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Allocated from Singapore Hub (C02WR9T6MD6T)'] },
-  { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
+  { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', assetSerials: ['PF3QW8ZN'], start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
     stage: 'In Repair', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Booked with FixPoint London, drop-off Thursday'], href: '/pages/tracker/work-order.html' },
   { id: 'ONB-1190', client: 'techglobal', type: 'onboarding', cc: 'SG', start: '2026-10-13T09:00', done: ['2026-10-13T15:00', '2026-10-15T10:00', '2026-10-16T09:00'],
     stage: 'Shipping kit', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Kit packed, courier label created for Monday'],
@@ -95,6 +95,24 @@ const TRACKER_ITEMS = [
 ];
 
 TRACKER_ITEMS.filter(i => i.onb).forEach(i => { i.href = `/pages/tracker/onboarding-detail.html?id=${i.id}`; });
+
+const TRACKER_MILESTONE_STORAGE = 'tracker-milestone-state-v1';
+const TRACKER_AUDIT_STORAGE = 'tracker-audit-v1';
+const TRACKER_HANDOVER_STORAGE = 'tracker-handover-notes-v1';
+
+function readTrackerStorage(key, fallback = {}) {
+  try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+  catch { return fallback; }
+}
+
+const trackerPersistedState = readTrackerStorage(TRACKER_MILESTONE_STORAGE);
+TRACKER_ITEMS.forEach(item => {
+  const saved = trackerPersistedState[item.id];
+  if (saved) {
+    item.milestoneActions = saved.milestoneActions || {};
+    if (saved.stage) item.stage = saved.stage;
+  }
+});
 
 const hoursBetween = (a, b) => (new Date(b) - new Date(a)) / 36e5;
 
@@ -127,32 +145,50 @@ function trackerSla(item) {
     const hours = m.fixed || skipped ? 0 : targets[i] * HOURS[m.unit];
     return { m, i, target: targets[i], hours, custom, skipped, quote };
   });
-  // done[] lists completion times of the steps that apply, in order
+  // done[] contains the seeded completion prefix; milestoneActions stores later operator actions.
   const active = steps.filter(st => !st.skipped);
+  let previousAt = item.start;
+  let foundCurrent = false;
   active.forEach((st, n) => {
-    const begin = n === 0 ? item.start : item.done[n - 1];
-    st.state = 'upcoming';
+    const action = item.milestoneActions?.[st.m.key];
+    const legacyDoneAt = n < item.done.length ? item.done[n] : null;
+    const terminalAt = action?.at || legacyDoneAt;
     st.actual = null;
-    if (n < item.done.length) { st.state = 'done'; st.actual = hoursBetween(begin, item.done[n]); st.doneAt = item.done[n]; }
-    else if (n === item.done.length) { st.state = 'current'; st.actual = hoursBetween(begin, TRACKER_NOW); }
+    if (action?.action === 'skip') {
+      st.state = 'skipped'; st.doneAt = action.at; st.skipReason = action.reason;
+      previousAt = action.at;
+    } else if (action?.action === 'complete') {
+      st.state = 'done'; st.doneAt = action.at; st.actual = hoursBetween(previousAt, action.at);
+      previousAt = action.at;
+    } else if (legacyDoneAt) {
+      st.state = 'done'; st.doneAt = legacyDoneAt; st.actual = hoursBetween(previousAt, legacyDoneAt);
+      previousAt = legacyDoneAt;
+    } else if (!foundCurrent) {
+      st.state = 'current'; st.startedAt = previousAt; st.actual = hoursBetween(previousAt, TRACKER_NOW);
+      foundCurrent = true;
+    } else {
+      st.state = 'upcoming';
+    }
+    if (!terminalAt && st.state === 'upcoming') st.actual = null;
   });
   steps.filter(st => st.skipped).forEach(st => { st.state = 'skipped'; st.actual = null; });
-  const cur = active[item.done.length];
-  const remaining = cur.hours - cur.actual;
-  const ratio = cur.actual / cur.hours;
+  const cur = active.find(st => st.state === 'current') || null;
+  const remaining = cur ? cur.hours - cur.actual : 0;
+  const ratio = cur && cur.hours ? cur.actual / cur.hours : 0;
   // Per-line milestone: done when the last line arrives, so a line ETA past the due time is a projected breach
   let lines = null;
-  if (cur.m.perLine && item.lines) {
-    const curStart = item.done.length ? item.done[item.done.length - 1] : item.start;
+  if (cur?.m.perLine && item.lines) {
+    const curStart = cur.startedAt;
     const due = new Date(new Date(curStart).getTime() + cur.hours * 36e5);
     const late = item.lines.filter(l => !l.received && l.eta && new Date(`${l.eta}T17:00:00`) > due);
     lines = { total: item.lines.length, received: item.lines.filter(l => l.received).length, late, due };
   }
-  let health = remaining < 0 ? 'breached' : ratio >= SLA_AT_RISK ? 'risk' : 'ok';
+  let health = !cur ? 'complete' : remaining < 0 ? 'breached' : ratio >= SLA_AT_RISK ? 'risk' : 'ok';
   if (lines && lines.late.length && health !== 'breached') health = 'risk';
   const totalHours = steps.reduce((n, s) => n + s.hours, 0);
   const due = new Date(new Date(item.start).getTime() + totalHours * 36e5);
-  return { type, steps, active, cur, index: item.done.length, remaining, ratio, health, totalHours, due, lines, route: item.route || 'hub', custom: steps.some(s => s.custom) };
+  const index = cur ? active.indexOf(cur) : active.length;
+  return { type, steps, active, cur, index, remaining, ratio, health, totalHours, due, lines, route: item.route || 'hub', custom: steps.some(s => s.custom) };
 }
 
 const routeTagHtml = s => (s.route === 'hub' ? '' : `<span class="route-tag">${SLA_ROUTES[s.route].short}</span>`);
@@ -165,7 +201,7 @@ function linesSummaryHtml(s) {
   return `<div class="lines-progress${late.length ? ' lines-late' : ''}">${received} of ${total} lines received${late.length ? ` · ⚠ ${late.length} ETA after due date` : ''}</div>`;
 }
 
-const HEALTH_PILL = { ok: ['sla-ok', 'On track'], risk: ['sla-risk', 'At risk'], breached: ['sla-breached', 'Breached'] };
+const HEALTH_PILL = { ok: ['sla-ok', 'On track'], risk: ['sla-risk', 'At risk'], breached: ['sla-breached', 'Breached'], complete: ['sla-ok', 'Complete'] };
 const HEALTH_ORDER = { breached: 0, risk: 1, ok: 2 };
 
 // Most overdue first, then by share of the milestone used
@@ -175,6 +211,7 @@ function trackerSorted() {
 }
 
 function runwayHtml(s) {
+  if (!s.cur) return '<div class="runway"><div class="runway-label">All milestones complete</div></div>';
   const cls = s.health === 'breached' ? 'overdue' : s.health === 'risk' ? 'risk' : '';
   const label = s.remaining < 0 ? `${fmtHours(s.remaining)} overdue` : `${fmtHours(s.remaining)} left`;
   return `<div class="runway"><div class="runway-label ${cls}">${label}</div><div class="runway-bar"><div class="runway-fill ${cls}" style="width: ${Math.min(100, Math.round(s.ratio * 100))}%;"></div></div>
@@ -190,7 +227,7 @@ function trackerRowsHtml() {
       <td class="card-id">${item.id}</td>
       <td>${escapeHtml(client.name)}<div class="runway-sub">${WH_COUNTRIES[item.cc][0]} ${item.cc}</div></td>
       <td><span class="type-icon" data-tooltip="${typeName} · ${s.type.name}">${icon}</span></td>
-      <td><div class="ms-current"><span class="ms-current-step">${s.index + 1}/${s.active.length}</span> ${s.cur.m.label} ${routeTagHtml(s)}</div>${linesSummaryHtml(s)}<div class="runway-sub">${escapeHtml(item.stage)}</div></td>
+      <td><div class="ms-current">${s.cur ? `<span class="ms-current-step">${s.index + 1}/${s.active.length}</span> ${s.cur.m.label} ${routeTagHtml(s)}` : 'Complete'}</div>${linesSummaryHtml(s)}<div class="runway-sub">${escapeHtml(item.stage)}</div></td>
       <td><div class="owner-cell"><span class="card-avatar">${item.owner[0]}</span>${item.owner[1]}</div></td>
       <td class="${item.blocker ? 'blocker-text' : 'text-muted'}">${item.blocker ? escapeHtml(item.blocker) : '—'}</td>
       <td>${runwayHtml(s)}</td>
@@ -220,7 +257,7 @@ function renderMilestoneCard(el) {
         } else if (st.state === 'current') {
           detail = `<span class="${s.health === 'breached' ? 'ms-late' : s.health === 'risk' ? 'ms-risk' : ''}">${fmtHours(st.actual)}</span> of ${target} · ${s.remaining < 0 ? `${fmtHours(s.remaining)} overdue` : `${fmtHours(s.remaining)} left`}`;
         } else if (st.state === 'skipped') {
-          detail = st.m.hubOnly ? `Not needed · ${SLA_ROUTES[s.route].label.toLowerCase()}` : 'Not needed · device already at hub';
+          detail = st.skipReason ? `Skipped · ${escapeHtml(st.skipReason)}` : st.m.hubOnly ? `Not needed · ${SLA_ROUTES[s.route].label.toLowerCase()}` : 'Not needed · device already at hub';
         } else {
           detail = `Target ${target}`;
         }
@@ -231,7 +268,7 @@ function renderMilestoneCard(el) {
     </ol>
     <div class="info-grid ms-summary">
       <div class="info-row"><span class="info-label">End-to-end target</span><span class="info-value">${fmtHours(s.totalHours)}</span></div>
-      <div class="info-row"><span class="info-label">Due</span><span class="info-value">${fmtDate(s.due)}</span></div>
+      <div class="info-row"><span class="info-label">Due</span><span class="info-value">${s.cur ? fmtDate(s.due) : 'Completed'}</span></div>
       <div class="info-row"><span class="info-label">SLA source</span><span class="info-value">${s.custom ? `${escapeHtml(client.name)} custom` : `${WH_COUNTRIES[item.cc][1]} default`}</span></div>
       ${item.lines ? `<div class="info-row"><span class="info-label">Route</span><span class="info-value">${SLA_ROUTES[s.route].label}</span></div>` : ''}
       ${item.lines && s.route === 'hub' ? `<div class="info-row"><span class="info-label">Dispatch</span><span class="info-value">${SLA_SPLIT_DELIVERY[item.client] ? 'Split allowed' : 'Ship complete'}</span></div>` : ''}
@@ -246,3 +283,222 @@ function renderMilestoneCard(el) {
 }
 
 document.querySelectorAll('[data-sla-item]').forEach(renderMilestoneCard);
+
+function trackerSave(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) { console.warn('Tracker changes could not be saved locally.', error); }
+}
+
+function trackerTimestamp(value = new Date()) {
+  return new Date(value).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function trackerSampleAuditEntries(itemId) {
+  const item = TRACKER_ITEMS.find(entry => entry.id === itemId);
+  if (!item) return [];
+  const entries = [{
+    itemId,
+    action: 'Request created',
+    detail: `${item.type === 'onboarding' ? 'Onboarding' : item.type === 'offboarding' ? 'Offboarding' : item.type === 'repair' ? 'Repair' : 'Tracker'} request opened`,
+    actor: item.owner?.[1] || 'System',
+    timestamp: item.start,
+    when: trackerTimestamp(item.start)
+  }];
+  trackerSla(item).active.forEach(step => {
+    if (step.state !== 'done' || !step.doneAt) return;
+    entries.push({
+      itemId,
+      action: 'Milestone completed',
+      detail: step.m.label,
+      actor: item.owner?.[1] || 'System',
+      timestamp: step.doneAt,
+      when: trackerTimestamp(step.doneAt)
+    });
+  });
+  return entries;
+}
+
+function trackerAuditEntries(itemId) {
+  const entries = readTrackerStorage(TRACKER_AUDIT_STORAGE, []);
+  const saved = Array.isArray(entries) ? entries.filter(entry => entry.itemId === itemId) : [];
+  return [...saved, ...trackerSampleAuditEntries(itemId)].sort((a, b) => {
+    const timeA = Date.parse(a.timestamp || a.when) || 0;
+    const timeB = Date.parse(b.timestamp || b.when) || 0;
+    return timeB - timeA;
+  });
+}
+
+function renderTrackerAudit(itemId) {
+  const feed = document.querySelector('[data-tracker-audit]');
+  if (!feed) return;
+  const entries = trackerAuditEntries(itemId);
+  feed.innerHTML = entries.length ? entries.map(entry => `<div class="timeline-item">
+    <div class="timeline-dot"></div><div class="timeline-head"><strong>${escapeHtml(entry.action)}</strong><span class="channel-tag">UI</span></div>
+    <div class="timeline-meta">${escapeHtml(entry.when)} · ${escapeHtml(entry.actor || 'You')}</div>
+    ${entry.detail ? `<div class="timeline-text">${escapeHtml(entry.detail)}</div>` : ''}
+  </div>`).join('') : '<p class="text-muted" data-audit-empty>No actions recorded yet.</p>';
+}
+
+function recordTrackerAudit(itemId, action, detail = '') {
+  const entries = readTrackerStorage(TRACKER_AUDIT_STORAGE, []);
+  const list = Array.isArray(entries) ? entries : [];
+  const now = new Date();
+  list.unshift({ itemId, action, detail, actor: 'You', timestamp: now.toISOString(), when: trackerTimestamp(now) });
+  trackerSave(TRACKER_AUDIT_STORAGE, list);
+  renderTrackerAudit(itemId);
+}
+window.recordTrackerAudit = recordTrackerAudit;
+
+function appendTrackerHandoverNote(itemId, text, actor = 'You', when = trackerTimestamp()) {
+  const notesByItem = readTrackerStorage(TRACKER_HANDOVER_STORAGE);
+  const notes = notesByItem[itemId] || [];
+  notes.unshift({ text, actor, when });
+  notesByItem[itemId] = notes;
+  trackerSave(TRACKER_HANDOVER_STORAGE, notesByItem);
+  const feed = document.querySelector('.handover-card .handover-feed');
+  if (feed) {
+    const item = document.createElement('div');
+    item.className = 'handover-item';
+    item.innerHTML = `<div class="card-avatar">${actor === 'You' ? 'Y' : escapeHtml(actor.slice(0, 1))}</div><div><div class="activity-header"><strong>${escapeHtml(actor)}</strong><span class="activity-time">${escapeHtml(when)}</span></div><div class="activity-message"></div></div>`;
+    item.querySelector('.activity-message').textContent = text;
+    feed.prepend(item);
+  }
+}
+window.appendTrackerHandoverNote = appendTrackerHandoverNote;
+
+function renderPersistedHandoverNotes(itemId) {
+  const notesByItem = readTrackerStorage(TRACKER_HANDOVER_STORAGE);
+  const notes = notesByItem[itemId] || [];
+  const feed = document.querySelector('.handover-card .handover-feed');
+  if (!feed) return;
+  notes.slice().reverse().forEach(note => {
+    const item = document.createElement('div');
+    item.className = 'handover-item';
+    item.innerHTML = `<div class="card-avatar">${note.actor === 'You' ? 'Y' : escapeHtml((note.actor || '?').slice(0, 1))}</div><div><div class="activity-header"><strong>${escapeHtml(note.actor || 'You')}</strong><span class="activity-time">${escapeHtml(note.when || '')}</span></div><div class="activity-message"></div></div>`;
+    item.querySelector('.activity-message').textContent = note.text;
+    feed.prepend(item);
+  });
+}
+
+function trackerModal() {
+  let overlay = document.getElementById('trackerMilestoneModal');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'trackerMilestoneModal';
+  overlay.innerHTML = `<form class="modal" role="dialog" aria-modal="true" aria-labelledby="trackerModalTitle">
+    <div class="modal-header"><h2 class="modal-title" id="trackerModalTitle"></h2><button type="button" class="modal-close" aria-label="Close">×</button></div>
+    <div class="modal-body"><p id="trackerModalPrompt"></p><div class="form-group"><label class="form-label" for="trackerActionNote" id="trackerActionNoteLabel"></label><textarea class="form-textarea" id="trackerActionNote" rows="4"></textarea><div class="info-line" id="trackerActionError" role="alert" hidden></div></div></div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-modal-cancel>Cancel</button><button type="submit" class="btn btn-primary" id="trackerActionConfirm"></button></div>
+  </form>`;
+  document.body.append(overlay);
+  overlay.addEventListener('click', event => { if (event.target === overlay || event.target.closest('[data-modal-cancel], .modal-close')) overlay.classList.remove('show'); });
+  return overlay;
+}
+
+function persistTrackerItem(item) {
+  const saved = readTrackerStorage(TRACKER_MILESTONE_STORAGE);
+  saved[item.id] = { milestoneActions: item.milestoneActions || {}, stage: item.stage };
+  trackerSave(TRACKER_MILESTONE_STORAGE, saved);
+}
+
+function refreshTrackerDetail(item) {
+  const s = trackerSla(item);
+  const card = document.querySelector(`[data-sla-item="${item.id}"]`);
+  if (card) renderMilestoneCard(card);
+  const stepper = document.querySelector('[data-tracker-stepper]');
+  if (stepper) {
+    stepper.innerHTML = s.active.map((st, n) => {
+      const cls = st.state === 'done' ? 'done' : st.state === 'current' ? ({ breached: 'current', risk: 'current-risk', ok: 'current-ok' }[s.health] || 'current') : '';
+      const label = st.state === 'done' ? onbFmtTrackerDate(st.doneAt) : st.state === 'skipped' ? 'Skipped' : st.state === 'current' ? `${fmtHours(s.remaining)} ${s.remaining < 0 ? 'overdue' : 'left'}` : '';
+      return `<li class="${cls}"><span class="stage-dot">${st.state === 'done' ? '✓' : n + 1}</span><span class="stage-name">${escapeHtml(st.m.label)}</span><span class="stage-date">${escapeHtml(label)}</span></li>`;
+    }).join('');
+  }
+  const status = document.querySelector('[data-tracker-current-status]');
+  if (status) status.textContent = s.cur ? s.cur.m.label : 'Complete';
+  const titleBadge = document.querySelector('[data-tracker-status-badge]');
+  if (titleBadge) titleBadge.textContent = s.cur ? s.cur.m.label : 'Complete';
+  const buttons = document.querySelectorAll('[data-tracker-milestone-action]');
+  buttons.forEach(button => { button.disabled = !s.cur; });
+}
+
+function onbFmtTrackerDate(date) {
+  return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function initTrackerDetailActions() {
+  const slaEl = document.querySelector('[data-sla-item]');
+  const item = slaEl && TRACKER_ITEMS.find(entry => entry.id === slaEl.dataset.slaItem);
+  if (!item) return;
+  if (slaEl.dataset.trackerActionsInitialized === 'true') return;
+  slaEl.dataset.trackerActionsInitialized = 'true';
+  const pageContent = slaEl.closest('.page-content');
+  if (!pageContent.querySelector('[data-tracker-audit-card]')) {
+    const auditCard = document.createElement('section');
+    auditCard.className = 'card mb-lg';
+    auditCard.dataset.trackerAuditCard = '';
+    auditCard.innerHTML = `<div class="card-header"><h3 class="card-title">Audit trail</h3></div><div class="card-body"><div class="timeline" data-tracker-audit></div></div>`;
+    pageContent.append(auditCard);
+  }
+  renderTrackerAudit(item.id);
+  renderPersistedHandoverNotes(item.id);
+  refreshTrackerDetail(item);
+
+  const overlay = trackerModal();
+  const contactModal = document.getElementById('contactClientAdminModal');
+  const contactButton = document.getElementById('contactClientAdmin');
+  if (contactModal && contactButton) {
+    contactButton.addEventListener('click', () => contactModal.classList.add('show'));
+    contactModal.addEventListener('click', event => {
+      if (event.target === contactModal || event.target.closest('[data-contact-modal-close]')) contactModal.classList.remove('show');
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') contactModal.classList.remove('show');
+    });
+  }
+  document.querySelectorAll('[data-tracker-milestone-action]').forEach(button => button.addEventListener('click', () => {
+    const s = trackerSla(item);
+    if (!s.cur) return;
+    const action = button.dataset.trackerMilestoneAction;
+    const title = action === 'complete' ? 'Complete current milestone' : 'Skip current milestone';
+    const modalForm = overlay.querySelector('form');
+    overlay.querySelector('#trackerModalTitle').textContent = title;
+    overlay.querySelector('#trackerModalPrompt').textContent = action === 'complete'
+      ? `Confirm that “${s.cur.m.label}” should be marked as completed? The SLA clock will start for the next milestone.`
+      : `Confirm that “${s.cur.m.label}” should be skipped? The SLA clock will start for the next milestone.`;
+    overlay.querySelector('#trackerActionNoteLabel').textContent = action === 'complete' ? 'Handover note (optional)' : 'Reason for skipping (required)';
+    const note = overlay.querySelector('#trackerActionNote');
+    note.value = '';
+    note.required = action === 'skip';
+    note.placeholder = action === 'complete' ? 'Add context for the next owner or shift…' : 'Explain why this milestone is being skipped…';
+    overlay.querySelector('#trackerActionError').hidden = true;
+    overlay.querySelector('#trackerActionConfirm').textContent = action === 'complete' ? 'Confirm completion' : 'Confirm skip';
+    overlay.classList.add('show');
+    note.focus();
+    modalForm.onsubmit = event => {
+      event.preventDefault();
+      const text = note.value.trim();
+      if (action === 'skip' && !text) {
+        note.focus();
+        overlay.querySelector('#trackerActionError').textContent = 'Enter a reason before skipping this milestone.';
+        overlay.querySelector('#trackerActionError').hidden = false;
+        return;
+      }
+      const current = trackerSla(item).cur;
+      if (!current) { overlay.classList.remove('show'); return; }
+      const at = new Date().toISOString();
+      item.milestoneActions ||= {};
+      item.milestoneActions[current.m.key] = { action, at, reason: text };
+      const next = trackerSla(item).cur;
+      item.stage = next ? next.m.label : 'Complete';
+      persistTrackerItem(item);
+      const actionLabel = action === 'complete' ? 'Milestone completed' : 'Milestone skipped';
+      recordTrackerAudit(item.id, actionLabel, `${current.m.label}${text ? ` · ${text}` : ''}`);
+      if (text) appendTrackerHandoverNote(item.id, action === 'skip' ? `Skipped ${current.m.label}: ${text}` : text);
+      overlay.classList.remove('show');
+      refreshTrackerDetail(item);
+    };
+  }));
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initTrackerDetailActions);
+else initTrackerDetailActions();

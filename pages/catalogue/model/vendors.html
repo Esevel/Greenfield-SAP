@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MacBook Pro 14&quot; M3 · Vendors - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    <main class="main-content">
+      <div id="header-container"></div>
+      <div class="page-content">
+        <div id="model-header-container" data-active-tab="vendors"></div>
+        <div class="toolbar-with-description">
+          <div class="toolbar-description"><p>Suppliers currently designated for this model’s country listings.</p></div>
+          <a href="/pages/vendors/list.html" class="btn btn-secondary">Manage vendors</a>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <thead><tr><th>Vendor</th><th>Countries supplied</th><th>Local listings</th><th>Vendor cost</th><th>Stock by country</th><th>Lead time</th></tr></thead>
+            <tbody id="modelVendorRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="modelVendorCount"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/markup-data.js"></script>
+  <script>
+    (function () {
+      const model = 'MacBook Pro 14" M3';
+      const listings = MODEL_VENDOR_LISTINGS[model].countries;
+      const vendorKeys = Object.fromEntries(Object.entries(SUPPLY_SUPPLIERS).map(([key, vendor]) => [vendor.name, key]));
+      const byVendor = new Map();
+      Object.entries(listings).forEach(([country, listing]) => {
+        if (!byVendor.has(listing.vendor)) byVendor.set(listing.vendor, []);
+        byVendor.get(listing.vendor).push({ country, listing });
+      });
+      const rows = [...byVendor.entries()].map(([name, supplies]) => {
+        const key = vendorKeys[name];
+        const vendor = SUPPLY_SUPPLIERS[key];
+        const countries = supplies.map(({ country }) => `<div><span class="flag">${WH_COUNTRIES[country]?.[0] || country}</span> ${WH_COUNTRIES[country]?.[1] || country}</div>`).join('');
+        const costsByCountry = supplies.map(({ country, listing }) => `<div>${country}: <strong>${listing.currency} ${listing.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>`).join('');
+        const stockByCountry = supplies.map(({ country, listing }) => `<div><span class="flag">${WH_COUNTRIES[country]?.[0] || country}</span> ${country}: <strong>${listing.stock}</strong> units</div>`).join('');
+        const leadTimes = supplies.map(({ country }) => {
+          const range = vendor?.leadTimes[country];
+          return range ? `${country}: ${range[0]}–${range[1]} days` : `${country}: —`;
+        }).join('<br>');
+        return `<tr>
+          <td><a class="link-sm" href="/pages/vendors/supplier.html?v=${encodeURIComponent(key || '')}">${escapeHtml(name)}</a></td>
+          <td>${countries}</td>
+          <td>${supplies.length}</td>
+          <td>${costsByCountry}</td>
+          <td>${stockByCountry}</td>
+          <td>${leadTimes}</td>
+        </tr>`;
+      });
+      document.getElementById('modelVendorRows').innerHTML = rows.join('') || '<tr><td colspan="6" class="text-muted sla-empty">No vendors are assigned to this model.</td></tr>';
+      document.getElementById('modelVendorCount').textContent = `${byVendor.size} vendors supplying this model · ${Object.keys(listings).length} country listings`;
+      const updateTabCount = () => {
+        const badge = document.getElementById('modelVendorsTabCount');
+        if (badge) badge.textContent = byVendor.size;
+      };
+      updateTabCount();
+      new MutationObserver(updateTabCount).observe(document.getElementById('model-header-container'), { childList: true });
+    })();
+  </script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

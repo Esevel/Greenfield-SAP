@@ -22,6 +22,7 @@ This document tracks all prototype screens in the Admin Portal.
 | `catalogue-markup` | `/pages/catalogue/markup.html` | Catalogue · Suggested adjustment: category × volume tier percentages for custom contracts; standard clients use retail. Negative adjustments to -100% permitted; client price floors at vendor cost. Click a cell → effective date and version history; country adjustments contribute to the suggestion | ✅ Complete |
 | `model-overview` | `/pages/catalogue/model/overview.html` | Model · Overview tab | ✅ Complete |
 | `model-country-listings` | `/pages/catalogue/model/country-listings.html` | Model · Country listings owns vendor SKU, vendor cost and our Retail price by country; vendor information panel, availability toggle; checkout estimate managed from vendor, warehouse, courier and calendar sources; no manual client selling-price override | ✅ Complete |
+| `model-vendors` | `/pages/catalogue/model/vendors.html` | Model · Vendors tab: suppliers designated across country listings, countries supplied, listing count, vendor costs, stock and supplier lead times | ✅ Complete |
 | `model-addons` | `/pages/catalogue/model/addons.html` | Model · Add-ons tab | ✅ Complete |
 | `model-client-catalogues` | `/pages/catalogue/model/client-catalogues.html` | Model · Client catalogues: vendor cost, Retail price, optional contract adjustment and Contract price. Clients without a contract adjustment use Retail; custom prices are calculated from retail and floored at vendor cost, converted to billing entity currency. Catalogue defaults are suggestions, not automatic; offer toggle is separate from client-hidden/not-offered status | ✅ Complete |
 | `model-inventory` | `/pages/catalogue/model/inventory.html` | Model · Inventory tab | ✅ Complete |
@@ -29,6 +30,7 @@ This document tracks all prototype screens in the Admin Portal.
 | `assets-list` | `/pages/assets/list.html` | Asset console with search, filter chips and asset table | ✅ Complete |
 | `assets-detail` | `/pages/assets/detail.html` | Asset detail: overview, internal SLA, client rules, timeline, documents, paired device | ✅ Complete |
 | `stock-clients` | `/pages/stock/list.html` | Stock · Clients (landing): one row per client with countries, in stock / reserved / available, hub vs site split, storage per month and Needs attention (below threshold, restock awaiting client, stored 90+ days); search, country filter | ✅ Complete |
+| `stock-warehouses` | `/pages/stock/warehouses.html` | Stock · Warehouses: warehouse list with in-stock, reserved and available totals; expand a warehouse for quantities grouped by client and model; warehouse and held-unit links open this view focused on the selected warehouse | ✅ Complete |
 | `stock-client` | `/pages/stock/client.html?c=` | Stock › Client: tiles (in stock, available, where, storage), grouped by country with threshold chips (edit / add, restock state), lines with new/used + incoming PO, expandable devices (condition, grade, days stored, fee, suggested Keep / Redeploy / Dispose with request links); threshold + restock panel | ✅ Complete |
 | `stock-restock` | `/pages/stock/restock.html` | Stock · Restock queue: one proposal per threshold below minimum; status filter (To send / Awaiting client / Approved / Declined-dismissed / All), client + country filters, Review panel to send to client or dismiss | ✅ Complete |
 | `stock-receiving` | `/pages/stock/receiving.html` | Stock · Receiving: scan / type serial, queue To inspect / Expected / Received (+ hub filter); intake panel with condition, grade A–D, notes, photos (min 2); receiving completes the work order step, posts the retrieval charge for that device (paying entity, FX) and starts storage billing | ✅ Complete |
@@ -117,10 +119,10 @@ Home (/)
 ├── Catalogue (Models | Default markup)
 │   ├── List (/pages/catalogue/list.html) · Default markup (/pages/catalogue/markup.html)
 │   └── Model (/pages/catalogue/model/*.html)
-│       ├── Overview · Country listings · Add-ons
+│       ├── Overview · Country listings · Vendors · Add-ons
 │       └── Client catalogues · Inventory · Activity
 ├── Assets (/pages/assets/list.html) → Detail
-├── Stock: Clients → Client · Restock queue · Receiving · Storage fees
+├── Stock: Clients · Warehouses → Client · Restock queue · Receiving · Storage fees
 ├── Tracker: All by risk · Orders · Onboarding · Offboarding · Repairs (Board | List | Quotes) · Redeployments · Storage · Disposal · Support
 │   ├── Sync inbox (/pages/tracker/sync-inbox.html)
 │   └── Work orders / detail pages (work-order.html?wo= with Billing card), Raise request

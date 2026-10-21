@@ -26,7 +26,7 @@
           <div class="filter-chips stock-filters">
             <div class="search-bar">
               <span class="search-icon">🔍</span>
-              <input type="text" class="search-input" id="dSearch" placeholder="Search name, email or role..." aria-label="Search people">
+              <input type="search" class="search-input" id="dSearch" placeholder="Search name, email, role or department..." aria-label="Search people by name, email, role or department">
             </div>
             <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
             <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
@@ -52,6 +52,7 @@
           </table>
         </div>
         <div class="table-footer-count" id="dCount"></div>
+        <div class="people-pagination" id="dPagination"></div>
       </div>
     </main>
   </div>
@@ -62,6 +63,7 @@
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/stock-data.js"></script>
   <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/people-list.js"></script>
   <script src="/scripts/people-header.js"></script>
   <script>
     (function () {
@@ -69,6 +71,7 @@
       $('fClient').innerHTML = '<option value="">All</option>' + [...new Set(PEOPLE.map(p => p.client))].map(id => `<option value="${id}">${peopleClientName(id)}</option>`).join('');
       $('fCountry').innerHTML = '<option value="">All</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][1]}</option>`).join('');
       $('fState').innerHTML = '<option value="">All</option>' + Object.entries(PERSON_STATE).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      let page = 1;
 
       function stateCell(p) {
         const [label, cls] = PERSON_STATE[p.state];
@@ -78,12 +81,14 @@
 
       function render() {
         const q = $('dSearch').value.trim().toLowerCase();
-        const rows = PEOPLE.filter(p => (!q || `${p.name} ${p.email} ${p.role}`.toLowerCase().includes(q))
+        const rows = PEOPLE.filter(p => peopleMatchesSearch(p, q)
           && (!$('fClient').value || p.client === $('fClient').value)
           && (!$('fCountry').value || p.cc === $('fCountry').value)
           && (!$('fState').value || p.state === $('fState').value))
           .sort((a, b) => a.name.localeCompare(b.name));
-        $('dRows').innerHTML = rows.map(p => `<tr data-id="${p.id}" tabindex="0">
+        const pagination = peoplePageSlice(rows, page);
+        page = pagination.page;
+        $('dRows').innerHTML = pagination.rows.map(p => `<tr data-id="${p.id}" tabindex="0">
             <td><div class="jn-name">${escapeHtml(p.name)}</div><div class="stock-sub">${escapeHtml(p.email)}</div></td>
             <td>${peopleClientName(p.client)}</td>
             <td>${escapeHtml(p.role)}</td>
@@ -93,14 +98,15 @@
             <td>${stateCell(p)}</td>
             <td class="text-muted">${escapeHtml(p.source)}</td>
           </tr>`).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No people match</td></tr>';
-        $('dCount').textContent = `${rows.length} of ${PEOPLE.length} people`;
+        $('dCount').textContent = `${rows.length} matching people of ${PEOPLE.length} total`;
+        renderPeoplePagination($('dPagination'), pagination, nextPage => { page = nextPage; render(); });
       }
 
       const go = row => { window.location.href = `/pages/people/person.html?id=${row.dataset.id}`; };
       $('dRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
       $('dRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
-      ['fClient', 'fCountry', 'fState'].forEach(id => $(id).addEventListener('change', render));
-      $('dSearch').addEventListener('input', render);
+      ['fClient', 'fCountry', 'fState'].forEach(id => $(id).addEventListener('change', () => { page = 1; render(); }));
+      $('dSearch').addEventListener('input', () => { page = 1; render(); });
       render();
     })();
   </script>
