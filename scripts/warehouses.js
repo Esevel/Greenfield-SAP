@@ -20,7 +20,7 @@ function warehouseRow(w) {
       <td>${w.type === 'client' ? escapeHtml(w.client) : '<span class="text-muted">—</span>'}</td>
       <td><span class="flag">${flag}</span> ${countryName}</td>
       <td>${assignedCell(w)}</td>
-      <td class="num">${w.units.toLocaleString()}</td>
+      <td class="num"><a class="link-sm" href="/pages/stock/warehouses.html?warehouse=${w.id}" aria-label="View ${w.units} units held at ${escapeHtml(w.name)}">${w.units.toLocaleString()}</a></td>
       <td>${active
         ? '<span class="badge badge-success badge-sm">Active</span>'
         : '<span class="badge badge-muted badge-sm">Decommissioned</span>'}</td>
@@ -42,11 +42,11 @@ function hubStockHtml(w) {
   const lines = STOCK_LINES.filter(l => l.loc === w.id && l.onHand);
   if (!lines.length) return '<div class="text-muted">No stock recorded here.</div>';
   const total = lines.reduce((s, l) => s + l.onHand, 0);
-  const rows = lines.map(l => `<tr>
+    const rows = lines.map(l => `<tr>
       <td><a href="/pages/stock/client.html?c=${l.client}&country=${w.country}" class="link-sm">${escapeHtml(stockClient(l.client).name)}</a></td>
       <td>${STOCK_MODELS[l.model].name}</td>
-      <td class="num">${l.onHand}</td>
-      <td class="num">${stockAvailable(l)}</td>
+      <td class="num"><a href="/pages/stock/warehouses.html?warehouse=${w.id}" class="link-sm">${l.onHand}</a></td>
+      <td class="num"><a href="/pages/stock/warehouses.html?warehouse=${w.id}" class="link-sm">${stockAvailable(l)}</a></td>
     </tr>`).join('');
   const fees = w.type === 'esevel' ? storageByCurrency(lines) : {};
   return `<table class="device-list-table">

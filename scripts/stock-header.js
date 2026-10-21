@@ -5,6 +5,7 @@ function renderStockHeader() {
   if (!el) return;
   const views = [
     ['clients', 'Clients', '/pages/stock/list.html'],
+    ['warehouses', 'Warehouses', '/pages/stock/warehouses.html'],
     ['restock', 'Restock queue', '/pages/stock/restock.html'],
     ['receiving', 'Receiving', '/pages/stock/receiving.html'],
     ['fees', 'Storage fees', '/pages/stock/fees.html']
