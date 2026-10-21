@@ -22,6 +22,7 @@ This document tracks all prototype screens in the Admin Portal.
 | `catalogue-markup` | `/pages/catalogue/markup.html` | Catalogue · Suggested adjustment: category × volume tier percentages for custom contracts; standard clients use retail. Negative adjustments to -100% permitted; client price floors at vendor cost. Click a cell → effective date and version history; country adjustments contribute to the suggestion | ✅ Complete |
 | `model-overview` | `/pages/catalogue/model/overview.html` | Model · Overview tab | ✅ Complete |
 | `model-country-listings` | `/pages/catalogue/model/country-listings.html` | Model · Country listings owns vendor SKU, vendor cost and our Retail price by country; vendor information panel, availability toggle; checkout estimate managed from vendor, warehouse, courier and calendar sources; no manual client selling-price override | ✅ Complete |
+| `model-vendors` | `/pages/catalogue/model/vendors.html` | Model · Vendors tab: suppliers designated across country listings, countries supplied, listing count, vendor costs, stock and supplier lead times | ✅ Complete |
 | `model-addons` | `/pages/catalogue/model/addons.html` | Model · Add-ons tab | ✅ Complete |
 | `model-client-catalogues` | `/pages/catalogue/model/client-catalogues.html` | Model · Client catalogues: vendor cost, Retail price, optional contract adjustment and Contract price. Clients without a contract adjustment use Retail; custom prices are calculated from retail and floored at vendor cost, converted to billing entity currency. Catalogue defaults are suggestions, not automatic; offer toggle is separate from client-hidden/not-offered status | ✅ Complete |
 | `model-inventory` | `/pages/catalogue/model/inventory.html` | Model · Inventory tab | ✅ Complete |
@@ -117,7 +118,7 @@ Home (/)
 ├── Catalogue (Models | Default markup)
 │   ├── List (/pages/catalogue/list.html) · Default markup (/pages/catalogue/markup.html)
 │   └── Model (/pages/catalogue/model/*.html)
-│       ├── Overview · Country listings · Add-ons
+│       ├── Overview · Country listings · Vendors · Add-ons
 │       └── Client catalogues · Inventory · Activity
 ├── Assets (/pages/assets/list.html) → Detail
 ├── Stock: Clients → Client · Restock queue · Receiving · Storage fees
