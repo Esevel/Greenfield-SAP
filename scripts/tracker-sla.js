@@ -87,7 +87,7 @@ const TRACKER_ITEMS = [
     stage: 'QC and wipe', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Wipe certificate generated, QC bench slot tomorrow AM'], href: '/pages/tracker/redeployments.html' },
   { id: 'ORD-30455', client: 'acme', type: 'stock', cc: 'SG', start: '2026-10-16T07:00', done: ['2026-10-16T08:00'],
     stage: 'Picking', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Allocated from Singapore Hub (C02WR9T6MD6T)'] },
-  { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
+  { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', assetSerials: ['PF3QW8ZN'], start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
     stage: 'In Repair', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Booked with FixPoint London, drop-off Thursday'], href: '/pages/tracker/work-order.html' },
   { id: 'ONB-1190', client: 'techglobal', type: 'onboarding', cc: 'SG', start: '2026-10-13T09:00', done: ['2026-10-13T15:00', '2026-10-15T10:00', '2026-10-16T09:00'],
     stage: 'Shipping kit', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Kit packed, courier label created for Monday'],
