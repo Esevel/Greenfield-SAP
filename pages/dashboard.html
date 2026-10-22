@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/dashboard.css">
 </head>
 <body>
   <div class="app-container">
@@ -14,19 +15,41 @@
       <div id="header-container"></div>
       
       <div class="page-content">
-        <div class="page-header">
-          <h1 class="page-title">Dashboard</h1>
+        <div class="page-header dashboard-header">
+          <div>
+            <p class="dashboard-date" id="dashboard-date"></p>
+            <h1 class="page-title" id="dashboard-greeting">Dashboard</h1>
+          </div>
+          <div class="dashboard-positions" id="dashboard-positions"></div>
         </div>
         
-        <div class="empty-state">
-          <p class="text-muted">Not available yet</p>
-        </div>
+        <div id="dashboard-root"></div>
       </div>
     </main>
   </div>
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
+  <script src="/scripts/dashboard-widgets.js"></script>
+  <script src="/scripts/role-switcher.js"></script>
   <script src="/scripts/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = window.RBAC.getCurrentUser();
+
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('dashboard-date').textContent = new Date()
+        .toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      document.getElementById('dashboard-greeting').textContent = `${greeting}, ${user.name.split(' ')[0]}`;
+      document.getElementById('dashboard-positions').innerHTML = user.positions
+        .map(p => `<span class="position-chip" data-level="${p.level}">${p.label}</span>`)
+        .join('');
+
+      window.DashboardWidgets.render(document.getElementById('dashboard-root'), user);
+    });
+  </script>
 </body>
 </html>

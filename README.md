@@ -38,15 +38,26 @@ The prototype will open at `http://localhost:3000`
 │   └── header.html         # Shared header markup
 └── docs/
     ├── SCREENS.md          # Screen inventory
-    └── AGENTS.md           # Project conventions
+    ├── AGENTS.md           # Project conventions
+    ├── ROLES.md            # Role-based access (RBAC) model and API
+    └── ROLE-EXAMPLES.md    # Who sees what, per person
 ```
 
 ## Available Screens
 
 - **Home** (`/`) - Central prototype directory
-- **Dashboard** (`/pages/dashboard.html`) - Main overview with stats and activity
+- **Dashboard** (`/pages/dashboard.html`) - Main overview with stats and activity (with role-based views)
 - **User List** (`/pages/users/list.html`) - Searchable user directory with filters
 - **User Detail** (`/pages/users/detail.html`) - Individual user profile and edit form
+
+## Role-Based Access
+
+Access is derived from the org chart in `scripts/org-data.js`: put a person in a team and their capabilities, level (member / team lead / function lead / head) and scope follow. Double hats are additive.
+
+- The dashboard shows metrics and action items based on the current person's access
+- **Viewing as** (top-right of the header, localhost only) switches between everyone in the org chart
+
+See [docs/ROLES.md](docs/ROLES.md) for the model and API, and [docs/ROLE-EXAMPLES.md](docs/ROLE-EXAMPLES.md) for who sees what.
 
 ## Features
 

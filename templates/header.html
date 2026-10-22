@@ -11,6 +11,16 @@
       <input type="text" class="search-input" placeholder="Search...">
     </div>
     
+    <!-- Demo only: populated by role-switcher.js -->
+    <div class="dropdown" id="role-switcher-header" hidden>
+      <button class="dropdown-toggle role-switcher-toggle" id="roleSwitcherDropdown" title="Demo: view the portal as another person">
+        <span class="role-switcher-prefix">Viewing as</span>
+        <span id="current-user-name"></span>
+        <span>▼</span>
+      </button>
+      <div class="dropdown-menu role-switcher-menu" id="roleSwitcherMenu"></div>
+    </div>
+    
     <div class="dropdown">
       <button class="dropdown-toggle" id="userDropdown">
         <span>Admin User</span>
