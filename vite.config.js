@@ -20,6 +20,8 @@ const htmlFiles = [
   ...collectFiles(resolve(projectRoot, 'templates'), '.html')
 ];
 const scriptFiles = collectFiles(resolve(projectRoot, 'scripts'), '.js');
+// Fetched at runtime, so Vite can't discover them from HTML
+const staticAssetFiles = collectFiles(resolve(projectRoot, 'assets'), '.svg');
 
 const input = Object.fromEntries(htmlFiles.map((filePath) => [
   relative(projectRoot, filePath)
@@ -37,7 +39,7 @@ export default defineConfig({
       return html.replace('</head>', '  <script src="/scripts/auth.js"></script>\n</head>');
     },
     generateBundle() {
-      for (const filePath of scriptFiles) {
+      for (const filePath of [...scriptFiles, ...staticAssetFiles]) {
         this.emitFile({
           type: 'asset',
           fileName: relative(projectRoot, filePath).split(sep).join('/'),
