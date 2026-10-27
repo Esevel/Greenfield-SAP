@@ -85,7 +85,7 @@ function initLedger() {
       row('Document', e.doc ? `📄 ${escapeHtml(e.doc)}` : '<span class="text-error">None</span>'),
       e.source ? row('Posted by', escapeHtml(e.source)) : '',
       e.dupBlocked ? row('Duplicates', `<span class="text-error">${e.dupBlocked.length} blocked</span>${e.dupBlocked.map(d => `<div class="stock-sub">${d.at} · ${escapeHtml(d.source)}</div>`).join('')}`) : '',
-      /^[A-Z]{3}-\d+$/.test(e.wo) ? `<div class="info-row ledger-info"><span class="info-label"></span><span class="info-value"><a href="${e.wo.startsWith('ORD-') ? `/pages/tracker/order.html?id=${encodeURIComponent(e.wo)}` : `/pages/tracker/work-order.html?wo=${encodeURIComponent(e.wo)}`}" class="link-sm">${e.wo.startsWith('ORD-') ? 'Open order' : 'Open work order'}</a></span></div>` : ''
+      /^[A-Z]{3}-\d+$/.test(e.wo) ? `<div class="info-row ledger-info"><span class="info-label"></span><span class="info-value"><a href="${e.wo.startsWith('ORD-') ? `/pages/orders/order.html?id=${encodeURIComponent(e.wo)}` : `/pages/services/work-order.html?wo=${encodeURIComponent(e.wo)}`}" class="link-sm">${e.wo.startsWith('ORD-') ? 'Open order' : 'Open work order'}</a></span></div>` : ''
     ].join('');
     $('lgBilling').innerHTML = [
       e.basis && e.basis.discount ? row('Discount', `${escapeHtml(e.basis.discount)}<div class="stock-sub"><a href="/pages/clients/detail.html?c=${e.client}#sec-discounts" class="link-sm">Contract term</a></div>`) : '',

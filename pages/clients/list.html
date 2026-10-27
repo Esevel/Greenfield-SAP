@@ -20,7 +20,10 @@
       
       <div class="page-content">
         <div class="page-header">
-          <h1 class="page-title">Clients</h1>
+          <div class="flex-between">
+            <h1 class="page-title">Clients</h1>
+            <a href="/pages/clients/new.html" class="btn btn-primary">New client</a>
+          </div>
           <p class="page-description">Each client's contract: plan, billing entities, currency, fees and caps. Open a client to see or amend its terms.</p>
         </div>
         
@@ -29,7 +32,7 @@
           <a href="/pages/clients/caps.html" class="tab-link">Procurement caps</a>
         </nav>
         
-        <div class="inventory-summary stock-summary stock-summary-4" id="clTiles"></div>
+        <div class="inventory-summary stock-summary stock-summary-5" id="clTiles"></div>
         
         <div class="asset-toolbar">
           <div class="filter-chips stock-filters">
@@ -87,8 +90,9 @@
 
         const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
         const count = s => all.filter(r => r.k.status === s).length;
-        const renewSoon = all.filter(r => r.k.status !== 'expired' && r.k.end <= '2027-01-31').length;
+        const renewSoon = all.filter(r => r.k.status !== 'expired' && r.k.status !== 'onboarding' && r.k.end <= '2027-01-31').length;
         $('clTiles').innerHTML = [
+          tile('Onboarding', count('onboarding'), 'New clients, first contract not yet accepted', count('onboarding') ? 'summary-tile-alert' : ''),
           tile('Active', count('active')),
           tile('Amendment pending', count('amendment'), 'Waiting for client admin acceptance', count('amendment') ? 'summary-tile-alert' : ''),
           tile('Expired', count('expired'), 'Billing continues on last accepted terms', count('expired') ? 'summary-tile-breached' : ''),
@@ -98,10 +102,21 @@
         $('clRows').innerHTML = rows.map(({ c, k }) => {
           const v = activeVersion(k);
           const p = pendingVersion(k);
+          if (!v) {
+            return `<tr data-id="${c.id}" tabindex="0">
+            <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}</span></div></td>
+            <td>${k.tier}</td>
+            <td>—<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : 'awaiting acceptance'}</div></td>
+            <td>${fmt(k.start)}<div class="stock-sub">Proposed start</div></td>
+            <td><span class="badge ${CONTRACT_STATUS.onboarding[1]} badge-sm">${CONTRACT_STATUS.onboarding[0]}</span></td>
+            <td>${contractCurrencies(k.terms).map(c => `<span class="cur-pill">${c}</span>`).join(' ')}</td>
+            <td>${k.terms.entities.length} <span class="text-muted">· ${k.terms.entities.map(e => `${WH_COUNTRIES[e.country][0]} ${e.currency}`).join(' · ')}</span></td>
+          </tr>`;
+          }
           const [sLabel, sCls] = CONTRACT_STATUS[k.status];
           const ents = k.terms.entities;
           return `<tr data-id="${c.id}" tabindex="0">
-            <td><div class="client-cell"><div class="client-logo">${c.logo}</div><span>${escapeHtml(c.name)}</span></div></td>
+            <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}</span></div></td>
             <td>${k.tier}</td>
             <td>v${v.v}${p ? `<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : 'awaiting acceptance'}</div>` : ''}</td>
             <td>${fmt(v.effective)}<div class="stock-sub">Term ends ${fmt(k.end)}</div></td>

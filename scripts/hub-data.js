@@ -50,6 +50,19 @@ const HUB_ASSIGNMENTS = {
   brightpath: { SG: 1, MY: 'none', AU: 3 }
 };
 
+// Prototype only: clients added through New client are kept for the browser session (with their hub per country)
+const NEW_CLIENTS_KEY = 'sap-new-clients-v1';
+function saveNewClients() {
+  sessionStorage.setItem(NEW_CLIENTS_KEY, JSON.stringify(WH_CLIENTS.filter(c => c.isNew).map(c => ({ ...c, hubs: HUB_ASSIGNMENTS[c.id] }))));
+}
+try {
+  JSON.parse(sessionStorage.getItem(NEW_CLIENTS_KEY) || '[]').forEach(({ hubs, ...c }) => {
+    if (WH_CLIENTS.some(x => x.id === c.id)) return;
+    WH_CLIENTS.push(c);
+    HUB_ASSIGNMENTS[c.id] = hubs || {};
+  });
+} catch (e) { sessionStorage.removeItem(NEW_CLIENTS_KEY); }
+
 function clientsAssignedTo(hubId) {
   return WH_CLIENTS
     .map(c => ({ client: c, countries: Object.keys(HUB_ASSIGNMENTS[c.id]).filter(cc => HUB_ASSIGNMENTS[c.id][cc] === hubId) }))

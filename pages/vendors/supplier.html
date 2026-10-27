@@ -111,7 +111,7 @@
             <td><span class="flag">${WH_COUNTRIES[cc][0]}</span> ${WH_COUNTRIES[cc][1]}</td>
             <td><span class="${valid(r) ? '' : 'lm-invalid'}"><input type="number" class="form-input lm-input" data-cc="${cc}" data-i="0" value="${r[0]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} minimum"> – <input type="number" class="form-input lm-input" data-cc="${cc}" data-i="1" value="${r[1]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} maximum"></span></td>
             <td class="${slow ? 'rate-slow' : ''}">${actual.toFixed(1)}d${slow ? ' ⚠ slower than lead time' : ''}</td>
-            <td>${c.length ? c.map(o => `<a href="/pages/tracker/order.html?id=${o.id}" class="link-sm">${o.id}</a>`).join(', ') : '<span class="text-muted">—</span>'}</td>
+            <td>${c.length ? c.map(o => `<a href="/pages/orders/order.html?id=${o.id}" class="link-sm">${o.id}</a>`).join(', ') : '<span class="text-muted">—</span>'}</td>
           </tr>`;
         }).join('');
         $('supSave').disabled = !dirty() || Object.values(draft).some(r => !valid(r));

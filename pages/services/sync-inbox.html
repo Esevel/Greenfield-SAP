@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Sync inbox - Admin Portal</title>
+  <title>Sync inbox · Services - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
@@ -21,7 +21,7 @@
       
       <div class="page-content">
         <nav class="breadcrumbs-custom">
-          <a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a>
+          <a href="/pages/services/onboarding.html" class="breadcrumb-link">Services</a>
           <span class="breadcrumb-separator">›</span>
           <span class="breadcrumb-current">Sync inbox</span>
         </nav>
@@ -146,7 +146,7 @@
             <td class="asset-serial">${escapeHtml(e.ref)}</td>
             <td>${escapeHtml(e.recipient)} <span class="flag">${WH_COUNTRIES[e.cc][0]}</span></td>
             <td>${e.doc ? `📄 ${escapeHtml(e.doc)}` : '<span class="text-muted">Event only</span>'}</td>
-            <td>${e.wo ? `<a href="/pages/tracker/work-order.html" class="link-sm">${e.wo}</a><div class="stock-sub">${escapeHtml(e.step)}${e.state === 'suggested' ? ' · suggested' : ''}</div>` : '<span class="text-muted">—</span>'}</td>
+            <td>${e.wo ? `<a href="/pages/services/work-order.html" class="link-sm">${e.wo}</a><div class="stock-sub">${escapeHtml(e.step)}${e.state === 'suggested' ? ' · suggested' : ''}</div>` : '<span class="text-muted">—</span>'}</td>
             <td><span class="badge ${c} badge-sm">${l}</span>${e.why && e.state !== 'matched' ? `<div class="stock-sub">${escapeHtml(e.why)}</div>` : ''}${e.state === 'matched' ? chargeSub(e) : ''}</td>
           </tr>`;
         }).join('') || `<tr><td colspan="7" class="text-muted sla-empty">${state === 'todo' ? 'Inbox clear. Every courier document is matched to a work order.' : 'Nothing here'}</td></tr>`;
@@ -183,7 +183,7 @@
         const done = e.state === 'matched' || e.state === 'ignored';
         $('siMatchSection').hidden = done;
         $('siDone').hidden = !done;
-        $('siDone').innerHTML = e.state === 'matched' ? `✓ Matched to <a href="/pages/tracker/work-order.html?wo=${e.wo}">${e.wo}</a> · ${escapeHtml(e.step)} completed` : e.state === 'ignored' ? `Ignored · ${escapeHtml(e.why || '')}` : '';
+        $('siDone').innerHTML = e.state === 'matched' ? `✓ Matched to <a href="/pages/services/work-order.html?wo=${e.wo}">${e.wo}</a> · ${escapeHtml(e.step)} completed` : e.state === 'ignored' ? `Ignored · ${escapeHtml(e.why || '')}` : '';
         $('siBillSection').hidden = e.state !== 'matched';
         $('siUnmatchSection').hidden = e.state !== 'matched';
         if (e.state === 'matched') $('siCharges').innerHTML = chargeList(e);

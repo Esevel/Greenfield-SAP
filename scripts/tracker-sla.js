@@ -16,11 +16,9 @@ const TRACKER_TYPE_ICON = {
 // lines: order lines for the per-line vendor milestone; it completes when the last line in the kit is received.
 const TRACKER_ITEMS = [
   { id: 'OFF-2055', client: 'digital', type: 'offboarding', cc: 'GB', start: '2026-10-10T17:22', done: ['2026-10-12T09:00'],
-    stage: 'Scheduled', owner: ['Q', 'Qonit'], blocker: 'Awaiting courier', note: ['Qonit', 'DHL missed second pickup window, escalated to account manager'], href: '/pages/tracker/offboarding-detail.html' },
-  { id: 'SUP-5521', client: 'acme', type: 'support', cc: 'SG', start: '2026-10-15T21:10', done: ['2026-10-15T21:52'],
-    stage: 'In Progress / With Tech', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Profile reissued via Jamf. If it still drops, escalate to Acme network team'], href: '/pages/tracker/support-detail.html' },
+    stage: 'Scheduled', owner: ['Q', 'Qonit'], blocker: 'Awaiting courier', note: ['Qonit', 'DHL missed second pickup window, escalated to account manager'], href: '/pages/services/offboarding-detail.html' },
   { id: 'REP-0871', client: 'techglobal', type: 'repair', cc: 'SG', start: '2026-10-09T14:00', done: ['2026-10-09T16:00', '2026-10-11T19:00'],
-    stage: 'Awaiting part', owner: ['JL', 'Jia Ling'], blocker: 'Awaiting part', note: ['Jia Ling', 'Logic board back-ordered, vendor ETA Friday. Loaner sent.'], href: '/pages/tracker/work-order.html' },
+    stage: 'Awaiting part', owner: ['JL', 'Jia Ling'], blocker: 'Awaiting part', note: ['Jia Ling', 'Logic board back-ordered, vendor ETA Friday. Loaner sent.'], href: '/pages/services/work-order.html' },
   { id: 'ONB-1182', client: 'mediaworks', type: 'onboarding', cc: 'SG', start: '2026-10-14T15:00', done: ['2026-10-14T18:00'],
     stage: 'Arriving at hub 21 Oct', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Client approved the 16" upgrade; vendor shipping to Singapore Hub'],
     lines: [
@@ -67,25 +65,25 @@ const TRACKER_ITEMS = [
     stage: 'Awaiting employee sign-off', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Delivered to reception this morning'],
     onb: { employee: 'Mei Lin Tan', role: 'Content Producer', startDate: '2026-10-20', pkg: 'Designer Pro', address: '9 Raffles Blvd, Singapore 039596', devices: ['MacBook Pro 16" M3 Max', 'Apple Magic Keyboard'] } },
   { id: 'OFF-2044', client: 'techglobal', type: 'offboarding', cc: 'US', start: '2026-10-09T10:00', done: ['2026-10-10T15:00', '2026-10-14T03:00'],
-    stage: 'In Transit', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Tracking stalled at Memphis hub, opened trace with FedEx'], href: '/pages/tracker/offboarding-detail.html' },
+    stage: 'In Transit', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Tracking stalled at Memphis hub, opened trace with FedEx'], href: '/pages/services/offboarding-detail.html' },
   { id: 'RED-0318', client: 'techglobal', type: 'redeploy', cc: 'US', start: '2026-10-13T19:00', done: [],
-    stage: 'Collection booked', owner: ['JL', 'Jia Ling'], blocker: 'Austin IT room closed until 17 Oct', note: ['Jia Ling', 'Sarah Kim confirmed the room reopens Friday; FedEx rebooked for 09:00'], href: '/pages/tracker/redeployments.html' },
+    stage: 'Collection booked', owner: ['JL', 'Jia Ling'], blocker: 'Austin IT room closed until 17 Oct', note: ['Jia Ling', 'Sarah Kim confirmed the room reopens Friday; FedEx rebooked for 09:00'], href: '/pages/services/redeployments.html' },
   { id: 'DSP-0207', client: 'finance', type: 'disposal', cc: 'SG', start: '2026-10-08T10:00', done: ['2026-10-10T16:00'],
-    stage: 'Data wipe', owner: ['AI', 'Aisha'], blocker: 'Wipe failed on 1 of 4 drives', note: ['Aisha', 'Re-running NIST wipe on the failed SSD, physical shred if it fails again'], href: '/pages/tracker/disposal.html' },
+    stage: 'Data wipe', owner: ['AI', 'Aisha'], blocker: 'Wipe failed on 1 of 4 drives', note: ['Aisha', 'Re-running NIST wipe on the failed SSD, physical shred if it fails again'], href: '/pages/services/disposal.html' },
   { id: 'STO-0142', client: 'cloud', type: 'storage', cc: 'US', start: '2026-10-14T09:00', done: [],
-    stage: 'In transit', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', '3 monitors from Denver office, FedEx ETA 18 Oct'], href: '/pages/tracker/storage.html' },
+    stage: 'In transit', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', '3 monitors from Denver office, FedEx ETA 18 Oct'], href: '/pages/services/storage.html' },
   { id: 'RED-0311', client: 'mediaworks', type: 'redeploy', cc: 'SG', start: '2026-10-14T21:00', done: ['2026-10-14T21:00'], skipCollection: true,
-    stage: 'QC and wipe', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Wipe certificate generated, QC bench slot tomorrow AM'], href: '/pages/tracker/redeployments.html' },
+    stage: 'QC and wipe', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Wipe certificate generated, QC bench slot tomorrow AM'], href: '/pages/services/redeployments.html' },
   { id: 'ORD-30455', client: 'acme', type: 'stock', cc: 'SG', start: '2026-10-16T07:00', done: ['2026-10-16T08:00'],
     stage: 'Picking', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Allocated from Singapore Hub (C02WR9T6MD6T)'] },
   { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', assetSerials: ['PF3QW8ZN'], start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
-    stage: 'In Repair', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Booked with FixPoint London, drop-off Thursday'], href: '/pages/tracker/work-order.html' },
+    stage: 'In Repair', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Booked with FixPoint London, drop-off Thursday'], href: '/pages/services/work-order.html' },
   { id: 'ONB-1190', client: 'techglobal', type: 'onboarding', cc: 'SG', start: '2026-10-13T09:00', done: ['2026-10-13T15:00', '2026-10-15T10:00', '2026-10-16T09:00'],
     stage: 'Shipping kit', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Kit packed, courier label created for Monday'],
     onb: { employee: 'Hannah Lee', role: 'Sales Manager', startDate: '2026-10-20', pkg: 'Sales Standard', address: '3 Temasek Ave, #18-00, Singapore 039190', devices: ['MacBook Air 13" M2', 'Jabra Evolve2 65'] } }
 ];
 
-TRACKER_ITEMS.filter(i => i.onb).forEach(i => { i.href = `/pages/tracker/onboarding-detail.html?id=${i.id}`; });
+TRACKER_ITEMS.filter(i => i.onb).forEach(i => { i.href = `/pages/services/onboarding-detail.html?id=${i.id}`; });
 // Open purchase orders join the cross-service view when the Orders module is loaded (orders-data.js + orders-engine.js)
 if (typeof orderTrackerItems === 'function') TRACKER_ITEMS.push(...orderTrackerItems());
 

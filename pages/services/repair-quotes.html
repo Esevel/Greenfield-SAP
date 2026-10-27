@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repairs · Quotes - Admin Portal</title>
+  <title>Services · Repairs quotes - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/support.css">
   <link rel="stylesheet" href="/styles/stock.css">
   <link rel="stylesheet" href="/styles/billing.css">
 </head>
@@ -20,12 +21,12 @@
       <div id="header-container"></div>
       
       <div class="page-content">
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Repairs</h1>
-          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
-        </div>
-        
-        <nav id="trackerTabs" data-active="repairs"></nav>
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/services/onboarding.html" class="breadcrumb-link">Services</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Repairs</span>
+        </nav>
+        <div id="servicesHeader" data-active="repairs"></div>
         
         <div class="tracker-controls">
           <div class="asset-toolbar">
@@ -40,9 +41,9 @@
             </div>
           </div>
           <nav class="segmented-control view-toggle">
-            <a href="/pages/tracker/repairs.html" class="segment-button">Board</a>
-            <a href="/pages/tracker/repairs-list.html" class="segment-button">List</a>
-            <a href="/pages/tracker/repair-quotes.html" class="segment-button active">Quotes <span class="tab-count tab-count-alert" id="rqBadge"></span></a>
+            <a href="/pages/services/repairs.html" class="segment-button">Board</a>
+            <a href="/pages/services/repairs-list.html" class="segment-button">List</a>
+            <a href="/pages/services/repair-quotes.html" class="segment-button active">Quotes <span class="tab-count tab-count-alert" id="rqBadge"></span></a>
           </nav>
         </div>
         
@@ -61,7 +62,7 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/services-tabs.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/billing-data.js"></script>
   <script src="/scripts/repair-quote-data.js"></script>
@@ -101,7 +102,7 @@
         }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No quotes here</td></tr>';
         $('rqCount').textContent = `${rows.length} shown · Quotes expire after ${QUOTE_VALID_DAYS} days without a decision. Clients decide in their portal: repair, replace or write off.`;
       }
-      const go = r => { window.location.href = `/pages/tracker/work-order.html?id=${r.dataset.id}#quote`; };
+      const go = r => { window.location.href = `/pages/services/work-order.html?id=${r.dataset.id}#quote`; };
       $('rqRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
       $('rqRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
       $('rqState').addEventListener('click', e => { const b = e.target.closest('.segment-button'); if (b) { state = b.dataset.s; render(); } });

@@ -6,11 +6,11 @@
 (function initOrderNew() {
   const root = document.getElementById('newRoot');
   const params = new URLSearchParams(location.search);
-  const clients = WH_CLIENTS.filter(c => CONTRACTS[c.id]);
+  const clients = WH_CLIENTS.filter(c => CONTRACTS[c.id] && activeVersion(CONTRACTS[c.id]));
   const models = Object.keys(ORDER_PRICE_BOOK);
 
   const d = {
-    client: params.get('client') || 'acme', cc: '', entity: '', type: 'regular', priority: 'Normal', route: 'hub', vendor: '',
+    client: clients.some(c => c.id === params.get('client')) ? params.get('client') : 'acme', cc: '', entity: '', type: 'regular', priority: 'Normal', route: 'hub', vendor: '',
     recipient: '', person: '', address: '', owner: orderUser().split(' ')[0], ticket: '', po: '', costCentre: '',
     approvalRequired: false, lines: [{ model: 'mbp14', qty: 1 }], fees: [], shippingCost: null, shippingRev: null, errors: {}
   };
@@ -54,7 +54,7 @@
 
   // Cap remaining after this order, converting device spend into the cap currency
   function capCheck(o, p) {
-    if (typeof capInfo !== 'function' || !CAP_SPEND[d.client]) return null;
+    if (typeof capInfo !== 'function' || !CAP_SPEND[d.client] || !capInfo(d.client).limit) return null;
     const ci = capInfo(d.client);
     const add = Math.round(fxConvert(p.subRev, o.currency, ci.cur));
     const after = ci.limit - ci.spent - add;
@@ -151,7 +151,7 @@
         <div class="side-panel-footer" style="flex-direction: column; align-items: stretch;">
           <button type="button" class="btn btn-primary" id="nCreate">Create order</button>
           <button type="button" class="btn btn-secondary" id="nSaveTpl">Save as template</button>
-          <a href="/pages/tracker/orders.html" class="btn-text" style="text-align:center;">Cancel</a>
+          <a href="/pages/orders/board.html" class="btn-text" style="text-align:center;">Cancel</a>
         </div></section>
       </aside>
     </div>`;
@@ -234,7 +234,7 @@
     const id = nextOrderId();
     const now = orderNowIso();
     const o = {
-      ...draft, id, priority: d.priority, channel: 'Manual', vendor: d.vendor, recipient: d.recipient.trim(), person: d.person, orderedBy: `${orderUser()} (for ${ORDER_CLIENT_ADMIN[d.client]})`,
+      ...draft, id, priority: d.priority, channel: 'Manual', vendor: d.vendor, recipient: d.recipient.trim(), person: d.person, orderedBy: `${orderUser()} (for ${ORDER_CLIENT_ADMIN[d.client] || clientAdminFor(CONTRACTS[d.client])})`,
       owner: d.owner, ticket: d.ticket.trim(), po: d.po.trim(), costCentre: d.costCentre.trim(), blocker: '', approvalRequired: d.approvalRequired || !!(cap && cap.over),
       approval: d.approvalRequired || (cap && cap.over) ? 'pending' : '', paymentHold: false, address: d.route === 'hub' ? '' : d.address.trim(), notes: {}, audit: [], pauses: [], stages: {}, posted: false, createdAt: now
     };
@@ -244,7 +244,7 @@
     if (o.approvalRequired) o.audit.push({ at: now, who: 'System', text: cap && cap.over ? `Approval required: over procurement cap (${fmtAmount(cap.ci.cur, cap.after, 0)} after order)` : 'Approval required before processing' });
     ORDERS.push(o);
     saveOrders();
-    location.href = `/pages/tracker/order.html?id=${id}&created=1`;
+    location.href = `/pages/orders/order.html?id=${id}&created=1`;
   }
 
   render();

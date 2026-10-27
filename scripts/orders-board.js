@@ -7,11 +7,10 @@
   const selected = new Set();
   let drawerId = null;
 
-  $('orderActions').innerHTML = orderHeaderActionsHtml();
-  $('obView').innerHTML = orderViewToggleHtml('board');
+  renderOrderHeader('board', () => ORDERS.filter(o => orderMatches(o, f)));
   $('obFilters').innerHTML = orderFilterBarHtml(f);
-  orderBindHeader(() => ORDERS.filter(o => orderMatches(o, f)));
   orderBindFilters($('obFilters'), f, render);
+  orderBindTiles($('obTiles'), f, render);
 
   const STAGES = slaType('regular').milestones;
   // Lane an order sits in: blocked / paused lanes first, then its current stage; delivered and cancelled lanes for those filters
@@ -24,19 +23,7 @@
     return orderSla(o).cur.key;
   }
 
-  function tiles() {
-    const open = openOrders();
-    const n = st => open.filter(o => orderState(o) === st).length;
-    const risk = open.filter(o => orderState(o) === 'progress' && orderSla(o).health === 'risk').length;
-    const weekAgo = new Date(ORDER_NOW.getTime() - 7 * 864e5);
-    const delivered = ORDERS.filter(o => o.deliveredAt && new Date(o.deliveredAt) >= weekAgo).length;
-    const tile = (label, value, cls = '', status = '') => `<button type="button" class="summary-tile summary-tile-link ${cls}" ${status ? `data-status="${status}"` : ''}><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div></button>`;
-    $('obTiles').innerHTML = tile('Open', open.length, '', 'open')
-      + tile('Overdue', n('overdue'), n('overdue') ? 'summary-tile-breached' : '', 'overdue')
-      + tile('At risk', risk, risk ? 'summary-tile-alert' : '', 'attention')
-      + tile('Pending approval · on hold', `${n('pending')} · ${n('hold')}`, n('pending') + n('hold') ? 'summary-tile-alert' : '', 'attention')
-      + tile('Delivered (7 days)', delivered, 'summary-tile-ok', 'all');
-  }
+  const tiles = () => { $('obTiles').innerHTML = orderTilesHtml(f); };
 
   function cardHtml(o) {
     const s = orderSla(o);
@@ -74,8 +61,8 @@
     let html = column('blocked', 'Pending approval · Payment hold', 'Processing blocked', by('blocked'), 'board-column-blocked');
     html += column('paused', '⏸ SLA paused', 'Clock stopped', by('paused'), 'board-column-paused');
     html += STAGES.map((m, i) => column(m.key, m.label, `${m.hubOnly ? 'Via hub only · ' : ''}SG standard ${sg[i]}h`, by(m.key))).join('');
-    if (['all', 'cancelled'].includes(f.status)) {
-      if (f.status === 'all') html += column('done', 'Delivered', '', by('done'), 'board-column-done');
+    if (['all', 'cancelled', 'delivered'].includes(f.status)) {
+      if (f.status !== 'cancelled') html += column('done', 'Delivered', '', by('done'), 'board-column-done');
       html += column('cancelled', 'Cancelled', '', by('cancelled'), 'board-column-done');
     }
     $('obBoard').innerHTML = html;
@@ -110,14 +97,6 @@
     if (card) openDrawer(card.dataset.id);
   });
   $('obBoard').addEventListener('keydown', e => { const card = e.target.closest('.order-card'); if (card && e.key === 'Enter' && e.target === card) openDrawer(card.dataset.id); });
-  $('obTiles').addEventListener('click', e => {
-    const t = e.target.closest('[data-status]');
-    if (!t) return;
-    f.status = t.dataset.status;
-    orderFiltersSave(f);
-    $('ofStatus').value = f.status;
-    render();
-  });
 
   $('obBulkDone').addEventListener('click', () => {
     const list = [...selected].map(orderById);
@@ -197,7 +176,7 @@
       </div>`;
     const block = orderBlockedReason(o);
     const paused = orderIsPaused(o);
-    $('obDrawerFoot').innerHTML = `<a href="/pages/tracker/order.html?id=${o.id}" class="btn btn-secondary">Open order</a>
+    $('obDrawerFoot').innerHTML = `<a href="/pages/orders/order.html?id=${o.id}" class="btn btn-secondary">Open order</a>
       ${orderPendingApproval(o) ? '<button type="button" class="btn btn-primary" id="dwApprove">Approve</button>' : ''}
       ${o.paymentHold ? '<button type="button" class="btn btn-primary" id="dwRelease">Release hold</button>' : ''}
       ${!block && s.cur ? `<button type="button" class="btn btn-secondary" id="dwPause">${paused ? '▶ Resume SLA' : '⏸ Pause SLA'}</button><button type="button" class="btn btn-primary" id="dwDone">Mark ${escapeHtml(s.cur.m.label)} done</button>` : ''}`;

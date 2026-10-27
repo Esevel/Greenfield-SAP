@@ -52,8 +52,8 @@ function initStockClient() {
       const sug = deviceSuggestion(d);
       const recCls = { Keep: 'tag-keep', Redeploy: 'tag-redeploy', Dispose: 'tag-dispose' }[sug.rec];
       const action = d.reserved ? '' : sug.rec === 'Dispose'
-        ? '<a href="/pages/tracker/raise-request.html?type=disposal" class="link-sm">Dispose</a>'
-        : `<a href="/pages/tracker/raise-request.html?type=redeployment" class="link-sm">${isHub(loc) ? 'Redeploy' : 'Collect & redeploy'}</a>`;
+        ? '<a href="/pages/services/new.html?type=disposal" class="link-sm">Dispose</a>'
+        : `<a href="/pages/services/new.html?type=redeployment" class="link-sm">${isHub(loc) ? 'Redeploy' : 'Collect & redeploy'}</a>`;
       return `<tr>
         <td><a href="/pages/assets/detail.html" class="asset-serial">${d.serial}</a></td>
         <td>${d.condition === 'new' ? 'New' : 'Used'}</td>

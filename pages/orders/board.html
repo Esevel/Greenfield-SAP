@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Orders - Admin Portal</title>
+  <title>Orders · Board - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
@@ -22,23 +22,13 @@
       
       <div class="page-content">
         <nav class="breadcrumbs-custom">
-          <a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a>
-          <span class="breadcrumb-separator">›</span>
           <span class="breadcrumb-current">Orders</span>
         </nav>
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Work order tracker</h1>
-          <span class="tracker-header-actions" id="orderActions"></span>
-        </div>
-        
-        <nav id="trackerTabs" data-active="orders"></nav>
+        <div id="orderHeader"></div>
         
         <div class="inventory-summary stock-summary order-tiles" id="obTiles"></div>
         
-        <div class="tracker-controls">
-          <div class="asset-toolbar" id="obFilters"></div>
-          <div id="obView"></div>
-        </div>
+        <div class="asset-toolbar" id="obFilters"></div>
         
         <div class="board order-board" id="obBoard"></div>
         <div class="board-footnote">Columns are the order stages. Time in stage counts business hours in the order country (Operating calendar), minus paused time. At risk from 75% of the stage target; targets come from SLA configuration (client exception, else country standard). Received at hub and QC &amp; dispatch only apply to orders routed via a hub.</div>
@@ -85,7 +75,6 @@
   <script src="/scripts/orders-data.js"></script>
   <script src="/scripts/orders-engine.js"></script>
   <script src="/scripts/orders-ui.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
   <script src="/scripts/orders-board.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

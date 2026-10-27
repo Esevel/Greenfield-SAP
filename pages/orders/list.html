@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Orders list - Admin Portal</title>
+  <title>Orders · List - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
@@ -24,31 +24,19 @@
       
       <div class="page-content">
         <nav class="breadcrumbs-custom">
-          <a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a>
-          <span class="breadcrumb-separator">›</span>
           <span class="breadcrumb-current">Orders</span>
         </nav>
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Work order tracker</h1>
-          <span class="tracker-header-actions" id="orderActions"></span>
-        </div>
+        <div id="orderHeader"></div>
         
-        <nav id="trackerTabs" data-active="orders"></nav>
-        
-        <div class="tracker-controls">
-          <div class="asset-toolbar" id="olFilters"></div>
-          <div id="olView"></div>
-        </div>
+        <div class="inventory-summary stock-summary order-tiles" id="olTiles"></div>
+        <div class="asset-toolbar" id="olFilters"></div>
         
         <div class="orders-split">
           <aside class="orders-list-pane" aria-label="Orders">
             <div class="orders-list-count" id="olCount"></div>
             <div id="olList"></div>
           </aside>
-          <section>
-            <div class="order-tabbar" id="olTabs" role="tablist"></div>
-            <div id="olDetail"></div>
-          </section>
+          <section class="orders-detail-pane" id="olDetail" aria-live="polite"></section>
         </div>
       </div>
     </main>
@@ -71,7 +59,6 @@
   <script src="/scripts/orders-engine.js"></script>
   <script src="/scripts/orders-ui.js"></script>
   <script src="/scripts/order-detail.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
   <script src="/scripts/orders-list.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

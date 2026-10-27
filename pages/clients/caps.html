@@ -70,7 +70,7 @@
       const ORDER = { over: 0, near: 1, healthy: 2 };
       const expanded = new Set();
       let state = '';
-      $('cpCur').innerHTML = '<option value="">All</option>' + [...new Set(WH_CLIENTS.map(c => capInfo(c.id).cur))].sort().map(c => `<option>${c}</option>`).join('');
+      $('cpCur').innerHTML = '<option value="">All</option>' + [...new Set(WH_CLIENTS.filter(c => activeVersion(CONTRACTS[c.id])).map(c => capInfo(c.id).cur))].sort().map(c => `<option>${c}</option>`).join('');
 
       const panel = initCapPanel((id, draft) => {
         $('cpSaved').innerHTML = `✓ New cap saved to draft v${draft.v} for ${escapeHtml(clientName(id))}. <a href="/pages/clients/amendment.html?c=${id}&v=${draft.v}">Review and publish</a> to send it for client acceptance.`;
@@ -79,7 +79,8 @@
       });
 
       function render() {
-        const all = WH_CLIENTS.map(c => ({ c, i: capInfo(c.id), k: CONTRACTS[c.id] }));
+        // Onboarding clients have no spend until their first contract is accepted
+        const all = WH_CLIENTS.filter(c => activeVersion(CONTRACTS[c.id])).map(c => ({ c, i: capInfo(c.id), k: CONTRACTS[c.id] }));
         const n = s => all.filter(r => r.i.status === s).length;
         const tile = (label, value, sub, cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div><div class="summary-tile-sub">${sub}</div></div>`;
         const renewSoon = all.filter(r => r.i.renewal <= '2027-01-31').length;
@@ -117,7 +118,7 @@
               <table class="device-list-table cap-orders"><thead><tr><th>Billing entity</th><th class="num">Spend (entity currency)</th><th class="num">Rate</th><th class="num">Counted (${i.cur})</th></tr></thead>
               <tbody>${i.parts.map(p => `<tr><td>${escapeHtml(p.entity.name)}</td><td class="num">${fmtAmount(p.cur, p.amount, 0)}</td><td class="num">${p.cur === i.cur ? '—' : p.rate.toFixed(4)}</td><td class="num">${fmtAmount(i.cur, p.converted, 0)}</td></tr>`).join('')}</tbody></table>
               <table class="device-list-table cap-orders"><thead><tr><th>Recent order</th><th>Date</th><th>What</th><th>Entity</th><th class="num">Amount</th></tr></thead>
-              <tbody>${CAP_SPEND[c.id].orders.map(([id, d, what, e, amt]) => { const ent = entityById(k.terms, e); return `<tr><td class="asset-serial"><a href="/pages/tracker/order.html?id=${id}" class="link-sm">${id}</a></td><td>${billingDate(d)}</td><td>${escapeHtml(what)}</td><td>${escapeHtml(ent.name)}</td><td class="num">${fmtAmount(ent.currency, amt, 0)}${ent.currency !== i.cur ? `<div class="stock-sub">≈ ${fmtAmount(i.cur, fxConvert(amt, ent.currency, i.cur), 0)}</div>` : ''}</td></tr>`; }).join('')}</tbody></table>
+              <tbody>${CAP_SPEND[c.id].orders.map(([id, d, what, e, amt]) => { const ent = entityById(k.terms, e); return `<tr><td class="asset-serial"><a href="/pages/orders/order.html?id=${id}" class="link-sm">${id}</a></td><td>${billingDate(d)}</td><td>${escapeHtml(what)}</td><td>${escapeHtml(ent.name)}</td><td class="num">${fmtAmount(ent.currency, amt, 0)}${ent.currency !== i.cur ? `<div class="stock-sub">≈ ${fmtAmount(i.cur, fxConvert(amt, ent.currency, i.cur), 0)}</div>` : ''}</td></tr>`; }).join('')}</tbody></table>
               <div class="readonly-note">Spend in each entity's currency is converted into the cap currency at the ${i.fxSource} rate. Device purchases count at order value incl. tax. Lifecycle fees and billable users don't count. <a href="/pages/clients/detail.html?c=${c.id}#sec-cap">Contract cap terms</a></div>
             </td></tr>` : ''}`;
         }).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No clients match</td></tr>';

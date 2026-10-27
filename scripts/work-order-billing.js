@@ -16,7 +16,7 @@ function initWorkOrderBilling() {
     document.querySelector('.page-title-edit').textContent = `${wo} · ${o.recipient}`;
     document.querySelector('.breadcrumb-current').textContent = wo;
     const crumbs = { ONB: ['Onboarding', 'onboarding'], DSP: ['Disposal', 'disposal'], REP: ['Repairs', 'repairs'] }[wo.split('-')[0]];
-    if (crumbs) Object.assign(document.querySelector('.breadcrumb-link'), { textContent: crumbs[0], href: `/pages/tracker/${crumbs[1]}.html` });
+    if (crumbs) Object.assign([...document.querySelectorAll('.breadcrumb-link')].pop(), { textContent: crumbs[0], href: `/pages/services/${crumbs[1]}.html` });
     document.querySelector('.quote-card').hidden = !wo.startsWith('REP');
     document.querySelector('.asset-header-meta').innerHTML = `<span>${escapeHtml(client)}</span><span class="meta-sep">·</span><span class="flag">${WH_COUNTRIES[o.cc][0]}</span> ${WH_COUNTRIES[o.cc][1]}`;
     document.title = `${wo} · Work order - Admin Portal`;

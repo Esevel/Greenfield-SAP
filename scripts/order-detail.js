@@ -23,33 +23,43 @@ function renderOrderDetail(root, id, opts = {}) {
   /* ---------- Banners ---------- */
   const banners = [
     cancelled ? `<div class="order-banner banner-cancelled"><span>🚫</span><div><strong>Order cancelled</strong> by ${escapeHtml(o.cancelled.by)} on ${fmtOrderTs(o.cancelled.at)}. SLA is frozen.<div>Reason: <em>${escapeHtml(o.cancelled.reason)}</em></div></div></div>` : '',
-    orderPendingApproval(o) ? `<div class="order-banner banner-pending"><span>⏳</span><div><strong>Pending approval.</strong> ${escapeHtml(o.orderedBy)} (client admin) needs to approve before processing can start. Stage progress is blocked.</div><button type="button" class="btn btn-secondary btn-sm" data-act="reject">Reject</button><button type="button" class="btn btn-primary btn-sm" data-act="approve">Approve</button></div>` : '',
+    orderPendingApproval(o) ? `<div class="order-banner banner-pending"><span>⏳</span><div><strong>Pending approval.</strong> ${escapeHtml(o.orderedBy)} (client admin) needs to approve before processing can start. Stage progress is blocked.</div></div>` : '',
     o.approvalRequired && o.approval === 'rejected' && !cancelled ? '<div class="order-banner banner-rejected"><span>🔴</span><div><strong>Order rejected.</strong></div></div>' : '',
-    o.paymentHold && !cancelled ? `<div class="order-banner banner-hold"><span>⚠</span><div><strong>Payment hold.</strong> ${escapeHtml(client.name)} has an unpaid invoice. Processing is blocked until Finance releases the hold. <a href="/pages/billing/invoices.html?client=${o.client}" class="link-sm">Open invoices</a></div><button type="button" class="btn btn-primary btn-sm" data-act="release">Release hold</button></div>` : '',
-    paused && open ? `<div class="order-banner banner-paused"><span>⏸</span><div><strong>SLA paused</strong> since ${fmtOrderTs(o.pauses.find(x => !x.resumedAt).at)} by ${escapeHtml(o.pauses.find(x => !x.resumedAt).by)}: ${escapeHtml(o.pauses.find(x => !x.resumedAt).reason)}. The order isn't counted as overdue while paused.</div><button type="button" class="btn btn-secondary btn-sm" data-act="resume">▶ Resume SLA</button></div>` : '',
+    o.paymentHold && !cancelled ? `<div class="order-banner banner-hold"><span>⚠</span><div><strong>Payment hold.</strong> ${escapeHtml(client.name)} has an unpaid invoice. Processing is blocked until Finance releases the hold. <a href="/pages/billing/invoices.html?client=${o.client}" class="link-sm">Open invoices</a></div></div>` : '',
+    paused && open ? `<div class="order-banner banner-paused"><span>⏸</span><div><strong>SLA paused</strong> since ${fmtOrderTs(o.pauses.find(x => !x.resumedAt).at)} by ${escapeHtml(o.pauses.find(x => !x.resumedAt).by)}: ${escapeHtml(o.pauses.find(x => !x.resumedAt).reason)}. The order isn't counted as overdue while paused.</div></div>` : '',
     o.blocker && open ? `<div class="order-banner banner-blocker"><span>⛔</span><div><strong>Blocker:</strong> ${escapeHtml(o.blocker)}</div><button type="button" class="btn-text" data-act="clear-blocker">Clear</button></div>` : ''
   ].join('');
 
-  /* ---------- Header ---------- */
-  const header = `<div class="asset-header">
+  /* ---------- Header: one primary next step, secondary Pause, everything else under More ---------- */
+  const awbMissing = s.cur && s.cur.key === 'awb' && !(o.stages.awb?.awb || []).some(a => a.tracking);
+  let primary = '';
+  if (orderPendingApproval(o)) primary = '<button type="button" class="btn btn-primary" data-act="approve">Approve order</button>';
+  else if (o.paymentHold && !cancelled) primary = '<button type="button" class="btn btn-primary" data-act="release">Release payment hold</button>';
+  else if (paused && open) primary = '<button type="button" class="btn btn-primary" data-act="resume">▶ Resume SLA</button>';
+  else if (open && s.cur && !block) primary = `<button type="button" class="btn btn-primary" data-act="done" ${awbMissing ? 'data-needs-awb' : ''}>✓ Mark ${escapeHtml(s.cur.m.label)} done</button>`;
+  const more = orderMenuHtml('More', [
+    ['data-act="edit"', 'Edit order…'],
+    ['data-act="template"', 'Save as template…'],
+    open && !orderPendingApproval(o) ? ['data-act="hold"', o.paymentHold ? 'Release payment hold' : 'Payment hold…'] : null,
+    orderPendingApproval(o) ? ['data-act="reject"', 'Reject…', 'order-menu-danger'] : null,
+    open ? ['data-act="cancel"', 'Cancel order…', 'order-menu-danger'] : null
+  ]);
+  const header = `<div class="asset-header order-header">
     <div>
-      <h1 class="page-title-edit">${o.id} · ${escapeHtml(client.name)}</h1>
+      <h1 class="page-title-edit">${opts.compact ? `<a href="/pages/orders/order.html?id=${o.id}" class="link-plain" title="Open full page">${o.id} ↗</a>` : o.id} · ${escapeHtml(client.name)}</h1>
       <div class="asset-header-meta">
         ${orderStateBadge(o)}${orderPriorityTag(o.priority)}
+        ${s.cur ? `<span class="sla-pill ${ORDER_HEALTH_PILL[s.health][0]}">${ORDER_HEALTH_PILL[s.health][1]}</span>` : ''}
         <span class="meta-sep">·</span><span>${escapeHtml(o.recipient)}</span>
         <span class="meta-sep">·</span><span>${orderFlag(o.cc)} ${WH_COUNTRIES[o.cc][1]}</span>
         <span class="meta-sep">·</span><span>${slaType(o.type).name}</span>
-        <span class="meta-sep">·</span><span class="tag ${o.channel === 'Platform' ? 'tag-hub' : 'tag-client-loc'}">${o.channel}</span>
-        ${o.ticket ? `<span class="meta-sep">·</span><span class="text-muted">${escapeHtml(o.ticket)}</span>` : ''}
-        ${s.cur ? `<span class="sla-pill ${ORDER_HEALTH_PILL[s.health][0]}">${ORDER_HEALTH_PILL[s.health][1]}</span>` : ''}
+        <span class="meta-sep">·</span><span class="text-muted">${o.channel}${o.ticket ? ` · ${escapeHtml(o.ticket)}` : ''}</span>
       </div>
     </div>
     <div class="header-actions">
-      ${open && !block ? `<button type="button" class="btn btn-secondary" data-act="${paused ? 'resume' : 'pause'}">${paused ? '▶ Resume SLA' : '⏸ Pause SLA'}</button>` : ''}
-      ${open ? '<button type="button" class="btn btn-secondary" data-act="hold">Payment hold…</button>' : ''}
-      ${open ? '<button type="button" class="btn btn-secondary" data-act="cancel">Cancel order</button>' : ''}
-      <button type="button" class="btn btn-secondary" data-act="template">Save as template</button>
-      <button type="button" class="btn btn-primary" data-act="edit">Edit order</button>
+      ${open && !block && !paused && primary.includes('data-act="done"') ? '<button type="button" class="btn btn-secondary" data-act="pause">⏸ Pause SLA</button>' : ''}
+      ${more}
+      ${primary}
     </div>
   </div>`;
 
@@ -77,7 +87,7 @@ function renderOrderDetail(root, id, opts = {}) {
       <input class="form-input" data-f="tracking" value="${escapeHtml(a.tracking)}" placeholder="Tracking / AWB number" aria-label="Tracking number">
       <input class="form-input" data-f="url" value="${escapeHtml(a.url)}" placeholder="Tracking link (optional)" aria-label="Tracking link">
       <button type="button" class="btn-text" data-awb-del="${i}" aria-label="Remove shipment">✕</button></div>`).join('');
-    return `<div class="stage-box"><div id="awbRows">${rows}</div><div class="order-form-actions"><button type="button" class="btn-text" data-act="awb-add">+ Add AWB</button><button type="button" class="btn btn-secondary btn-sm" data-act="awb-save">Save shipment info</button></div></div>`;
+    return `<div class="stage-box" data-awb-scope><div id="awbRows">${rows}</div><div class="order-form-actions"><button type="button" class="btn-text" data-act="awb-add">+ Add AWB</button><button type="button" class="btn btn-secondary btn-sm" data-act="awb-save">Save shipment info</button></div></div>`;
   };
   const stages = s.steps.map((x, idx) => {
     const n = idx + 1;
@@ -139,9 +149,16 @@ function renderOrderDetail(root, id, opts = {}) {
   const vcur = view === 'local' ? o.currency : view;
   const money = v => fmtAmount(vcur, conv(v));
   const rowP = (label, sub, qty, uc, ur, lc, lr, extra = '') => `<tr><td>${label}${sub ? `<div class="stock-sub">${sub}</div>` : ''}${extra}</td><td class="num">${qty}</td><td class="num">${money(uc)}</td><td class="num">${money(ur)}</td><td class="num">${money(lc)}</td><td class="num">${money(lr)}</td><td class="num">${marginBadge(marginPct(lc, lr))}</td></tr>`;
-  const pricing = `<div class="card mb-lg"><div class="card-header"><h3 class="card-title">Pricing</h3>
-      <div class="segmented-control segmented-sm pricing-toggle" role="group" aria-label="Currency view">${Object.entries(ORDER_FX_VIEWS).filter(([k]) => k === 'local' || k !== o.currency).map(([k, l]) => `<button type="button" class="segment-button${k === view ? ' active' : ''}" data-fx="${k}">${k === 'local' ? o.currency : l}</button>`).join('')}</div></div>
-    <div class="card-body">
+  const fxToggle = `<div class="segmented-control segmented-sm pricing-toggle" role="group" aria-label="Currency view">${Object.entries(ORDER_FX_VIEWS).filter(([k]) => k === 'local' || k !== o.currency).map(([k, l]) => `<button type="button" class="segment-button${k === view ? ' active' : ''}" data-fx="${k}">${k === 'local' ? o.currency : l}</button>`).join('')}</div>`;
+  const pricingSummary = `<div class="card mb-lg"><div class="card-header"><h3 class="card-title">Value</h3></div><div class="card-body">
+      <ul class="summary-lines">
+        <li><span>Revenue${p.tax.rate ? ` incl. ${escapeHtml(p.tax.label)}` : ''}</span><span>${fmtAmount(o.currency, p.totalRev)}</span></li>
+        <li><span>Cost</span><span>${fmtAmount(o.currency, p.totalCost)}</span></li>
+        <li class="sum-total"><span>Margin</span><span>${fmtAmount(o.currency, p.margin)} ${marginBadge(p.pct)}</span></li>
+      </ul>
+      <button type="button" class="btn-text" data-tab="items">See line items</button>
+    </div></div>`;
+  const pricing = `<div class="tab-toolbar"><span class="text-muted">${p.products.reduce((n, l) => n + l.qty, 0)} items · ${o.currency}</span>${fxToggle}</div>
       <div class="pricing-summary">
         <div><div class="ps-label">Total revenue${p.tax.rate ? ` (incl. ${escapeHtml(p.tax.label)})` : ''}</div><div class="ps-value">${money(p.totalRev)}</div></div>
         <div><div class="ps-label">Total cost</div><div class="ps-value">${money(p.totalCost)}</div></div>
@@ -161,8 +178,7 @@ function renderOrderDetail(root, id, opts = {}) {
           <tr class="total-row"><td colspan="4">Total</td><td class="num">${money(p.totalCost)}</td><td class="num">${money(p.totalRev)}</td><td></td></tr>
         </tbody>
       </table>
-      <div class="readonly-note">${view === 'local' ? `Amounts in ${o.currency}, the billing entity's currency.` : `Converted from ${o.currency} at today's rate (${FX_SOURCES[CONTRACTS[o.client].terms.fxSource].split(' (')[0]}) for internal comparison; the client is billed in ${o.currency}.`} Margin: green ${ORDER_MARGIN_GOOD}%+, amber ${ORDER_MARGIN_WARN}–${ORDER_MARGIN_GOOD - 1}%, red under ${ORDER_MARGIN_WARN}%.${o.posted ? ` <a href="/pages/billing/ledger.html" class="link-sm">Charges in the ledger</a>` : ''}</div>
-    </div></div>`;
+      <div class="readonly-note">${view === 'local' ? `Amounts in ${o.currency}, the billing entity's currency.` : `Converted from ${o.currency} at today's rate (${FX_SOURCES[CONTRACTS[o.client].terms.fxSource].split(' (')[0]}) for internal comparison; the client is billed in ${o.currency}.`} Margin: green ${ORDER_MARGIN_GOOD}%+, amber ${ORDER_MARGIN_WARN}–${ORDER_MARGIN_GOOD - 1}%, red under ${ORDER_MARGIN_WARN}%.${o.posted ? ` <a href="/pages/billing/ledger.html" class="link-sm">Charges in the ledger</a>` : ''}</div>`;
 
   /* ---------- Sidebar ---------- */
   const person = o.person ? `<a href="/pages/people/person.html?id=${o.person}" class="link-sm">${escapeHtml(o.recipient)}</a>` : escapeHtml(o.recipient);
@@ -177,18 +193,41 @@ function renderOrderDetail(root, id, opts = {}) {
     <div class="info-row"><span class="info-label">Created</span><span class="info-value">${fmtOrderTs(o.createdAt)}</span></div>
     <div class="info-row"><span class="info-label">Expected delivery</span><span class="info-value">${fmtOrderDate(o.expected)}</span></div>
     ${o.costCentre ? `<div class="info-row"><span class="info-label">Cost centre</span><span class="info-value">${escapeHtml(o.costCentre)}</span></div>` : ''}
+    <div class="info-row"><span class="info-label">Owner</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-owner aria-label="Owner">${ORDER_OWNERS.map(n => `<option${n === o.owner ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span></div>
     <div class="info-row"><span class="info-label">Approval</span><span class="info-value">${o.approvalRequired ? { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }[o.approval] : 'Not required'}</span></div>
   </div></div></div>`;
-  const owner = `<div class="card mb-lg"><div class="card-header"><h3 class="card-title">Owner</h3></div><div class="card-body">
-    <div class="owner-picker"><span class="card-avatar">${escapeHtml(o.owner.split(' ').map(w => w[0]).join('').slice(0, 2))}</span><select class="form-select" data-owner aria-label="Owner">${ORDER_OWNERS.map(n => `<option${n === o.owner ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></div>
-  </div></div>`;
-  const audit = `<div class="card mb-lg"><div class="card-header"><h3 class="card-title">Audit log</h3></div><div class="card-body">
-    <ul class="audit-list">${o.audit.map((a, i) => ({ ...a, i })).sort((a, b) => b.at.localeCompare(a.at) || b.i - a.i).map(a => `<li>${escapeHtml(a.text)}<div class="audit-meta">${fmtOrderTs(a.at)} · ${escapeHtml(a.who)}</div></li>`).join('')}</ul>
-  </div></div>`;
+  const feed = [
+    ...o.audit.map((x, i) => ({ at: x.at, who: x.who, html: escapeHtml(x.text), kind: 'audit', i })),
+    ...Object.entries(o.notes).flatMap(([key, list]) => list.map((n, i) => ({ at: n.at, who: n.who, html: `<span class="note-tag note-tag-${n.tag.toLowerCase()}">${escapeHtml(n.tag)}</span>${escapeHtml(n.text)} <span class="text-muted">· ${escapeHtml((s.steps.find(x => x.key === key) || { m: { label: key } }).m.label)}</span>`, kind: 'note', i })))
+  ].sort((a, b) => b.at.localeCompare(a.at) || b.i - a.i);
+  const activityFilter = state.activity || 'all';
+  const activity = `<div class="tab-toolbar"><div class="segmented-control segmented-sm" role="group" aria-label="Show">${[['all', 'All'], ['note', `Notes · ${feed.filter(x => x.kind === 'note').length}`], ['audit', 'Changes']].map(([k, l]) => `<button type="button" class="segment-button${k === activityFilter ? ' active' : ''}" data-activity="${k}">${l}</button>`).join('')}</div><span class="text-muted">Add notes on a stage above</span></div>
+    <ul class="audit-list">${feed.filter(x => activityFilter === 'all' || x.kind === activityFilter).map(x => `<li class="${x.kind === 'note' ? 'audit-note' : ''}">${x.html}<div class="audit-meta">${fmtOrderTs(x.at)} · ${escapeHtml(x.who)}</div></li>`).join('') || '<li class="text-muted">Nothing yet.</li>'}</ul>`;
+
+  /* ---------- Shipments ---------- */
+  const awbList = o.stages.awb?.awb || [];
+  const hubId = HUB_ASSIGNMENTS[o.client]?.[o.cc];
+  const awbStep = s.steps.find(x => x.key === 'awb');
+  const shipEditable = open && awbStep && awbStep.state !== 'current';
+  const shipments = `<div class="info-grid ship-grid">
+      <div class="info-row"><span class="info-label">Route</span><span class="info-value">${SLA_ROUTES[o.route].label}${o.route === 'hub' && hubId && hubId !== 'none' ? ` · ${escapeHtml(WAREHOUSES.find(w => w.id === hubId).name)}` : ''}</span></div>
+      <div class="info-row"><span class="info-label">Deliver to</span><span class="info-value">${escapeHtml(o.recipient)}${o.address ? ` · ${escapeHtml(o.address)}` : ''}</span></div>
+      <div class="info-row"><span class="info-label">Expected delivery</span><span class="info-value">${fmtOrderDate(o.expected)}</span></div>
+      ${o.deliveredAt ? `<div class="info-row"><span class="info-label">Delivered</span><span class="info-value">${fmtOrderTs(o.deliveredAt)}</span></div>` : ''}
+    </div>
+    <h4 class="panel-section-title">Tracking</h4>
+    ${shipEditable ? awbHtml(awbStep, true) : awbList.length ? awbHtml(awbStep, false) : `<p class="text-muted">${awbStep && awbStep.state === 'current' ? 'Add tracking numbers on the Shipping info stage above.' : 'No tracking yet. It is added at the Shipping info stage.'}</p>`}`;
+
+  const TABS = [['items', 'Items & pricing'], ['shipments', `Shipments${awbList.length ? ` · ${awbList.length}` : ''}`], ['activity', `Activity · ${feed.length}`]];
+  const tab = state.tab || 'items';
+  const tabbed = `<section class="card mb-lg order-tabs-card">
+      <div class="tab-strip order-detail-tabs" role="tablist">${TABS.map(([k, l]) => `<button type="button" role="tab" class="tab-link${k === tab ? ' active' : ''}" aria-selected="${k === tab}" data-tab="${k}">${l}</button>`).join('')}</div>
+      <div class="card-body">${{ items: pricing, shipments, activity }[tab]}</div>
+    </section>`;
 
   // Breadcrumbs go in the shared header (navigation.js moves .breadcrumbs-custom there on load)
   if (!opts.compact) {
-    const crumbs = `<a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a><span class="breadcrumb-separator">›</span><a href="/pages/tracker/orders.html" class="breadcrumb-link">Orders</a><span class="breadcrumb-separator">›</span><span class="breadcrumb-current">${o.id}</span>`;
+    const crumbs = `<a href="/pages/orders/board.html" class="breadcrumb-link">Orders</a><span class="breadcrumb-separator">›</span><span class="breadcrumb-current">${o.id}</span>`;
     const hb = document.getElementById('breadcrumbs');
     if (hb && hb.childElementCount) hb.innerHTML = crumbs;
     else if (!document.querySelector('.breadcrumbs-custom')) document.querySelector('.page-content').insertAdjacentHTML('afterbegin', `<nav class="breadcrumbs-custom">${crumbs}</nav>`);
@@ -198,14 +237,20 @@ function renderOrderDetail(root, id, opts = {}) {
     <div class="edit-layout">
       <div class="edit-form-column">
         <section class="card mb-lg"><div class="card-header"><h3 class="card-title">Stages</h3><span class="text-muted">${s.paused ? 'Clock paused' : s.cur ? `Current: ${s.cur.m.label}` : ''}</span></div><div class="card-body"><ol class="stage-list">${stages}</ol></div></section>
-        ${pricing}
+        ${tabbed}
       </div>
-      <div class="edit-sidebar-column">${details}${owner}${bizPanel}${audit}</div>
+      <div class="edit-sidebar-column">${details}${pricingSummary}${bizPanel}</div>
     </div>`;
 
   /* ---------- Events ---------- */
   const act = async (name, el) => {
     const run = fn => orderTry(fn, changed);
+    if (name === 'done' && el.hasAttribute('data-needs-awb') && !readAwb().some(a => a.tracking)) {
+      const box = root.querySelector('[data-awb-scope] [data-f=tracking]');
+      if (box) { box.scrollIntoView({ block: 'center' }); box.focus(); }
+      orderToast('Add at least one tracking number first.', 'error');
+      return;
+    }
     if (name === 'done') return run(() => orderMarkDone(o, orderNowIso(), s.cur.key === 'awb' ? { awb: readAwb() } : {}));
     if (name === 'done-at') {
       const v = await orderDialog({ title: `${s.cur.m.label} · done at`, text: `Time is local to ${WH_COUNTRIES[o.cc][1]}. Must be after ${fmtOrderTs(s.cur.startedAt)}.`, fields: [{ id: 't', label: 'Completed at', type: 'datetime', value: orderNowIso(), required: true }], confirm: 'Mark done' });
@@ -269,6 +314,10 @@ function renderOrderDetail(root, id, opts = {}) {
   root.onclick = async e => {
     const a = e.target.closest('[data-act]');
     if (a) { act(a.dataset.act, a); return; }
+    const tb = e.target.closest('[data-tab]');
+    if (tb) { state.tab = tb.dataset.tab; changed(); return; }
+    const af = e.target.closest('[data-activity]');
+    if (af) { state.activity = af.dataset.activity; changed(); return; }
     const fx = e.target.closest('[data-fx]');
     if (fx) { state.fx = fx.dataset.fx; changed(); return; }
     const no = e.target.closest('[data-note-open]');

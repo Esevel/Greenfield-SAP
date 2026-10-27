@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support · Board - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/orders.css">
+  <link rel="stylesheet" href="/styles/support.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <span class="breadcrumb-current">Support</span>
+        </nav>
+        <div id="supportHeader"></div>
+        <div class="inventory-summary stock-summary order-tiles" id="spTiles"></div>
+        <div class="asset-toolbar" id="spFilters"></div>
+        <div class="board board-fit support-board" id="spBoard"></div>
+        <div class="board-footnote">Columns are ticket status. First response and resolution targets come from SLA configuration (client exception, else country standard); Urgent halves them, Low doubles them. Waiting on client pauses resolution.</div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/support-data.js"></script>
+  <script src="/scripts/support-ui.js"></script>
+  <script src="/scripts/support-board.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

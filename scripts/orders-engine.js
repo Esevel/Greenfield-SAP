@@ -5,7 +5,7 @@
 
 const ORDERS_KEY = 'sap-orders-v1';
 const ORDER_TEMPLATES_KEY = 'sap-order-templates-v1';
-const ORDER_TABS_KEY = 'sap-order-tabs-v1';
+sessionStorage.removeItem('sap-order-tabs-v1');
 const ORDER_AT_RISK = 0.75;
 
 const ORDER_STATE = {
@@ -299,7 +299,7 @@ function orderGenerated() {
   const pick = arr => arr[Math.floor(rng() * arr.length)];
   const out = [];
   let n = ORDER_GEN.firstId;
-  const clients = WH_CLIENTS.filter(c => CONTRACTS[c.id] && CONTRACTS[c.id].status !== 'expired').map(c => c.id);
+  const clients = WH_CLIENTS.filter(c => !c.isNew && CONTRACTS[c.id] && CONTRACTS[c.id].status !== 'expired').map(c => c.id);
   const vendorFor = cc => { const vs = supplyVendorsIn(cc); return vs.length ? pick(vs).key : 'ingram'; };
   const modelsFor = () => {
     const kit = pick([[['mbp14', 1], ['mxm3s', 1]], [['air13', 1]], [['xps15', 1], ['u2723', 1]], [['x1c', 1], ['mxm3s', 1], ['u2723', 1]], [['mbp14', 1], ['u2723', 2], ['magickb', 1]], [['air13', 2], ['mxm3s', 2]]]);
@@ -578,14 +578,10 @@ function orderTrackerItems() {
       id: o.id, client: o.client, type: o.type, cc: o.cc, start: o.createdAt, done: [], order: o,
       stage: orderPendingApproval(o) ? 'Pending approval' : o.paymentHold ? 'Payment hold' : orderIsPaused(o) ? 'SLA paused' : orderCurrentStage(o),
       owner: [initials, o.owner], blocker: o.blocker || (o.paymentHold ? 'Payment hold' : orderPendingApproval(o) ? 'Waiting for client approval' : ''),
-      note: lastNote ? [lastNote.who, lastNote.text] : ['—', 'No notes yet'], href: `/pages/tracker/order.html?id=${o.id}`
+      note: lastNote ? [lastNote.who, lastNote.text] : ['—', 'No notes yet'], href: `/pages/orders/order.html?id=${o.id}`
     };
   });
 }
 
 /* ---------- Order tabs (List view) ---------- */
 
-function orderTabs() {
-  try { return JSON.parse(sessionStorage.getItem(ORDER_TABS_KEY) || '{"open":[],"active":""}'); } catch { return { open: [], active: '' }; }
-}
-const saveOrderTabs = t => sessionStorage.setItem(ORDER_TABS_KEY, JSON.stringify(t));

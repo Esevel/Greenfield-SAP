@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Repairs (list) - Admin Portal</title>
+  <title>Services · Repairs list - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/support.css">
 </head>
 <body>
   <div class="app-container">
@@ -18,12 +19,12 @@
       <div id="header-container"></div>
       
       <div class="page-content">
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Repairs</h1>
-          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
-        </div>
-        
-        <nav id="trackerTabs" data-active="repairs"></nav>
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/services/onboarding.html" class="breadcrumb-link">Services</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Repairs</span>
+        </nav>
+        <div id="servicesHeader" data-active="repairs"></div>
         
         <div class="tracker-controls">
         <div class="asset-toolbar">
@@ -60,9 +61,9 @@
           </div>
         </div>
           <nav class="segmented-control view-toggle">
-            <a href="/pages/tracker/repairs.html" class="segment-button">Board</a>
-            <a href="/pages/tracker/repairs-list.html" class="segment-button active">List</a>
-            <a href="/pages/tracker/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
+            <a href="/pages/services/repairs.html" class="segment-button">Board</a>
+            <a href="/pages/services/repairs-list.html" class="segment-button active">List</a>
+            <a href="/pages/services/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
           </nav>
         </div>
         
@@ -190,13 +191,13 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/services-tabs.js"></script>
   <script>
     // Single prototype work order page for all repairs; tracking links don't trigger the row
     document.querySelectorAll('.repairs-table tbody tr').forEach(row => {
       row.addEventListener('click', e => {
         if (e.target.closest('a')) return;
-        window.location.href = '/pages/tracker/work-order.html';
+        window.location.href = '/pages/services/work-order.html';
       });
     });
     document.querySelectorAll('.tracking-link').forEach(link => link.addEventListener('click', e => e.preventDefault()));

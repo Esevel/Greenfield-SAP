@@ -1,7 +1,7 @@
 /* Orders: board, list with tabs, order detail, new order form, insights */
 
 .order-tiles {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   margin-bottom: var(--space-lg);
 }
 
@@ -316,52 +316,11 @@
   color: var(--color-text-secondary);
 }
 
-.order-tabbar {
-  display: flex;
-  gap: 2px;
-  margin-bottom: var(--space-md);
-  overflow-x: auto;
-  border-bottom: 2px solid var(--color-border);
-}
 
-.order-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
-  font: inherit;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-}
 
-.order-tab.active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
-}
 
-.order-tab-close {
-  padding: 0 4px;
-  font-size: var(--font-size-base);
-  line-height: 1;
-  color: var(--color-text-muted);
-  border-radius: var(--border-radius-sm);
-}
 
-.order-tab-close:hover {
-  color: var(--color-text-primary);
-  background: var(--color-background);
-}
 
-.order-tabbar-actions {
-  margin-left: auto;
-  align-self: center;
-}
 
 .orders-empty {
   padding: var(--space-2xl);
@@ -992,6 +951,7 @@
   .orders-split { grid-template-columns: 280px 1fr; }
   .insights-grid { grid-template-columns: 1fr 1fr; }
   .order-tiles, .insights-kpis { grid-template-columns: repeat(3, 1fr); }
+  .orders-split { grid-template-columns: 300px 1fr; }
 }
 
 /* Detail rendered inside the List view */
@@ -1014,4 +974,147 @@
 
 .order-lines td.num {
   white-space: nowrap;
+}
+
+/* Module shell: header, view tabs, tiles that act as filters */
+.order-module-header {
+  margin-bottom: var(--space-md);
+}
+
+.order-module-header .page-description {
+  margin-bottom: 0;
+}
+
+.order-tabs {
+  margin-bottom: var(--space-lg);
+}
+
+.order-tiles .summary-tile.active {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.insights-controls {
+  margin-bottom: var(--space-lg);
+}
+
+/* Menu button (More, ⋯) */
+.order-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.order-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  z-index: 50;
+  min-width: 200px;
+  padding: var(--space-xs) 0;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.order-menu-right {
+  right: 0;
+}
+
+.order-menu-left {
+  left: 0;
+}
+
+.order-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: left;
+  color: var(--color-text-primary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.order-menu-item:hover,
+.order-menu-item:focus-visible {
+  background: var(--color-background);
+}
+
+.order-menu-danger {
+  color: var(--color-error);
+}
+
+.tpl-actions .order-menu .btn {
+  margin-right: 0;
+  padding-left: var(--space-sm);
+  padding-right: var(--space-sm);
+}
+
+/* List view: list + selected order */
+.orders-detail-pane {
+  min-width: 0;
+}
+
+/* Order page: header, tabs under the timeline */
+.order-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.order-tabs-card .order-detail-tabs {
+  margin: 0;
+  padding: 0 var(--space-lg);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.order-detail-tabs .tab-link {
+  font: inherit;
+  font-size: var(--font-size-sm);
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  cursor: pointer;
+}
+
+.tab-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.audit-list .audit-note {
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-sm);
+}
+
+.owner-select {
+  width: auto;
+  min-width: 140px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.ship-grid {
+  margin-bottom: var(--space-lg);
+}
+
+@media (max-width: 1280px) {
+  #orderRoot .edit-layout,
+  #olDetail .edit-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #orderRoot .edit-sidebar-column,
+  #olDetail .edit-sidebar-column {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0 var(--space-lg);
+  }
 }

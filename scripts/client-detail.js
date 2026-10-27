@@ -8,7 +8,8 @@ function initClientDetail() {
   const client = WH_CLIENTS.find(c => c.id === params.get('c')) || WH_CLIENTS[0];
   const k = CONTRACTS[client.id];
   const VERSION_LABEL = { active: 'Active', pending: 'Awaiting acceptance', draft: 'Draft', superseded: 'Superseded', withdrawn: 'Withdrawn' };
-  let viewV = k.versions.some(v => v.v === Number(params.get('v'))) ? Number(params.get('v')) : activeVersion(k).v;
+  const baseV = () => (activeVersion(k) || pendingVersion(k)).v;
+  let viewV = k.versions.some(v => v.v === Number(params.get('v'))) ? Number(params.get('v')) : baseV();
 
   document.title = `${client.name} - Clients - Admin Portal`;
   $('cdCrumb').textContent = client.name;
@@ -168,14 +169,14 @@ function initClientDetail() {
 
   function managedHtml(t, cmp) {
     // The live count uses the active contract; a draft or old version only changes the rule fields above it
-    const live = t.managedUsers.enabled && k.terms.managedUsers.enabled;
+    const live = !isOnboarding(k) && t.managedUsers.enabled && k.terms.managedUsers.enabled;
     return `<div class="detail-grid">${CONTRACT_FIELDS.managed.map(f => fieldHtml(f, t, cmp)).join('')}</div>
       <div class="readonly-note">A user counts once a month if they held at least one Assigned laptop at any point in it, however many laptops. A laptop in repair still counts; loaners and peripherals never do. No proration. Each user bills to the entity in their work country at its rate (set under Billing entities).</div>
       ${live ? '<div id="buPanel" class="bu-panel"></div>' : ''}`;
   }
 
   function capHtml(t, cmp) {
-    if (!CAP_SPEND[client.id]) return grid('cap', t, cmp);
+    if (!CAP_SPEND[client.id] || isOnboarding(k)) return grid('cap', t, cmp);
     const i = capInfo(client.id);
     return grid('cap', t, cmp) + `<div class="util cap-inline"><div class="util-bar"><div class="util-fill util-${i.status}" style="width:${Math.min(100, i.pct)}%"></div><div class="util-mark"></div></div><span class="util-pct">${Math.round(i.pct)}%</span></div>
       <div class="readonly-note">${fmtAmount(i.cur, i.spent, 0)} spent this period across entities, converted at ${escapeHtml(i.fxSource)} · ${CAP_STATUS[i.status][0]} · <a href="/pages/clients/caps.html">Procurement caps</a>${editable() ? '' : ` · <a href="/pages/clients/caps.html?set=${client.id}">Set cap</a>`}</div>`;
@@ -235,13 +236,17 @@ function initClientDetail() {
     $('cdVersion').innerHTML = k.versions.map(x => `<option value="${x.v}" ${x.v === viewV ? 'selected' : ''}>v${x.v} · ${VERSION_LABEL[x.status]}${x.effective ? ` · from ${billingDate(x.effective)}` : ''}</option>`).join('');
     const pending = pendingVersion(k);
     const actions = [];
-    if (v.status === 'draft') actions.push('<button class="btn btn-secondary" id="cdDiscard">Discard draft</button>', `<a class="btn btn-primary" href="${amendHref(v.v)}">Review and publish</a>`);
+    if (isOnboarding(k) && v.status === 'draft') actions.push('<button class="btn btn-secondary" id="cdDeleteClient">Delete client</button>', `<a class="btn btn-primary" href="${amendHref(v.v)}">Review and send</a>`);
+    else if (isOnboarding(k)) actions.push(`<a class="btn btn-primary" href="${amendHref(v.v)}">Open initial contract</a>`);
+    else if (v.status === 'draft') actions.push('<button class="btn btn-secondary" id="cdDiscard">Discard draft</button>', `<a class="btn btn-primary" href="${amendHref(v.v)}">Review and publish</a>`);
     else if (v.status === 'pending') actions.push(`<a class="btn btn-primary" href="${amendHref(v.v)}">Open amendment</a>`);
     else if (!pending && v.status === 'active') actions.push('<button class="btn btn-primary" id="cdEdit">Edit terms</button>');
     else if (!pending) actions.push(`<button class="btn btn-secondary" id="cdGoActive">View active v${activeVersion(k).v}</button>`);
     else actions.push(`<button class="btn btn-secondary" id="cdGoPending">View v${pending.v} ${pending.status === 'draft' ? 'draft' : 'amendment'}</button>`);
     $('cdActions').innerHTML = actions.join('');
-    const banner = {
+    const banner = isOnboarding(k) ? (v.status === 'draft'
+      ? `New client · initial contract v1 is a draft. Edit any section below, then review and send it to ${escapeHtml(clientAdminFor(k))} to accept. Nothing is billed until then.`
+      : `New client · initial contract v1 was sent ${escapeHtml(v.publishedAt || '')} and is waiting for ${escapeHtml(clientAdminFor(k))} to accept. Terms are locked; withdraw it on the contract page to make changes.`) : {
       superseded: `Read-only · v${v.v} was replaced by a later version. Accepted by ${escapeHtml(v.acceptedBy || '—')} on ${escapeHtml(v.acceptedAt || '—')}. <a href="${amendHref(v.v)}">See what changed</a>`,
       withdrawn: `Read-only · v${v.v} was withdrawn before the client accepted it.`,
       pending: `Locked · v${v.v} was published ${escapeHtml(v.publishedAt || '')} and is waiting for ${escapeHtml(clientAdminFor(k))} to accept. Changes are highlighted against v${activeVersion(k).v}.`,
@@ -293,7 +298,7 @@ function initClientDetail() {
   function renderSections() {
     const v = viewing();
     const t = termsOf(v);
-    const cmp = v.status === 'draft' || v.status === 'pending' ? contractTerms(k, activeVersion(k).v) : null;
+    const cmp = (v.status === 'draft' || v.status === 'pending') && activeVersion(k) ? contractTerms(k, activeVersion(k).v) : null;
     const allSections = {
       overview: section('overview', 'Overview', overviewHtml(t, cmp)),
       entities: section('entities', 'Billing entities', entitiesHtml(t, cmp), `${t.entities.length} entit${t.entities.length === 1 ? 'y' : 'ies'} · company structure`),
@@ -418,11 +423,20 @@ function initClientDetail() {
       saveContracts();
       note('Draft discarded.');
       show(activeVersion(k).v);
+    } else if (id === 'cdDeleteClient') {
+      if (!confirm(`Delete ${client.name}? The draft contract and hub assignments are removed.`)) return;
+      delete CONTRACTS[client.id];
+      delete HUB_ASSIGNMENTS[client.id];
+      WH_CLIENTS.splice(WH_CLIENTS.indexOf(client), 1);
+      saveContracts();
+      saveNewClients();
+      location.href = '/pages/clients/list.html';
     } else if (id === 'cdGoPending') show(pendingVersion(k).v);
     else if (id === 'cdGoActive') show(activeVersion(k).v);
   });
 
   render();
+  if (params.get('created')) note(`${client.name} created with a draft initial contract (v1). Check the terms, then review and send it to ${clientAdminFor(k)}.`);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initClientDetail);

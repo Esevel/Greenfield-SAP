@@ -1,0 +1,79 @@
+/* Support module and shared module headers (Services, Support, Needs attention) */
+
+.module-header {
+  margin-bottom: var(--space-md);
+}
+
+.module-header .page-description {
+  margin-bottom: 0;
+}
+
+.module-tabs {
+  margin-bottom: var(--space-lg);
+}
+
+.support-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.support-table tbody tr {
+  cursor: pointer;
+}
+
+.support-table tbody tr:hover {
+  background: var(--color-background);
+}
+
+.composer-buttons {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.ticket-links {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  font-size: var(--font-size-sm);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.form-select-sm {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+/* Needs attention queue */
+.attention-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.attention-table tbody tr {
+  cursor: pointer;
+}
+
+.attention-table tbody tr:hover {
+  background: var(--color-background);
+}
+
+.attention-table .note-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 280px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.attention-kinds {
+  margin-bottom: var(--space-md);
+}
+
+.attention-kinds .segment-button .tab-count {
+  margin-left: 4px;
+}

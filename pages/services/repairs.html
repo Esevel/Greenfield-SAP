@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Repairs - Admin Portal</title>
+  <title>Services · Repairs - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/support.css">
 </head>
 <body>
   <div class="app-container">
@@ -18,12 +19,12 @@
       <div id="header-container"></div>
       
       <div class="page-content">
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Repairs</h1>
-          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
-        </div>
-        
-        <nav id="trackerTabs" data-active="repairs"></nav>
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/services/onboarding.html" class="breadcrumb-link">Services</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Repairs</span>
+        </nav>
+        <div id="servicesHeader" data-active="repairs"></div>
         
         <div class="tracker-controls">
           <div class="asset-toolbar">
@@ -61,9 +62,9 @@
           </div>
           
           <nav class="segmented-control view-toggle">
-            <a href="/pages/tracker/repairs.html" class="segment-button active">Board</a>
-            <a href="/pages/tracker/repairs-list.html" class="segment-button">List</a>
-            <a href="/pages/tracker/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
+            <a href="/pages/services/repairs.html" class="segment-button active">Board</a>
+            <a href="/pages/services/repairs-list.html" class="segment-button">List</a>
+            <a href="/pages/services/repair-quotes.html" class="segment-button">Quotes <span class="tab-count tab-count-alert">2</span></a>
           </nav>
         </div>
         
@@ -75,7 +76,7 @@
               <span class="board-avg">Avg 1.4 days</span>
             </div>
             <div class="board-cards">
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0877</span></div>
                 <div class="card-subject">Cracked display</div>
                 <div class="card-client">Acme Tech</div>
@@ -94,7 +95,7 @@
               <span class="board-avg">Avg 1.1 days</span>
             </div>
             <div class="board-cards">
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0878</span></div>
                 <div class="card-subject">Mic not detected</div>
                 <div class="card-client">Digital Solutions</div>
@@ -103,7 +104,7 @@
                 <div class="card-facility">🔧 FixPoint London</div>
                 <div class="card-bottom"><span>Return 24 Oct</span><span class="card-avatar">JL</span></div>
               </a>
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0876</span></div>
                 <div class="card-subject">Dead pixels, backlight bleed</div>
                 <div class="card-client">TechGlobal Inc</div>
@@ -122,7 +123,7 @@
               <span class="board-avg" data-tooltip="Avg 4.6 days · target 3">⚠ Avg 4.6 days</span>
             </div>
             <div class="board-cards">
-              <a class="board-card blocked" href="/pages/tracker/work-order.html">
+              <a class="board-card blocked" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0871</span></div>
                 <div class="card-subject">Logic board failure</div>
                 <div class="card-client">TechGlobal Inc</div>
@@ -132,7 +133,7 @@
                 <div class="card-facility">🔧 Dell Service Centre Singapore</div>
                 <div class="card-bottom"><span class="date-late">Return 14 Oct · 2d late</span><span class="card-avatar">JL</span></div>
               </a>
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0869</span></div>
                 <div class="card-subject">Keyboard keys unresponsive</div>
                 <div class="card-client">MediaWorks</div>
@@ -141,7 +142,7 @@
                 <div class="card-facility">🔧 iFix Kuala Lumpur</div>
                 <div class="card-bottom"><span class="date-late">Return 15 Oct · 1d late</span><span class="card-avatar">AI</span></div>
               </a>
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0874</span></div>
                 <div class="card-subject">Loose lid hinge, screen flicker</div>
                 <div class="card-client">Digital Solutions</div>
@@ -160,7 +161,7 @@
               <span class="board-avg">Avg 0.5 days</span>
             </div>
             <div class="board-cards">
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0872</span></div>
                 <div class="card-subject">Scroll wheel sensor fault</div>
                 <div class="card-client">MediaWorks</div>
@@ -179,7 +180,7 @@
               <span class="board-avg">Avg 1.6 days</span>
             </div>
             <div class="board-cards">
-              <a class="board-card" href="/pages/tracker/work-order.html">
+              <a class="board-card" href="/pages/services/work-order.html">
                 <div class="card-top"><span class="card-id">REP-0873</span></div>
                 <div class="card-subject">Battery not holding charge</div>
                 <div class="card-client">Acme Tech</div>
@@ -199,7 +200,7 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/services-tabs.js"></script>
   <script src="/scripts/main.js"></script>
 </body>
 </html>

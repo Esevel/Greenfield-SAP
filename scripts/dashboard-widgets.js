@@ -23,24 +23,24 @@ window.DashboardWidgets = (() => {
 
   // Tracker · All by risk
   const SLA = {
-    link: '/pages/tracker/all.html',
+    link: '/pages/attention/queue.html',
     open: 115, ok: 79, risk: 25, breached: 11,
     types: [
-      { label: 'Orders', open: 38, risk: 7, breached: 2, link: '/pages/tracker/orders.html' },
-      { label: 'Onboarding', open: 24, risk: 6, breached: 4, link: '/pages/tracker/onboarding.html' },
-      { label: 'Offboarding', open: 19, risk: 4, breached: 1, link: '/pages/tracker/offboarding.html' },
-      { label: 'Support', open: 14, risk: 3, breached: 1, link: '/pages/tracker/support.html' },
-      { label: 'Repairs', open: 8, risk: 2, breached: 1, link: '/pages/tracker/repairs.html' },
-      { label: 'Redeployments', open: 7, risk: 1, breached: 1, link: '/pages/tracker/redeployments.html' },
-      { label: 'Disposal', open: 4, risk: 1, breached: 1, link: '/pages/tracker/disposal.html' },
-      { label: 'Storage', open: 3, risk: 1, breached: 0, link: '/pages/tracker/storage.html' }
+      { label: 'Orders', open: 38, risk: 7, breached: 2, link: '/pages/orders/board.html' },
+      { label: 'Onboarding', open: 24, risk: 6, breached: 4, link: '/pages/services/onboarding.html' },
+      { label: 'Offboarding', open: 19, risk: 4, breached: 1, link: '/pages/services/offboarding.html' },
+      { label: 'Support', open: 14, risk: 3, breached: 1, link: '/pages/support/board.html' },
+      { label: 'Repairs', open: 8, risk: 2, breached: 1, link: '/pages/services/repairs.html' },
+      { label: 'Redeployments', open: 7, risk: 1, breached: 1, link: '/pages/services/redeployments.html' },
+      { label: 'Disposal', open: 4, risk: 1, breached: 1, link: '/pages/services/disposal.html' },
+      { label: 'Storage', open: 3, risk: 1, breached: 0, link: '/pages/services/storage.html' }
     ],
     overdue: [
-      { id: 'DSP-0207', client: 'FinanceExperts', milestone: 'Data wipe', late: '9d 13h', blocker: 'Wipe failed on 1 of 4 drives', link: '/pages/tracker/disposal.html' },
-      { id: 'OFF-2055', client: 'Digital Solutions', milestone: 'Collected', late: '6d 20h', blocker: 'Awaiting courier', link: '/pages/tracker/offboarding-detail.html' },
-      { id: 'RED-0311', client: 'MediaWorks', milestone: 'Repackage', late: '6d 8h', blocker: '', link: '/pages/tracker/redeployments.html' },
-      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Received at hub', late: '5d 7h', blocker: 'Missing import permit', link: '/pages/tracker/order.html?id=ORD-30398' },
-      { id: 'ONB-1188', client: 'FinanceExperts', milestone: 'Procured', late: '5d 18h', blocker: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' }
+      { id: 'DSP-0207', client: 'FinanceExperts', milestone: 'Data wipe', late: '9d 13h', blocker: 'Wipe failed on 1 of 4 drives', link: '/pages/services/disposal.html' },
+      { id: 'OFF-2055', client: 'Digital Solutions', milestone: 'Collected', late: '6d 20h', blocker: 'Awaiting courier', link: '/pages/services/offboarding-detail.html' },
+      { id: 'RED-0311', client: 'MediaWorks', milestone: 'Repackage', late: '6d 8h', blocker: '', link: '/pages/services/redeployments.html' },
+      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Received at hub', late: '5d 7h', blocker: 'Missing import permit', link: '/pages/orders/order.html?id=ORD-30398' },
+      { id: 'ONB-1188', client: 'FinanceExperts', milestone: 'Procured', late: '5d 18h', blocker: '1 line ETA after due date', link: '/pages/services/onboarding.html' }
     ]
   };
 
@@ -57,27 +57,27 @@ window.DashboardWidgets = (() => {
     { id: 'delivered', label: 'Delivered' }
   ];
   const OMS_PIPELINE = [
-    { label: 'Orders', link: '/pages/tracker/orders.html', stages: { new: 4, progress: 23, partner: 6, client: 1, delivered: 4 }, risk: 7, breached: 2 },
-    { label: 'Onboarding', link: '/pages/tracker/onboarding.html', stages: { new: 3, progress: 12, partner: 4, client: 2, delivered: 3 }, risk: 6, breached: 4 },
-    { label: 'Offboarding', link: '/pages/tracker/offboarding.html', stages: { new: 2, progress: 11, partner: 3, client: 1, delivered: 2 }, risk: 4, breached: 1 },
-    { label: 'Support', link: '/pages/tracker/support.html', stages: { new: 3, progress: 9, partner: 0, client: 2, delivered: 0 }, risk: 3, breached: 1 },
-    { label: 'Repairs', link: '/pages/tracker/repairs.html', stages: { new: 1, progress: 4, partner: 2, client: 1, delivered: 0 }, risk: 2, breached: 1 },
-    { label: 'Redeployments', link: '/pages/tracker/redeployments.html', stages: { new: 1, progress: 5, partner: 0, client: 0, delivered: 1 }, risk: 1, breached: 1 },
-    { label: 'Disposal', link: '/pages/tracker/disposal.html', stages: { new: 0, progress: 2, partner: 2, client: 0, delivered: 0 }, risk: 1, breached: 1 },
-    { label: 'Storage', link: '/pages/tracker/storage.html', stages: { new: 1, progress: 2, partner: 0, client: 0, delivered: 0 }, risk: 1, breached: 0 }
+    { label: 'Orders', link: '/pages/orders/board.html', stages: { new: 4, progress: 23, partner: 6, client: 1, delivered: 4 }, risk: 7, breached: 2 },
+    { label: 'Onboarding', link: '/pages/services/onboarding.html', stages: { new: 3, progress: 12, partner: 4, client: 2, delivered: 3 }, risk: 6, breached: 4 },
+    { label: 'Offboarding', link: '/pages/services/offboarding.html', stages: { new: 2, progress: 11, partner: 3, client: 1, delivered: 2 }, risk: 4, breached: 1 },
+    { label: 'Support', link: '/pages/support/board.html', stages: { new: 3, progress: 9, partner: 0, client: 2, delivered: 0 }, risk: 3, breached: 1 },
+    { label: 'Repairs', link: '/pages/services/repairs.html', stages: { new: 1, progress: 4, partner: 2, client: 1, delivered: 0 }, risk: 2, breached: 1 },
+    { label: 'Redeployments', link: '/pages/services/redeployments.html', stages: { new: 1, progress: 5, partner: 0, client: 0, delivered: 1 }, risk: 1, breached: 1 },
+    { label: 'Disposal', link: '/pages/services/disposal.html', stages: { new: 0, progress: 2, partner: 2, client: 0, delivered: 0 }, risk: 1, breached: 1 },
+    { label: 'Storage', link: '/pages/services/storage.html', stages: { new: 1, progress: 2, partner: 0, client: 0, delivered: 0 }, risk: 1, breached: 0 }
   ];
   const OMS_TOTALS = OMS_STAGES.reduce((t, s) => ({ ...t, [s.id]: OMS_PIPELINE.reduce((n, r) => n + r.stages[s.id], 0) }), {});
   const OMS_OPEN = Object.values(OMS_TOTALS).reduce((a, b) => a + b, 0);
   // Rush orders, VIP / exec requests and anything start-date or SLA critical. Overdue from Tracker · All by risk.
   const PRIORITY_ORDERS = [
-    { id: 'ONB-1186', client: 'Acme Tech', cc: 'SG', why: 'Starts today', stage: 'Imaged / Provisioned', owner: 'Qonit', waiting: 'Esevel ops', due: '5d 10h overdue', state: 'bad', link: '/pages/tracker/onboarding-detail.html?id=ONB-1186' },
-    { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', why: 'Start date at risk', stage: 'Procured · 1 of 2 lines', owner: 'Jia Ling', waiting: 'Vendor (backorder)', due: '5d 18h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
-    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Received at hub', owner: 'Aisha', waiting: 'Customs broker', due: '5d 7h overdue', state: 'bad', link: '/pages/tracker/order.html?id=ORD-30398' },
-    { id: 'SUP-5538', client: 'TechGlobal Inc', cc: 'US', why: 'Urgent ticket', stage: 'First response', owner: 'Esevel Ops', waiting: 'Esevel ops', due: '18m left', state: 'warn', link: '/pages/tracker/support.html' },
-    { id: 'ONB-1194', client: 'TechGlobal Inc', cc: 'US', why: 'Starts 3 Nov', stage: 'Initiated', owner: 'Qonit', waiting: 'Client HR', due: '4d 19h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
-    { id: 'REP-0871', client: 'TechGlobal Inc', cc: 'SG', why: 'Exec device', stage: 'Repair / loaner sent', owner: 'Jia Ling', waiting: 'Vendor (Dell part)', due: '5d 10h overdue', state: 'bad', link: '/pages/tracker/work-order.html?wo=REP-0871' },
-    { id: 'ONB-1190', client: 'TechGlobal Inc', cc: 'SG', why: 'Starts Mon', stage: 'Dispatched', owner: 'Qonit', waiting: 'Courier pickup', due: '4d 20h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
-    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Hub', due: '4d 21h overdue', state: 'bad', link: '/pages/tracker/all.html' }
+    { id: 'ONB-1186', client: 'Acme Tech', cc: 'SG', why: 'Starts today', stage: 'Imaged / Provisioned', owner: 'Qonit', waiting: 'Esevel ops', due: '5d 10h overdue', state: 'bad', link: '/pages/services/onboarding-detail.html?id=ONB-1186' },
+    { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', why: 'Start date at risk', stage: 'Procured · 1 of 2 lines', owner: 'Jia Ling', waiting: 'Vendor (backorder)', due: '5d 18h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
+    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Received at hub', owner: 'Aisha', waiting: 'Customs broker', due: '5d 7h overdue', state: 'bad', link: '/pages/orders/order.html?id=ORD-30398' },
+    { id: 'SUP-5538', client: 'TechGlobal Inc', cc: 'US', why: 'Urgent ticket', stage: 'First response', owner: 'Esevel Ops', waiting: 'Esevel ops', due: '18m left', state: 'warn', link: '/pages/support/board.html' },
+    { id: 'ONB-1194', client: 'TechGlobal Inc', cc: 'US', why: 'Starts 3 Nov', stage: 'Initiated', owner: 'Qonit', waiting: 'Client HR', due: '4d 19h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
+    { id: 'REP-0871', client: 'TechGlobal Inc', cc: 'SG', why: 'Exec device', stage: 'Repair / loaner sent', owner: 'Jia Ling', waiting: 'Vendor (Dell part)', due: '5d 10h overdue', state: 'bad', link: '/pages/services/work-order.html?wo=REP-0871' },
+    { id: 'ONB-1190', client: 'TechGlobal Inc', cc: 'SG', why: 'Starts Mon', stage: 'Dispatched', owner: 'Qonit', waiting: 'Courier pickup', due: '4d 20h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
+    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Hub', due: '4d 21h overdue', state: 'bad', link: '/pages/attention/queue.html' }
   ];
 
   // Billing (Ledger, Invoices), Stock · Storage fees, Clients · Procurement caps, repair quotes and client catalogues
@@ -93,7 +93,7 @@ window.DashboardWidgets = (() => {
     margins: [
       { label: 'Devices', value: '7–9%', sub: 'Contract price over vendor cost', link: '/pages/catalogue/model/client-catalogues.html',
         amounts: [['SGD', '155.84'], ['GBP', '142.00']], sgdCaption: 'per unit across 2 client listings' },
-      { label: 'Repairs', value: '38%', sub: 'Avg of 4 quotes with parts · lowest 27%', link: '/pages/tracker/repair-quotes.html',
+      { label: 'Repairs', value: '38%', sub: 'Avg of 4 quotes with parts · lowest 27%', link: '/pages/services/repair-quotes.html',
         amounts: [['SGD', '699.00'], ['AUD', '149.00'], ['USD', '153.00']], sgdCaption: 'across those 4 quotes' }
     ],
     caps: { over: 1, near: 3, renewing: 2, link: '/pages/clients/caps.html' }
@@ -263,7 +263,7 @@ window.DashboardWidgets = (() => {
     vendorOrders: [36, 38, 37, 40, 39, 41, 40, 43, 42, 44, 43, 45, 44]
   };
   const share = (points, f) => points.map(v => Math.round(v * f));
-  const SUPPORT = '/pages/tracker/support.html';
+  const SUPPORT = '/pages/support/board.html';
 
   const CARDS = [
     // Head
@@ -272,7 +272,7 @@ window.DashboardWidgets = (() => {
     { ...FINANCE, label: 'Gross margin', value: '21.4%', delta: ['up', true, '1.2 pts vs Q3'],
       note: '≈ SGD 10.3K this quarter', link: '/pages/catalogue/model/client-catalogues.html' },
     { ...HEAD, label: 'Work orders completed', value: '342', delta: ['up', true, '8% vs same days of Q3'],
-      note: '115 open now', spark: SPARK.woDone, link: '/pages/tracker/all.html' },
+      note: '115 open now', spark: SPARK.woDone, link: '/pages/attention/queue.html' },
     { ...HEAD, label: 'Tickets', value: '486', delta: ['up', null, '12% vs same days of Q3'],
       note: 'Avg resolution 9h 40m · target 16h', spark: SPARK.tickets, link: SUPPORT },
     { ...HEAD, label: 'Billable users', value: '767', delta: ['up', true, '0.5% vs end of Q3'],
@@ -281,7 +281,7 @@ window.DashboardWidgets = (() => {
     { ...FINANCE, when: user => !user.isHead, label: 'Outstanding invoices', value: sgd(toSGD(outstanding.amounts)), tone: 'warn',
       note: outstanding.sub, link: outstanding.link },
     { ...HEAD, label: 'Work orders within SLA', value: '91.6%', delta: ['down', false, '1.8 pts vs Q3'],
-      note: '11 open breached · 25 at risk', link: '/pages/tracker/all.html' },
+      note: '11 open breached · 25 at risk', link: '/pages/attention/queue.html' },
 
     // Finance
     { p: 1, requires: 'finance_reporting', label: 'Unbilled charges', value: sgd(toSGD(unbilled.amounts)),
@@ -304,7 +304,7 @@ window.DashboardWidgets = (() => {
     { p: 0, requires: 'support', when: IT_MEMBER, label: 'Open tickets', value: '12',
       note: '3 new · 3 triage · 4 with tech · 2 waiting on client', link: SUPPORT },
     { p: 0, requires: 'breakfix', when: IT_MEMBER, label: 'Repairs in flight', value: '8', tone: 'warn',
-      note: '2 at risk · REP-0869 1 day late back', link: '/pages/tracker/repairs.html' },
+      note: '2 at risk · REP-0869 1 day late back', link: '/pages/services/repairs.html' },
     { p: 0, requires: 'support', when: IT_MEMBER, label: 'Resolved this week', value: '69', delta: ['up', true, '4% vs same days last week'],
       note: '471 this quarter', spark: SPARK.resolved, link: SUPPORT },
     { p: 0, requires: 'support', when: IT_MEMBER, label: 'First response in target', value: '95%', delta: ['up', true, '3 pts vs Q3'],
@@ -336,7 +336,7 @@ window.DashboardWidgets = (() => {
     { p: 6, requires: 'clients', when: csView, label: 'Open work order breaches',
       value: byTier('clients', { all: '11', smb: '6', enterprise: '5' }), tone: 'bad',
       note: byTier('clients', { all: 'Acme Tech 3 · FinanceExperts, MediaWorks, TechGlobal 2 each', smb: 'FinanceExperts, MediaWorks 2 each · 2 more clients 1 each', enterprise: 'Acme Tech 3 · TechGlobal 2' }),
-      link: '/pages/tracker/all.html' },
+      link: '/pages/attention/queue.html' },
     { p: 5, requires: 'clients', when: user => !csView(user), label: 'Joiners',
       value: user => visible(user, 'clients', SAMPLE.joiners).length,
       note: user => {
@@ -355,43 +355,43 @@ window.DashboardWidgets = (() => {
     { p: 4, requires: 'support', ...IT_LEADS, label: 'Reopened tickets', value: '4.1%', delta: ['down', true, '0.8 pts vs Q3'],
       note: '19 of 471 resolved', link: SUPPORT },
     { p: 5, requires: 'breakfix', ...IT_LEADS, label: 'Repair turnaround', value: '7.4 days', delta: ['down', true, '0.6 days faster than Q3'],
-      note: '61 repairs this quarter · 1 open breached', link: '/pages/tracker/repairs.html' },
+      note: '61 repairs this quarter · 1 open breached', link: '/pages/services/repairs.html' },
     { p: 6, requires: 'onboarding', ...IT_LEADS, label: 'Onboarding set up on time', value: '84.2%', delta: ['down', false, '3.1 pts vs Q3'],
-      note: '52 onboardings this quarter · 4 open breached', link: '/pages/tracker/onboarding.html' },
+      note: '52 onboardings this quarter · 4 open breached', link: '/pages/services/onboarding.html' },
 
     // Control Tower: order status (Vinh)
     { p: 0, requires: 'coordination', when: towerView, label: 'Open', value: String(OMS_OPEN), delta: ['up', null, '8 vs last week'],
-      note: `${SLA.breached} breached · ${SLA.risk} at risk`, link: '/pages/tracker/all.html' },
+      note: `${SLA.breached} breached · ${SLA.risk} at risk`, link: '/pages/attention/queue.html' },
     { p: 0, requires: 'coordination', when: towerView, label: 'New', value: String(OMS_TOTALS.new), tone: 'warn',
-      note: 'Not started · oldest 6h', link: '/pages/tracker/all.html' },
+      note: 'Not started · oldest 6h', link: '/pages/attention/queue.html' },
     { p: 0, requires: 'coordination', when: towerView, label: 'In progress', value: String(OMS_TOTALS.progress),
-      note: 'Milestones under way', link: '/pages/tracker/all.html' },
+      note: 'Milestones under way', link: '/pages/attention/queue.html' },
     { p: 0, requires: 'coordination', when: towerView, label: 'Blocked', value: String(OMS_TOTALS.partner + OMS_TOTALS.client), tone: 'bad',
-      note: `${OMS_TOTALS.partner} on partners · ${OMS_TOTALS.client} on clients`, link: '/pages/tracker/all.html' },
+      note: `${OMS_TOTALS.partner} on partners · ${OMS_TOTALS.client} on clients`, link: '/pages/attention/queue.html' },
     { p: 0, requires: 'coordination', when: towerView, label: 'Delivered, awaiting sign-off', value: String(OMS_TOTALS.delivered),
-      note: 'Proof or setup confirmation needed', link: '/pages/tracker/sync-inbox.html' },
+      note: 'Proof or setup confirmation needed', link: '/pages/services/sync-inbox.html' },
     { p: 0, requires: 'coordination', when: towerView, label: 'Completed this week', value: '86', delta: ['up', true, '11% vs last week'],
-      note: '342 this quarter · 91.6% within SLA', spark: SPARK.woDone, link: '/pages/tracker/all.html' },
+      note: '342 this quarter · 91.6% within SLA', spark: SPARK.woDone, link: '/pages/attention/queue.html' },
 
     // Control Tower: shared with Siti
     { p: 1, requires: 'coordination', label: 'Work orders opened', value: '418', delta: ['up', null, '6% vs same days of Q3'],
-      note: 'Across all services', spark: SPARK.woOpened, link: '/pages/tracker/all.html' },
+      note: 'Across all services', spark: SPARK.woOpened, link: '/pages/attention/queue.html' },
     { p: 2, requires: 'coordination', label: 'Work orders completed', value: '342', delta: ['up', true, '8% vs same days of Q3'],
-      note: '115 open now', spark: SPARK.woDone, link: '/pages/tracker/all.html' },
+      note: '115 open now', spark: SPARK.woDone, link: '/pages/attention/queue.html' },
     { p: 3, requires: 'coordination', label: 'Within SLA', value: '91.6%', delta: ['down', false, '1.8 pts vs Q3'],
-      note: 'Completed this quarter', link: '/pages/tracker/all.html' },
+      note: 'Completed this quarter', link: '/pages/attention/queue.html' },
     { p: 4, requires: 'coordination', label: 'Breached now', value: '11', tone: 'bad',
-      note: 'Longest: DSP-0207, 9d 13h overdue', link: '/pages/tracker/all.html' },
+      note: 'Longest: DSP-0207, 9d 13h overdue', link: '/pages/attention/queue.html' },
     { p: 5, requires: 'coordination', label: 'At risk now', value: '25', tone: 'warn',
-      note: '75%+ of milestone used · of 115 open', link: '/pages/tracker/all.html' },
+      note: '75%+ of milestone used · of 115 open', link: '/pages/attention/queue.html' },
     { p: 6, requires: 'coordination', label: 'Delivery proofs to match', value: '4',
-      note: '2 unmatched · 2 to confirm', link: '/pages/tracker/sync-inbox.html' },
+      note: '2 unmatched · 2 to confirm', link: '/pages/services/sync-inbox.html' },
 
     // Service Delivery
     { p: 1, requires: 'shipments', label: 'Deliveries this quarter', value: '196', delta: ['up', null, '10% vs same days of Q3'],
-      note: 'Orders, onboarding and redeployments', spark: SPARK.deliveries, link: '/pages/tracker/orders.html' },
+      note: 'Orders, onboarding and redeployments', spark: SPARK.deliveries, link: '/pages/orders/board.html' },
     { p: 2, requires: 'shipments', label: 'Delivered on time', value: '89.3%', delta: ['down', false, '1.2 pts vs Q3'],
-      note: 'Against the Delivered milestone', link: '/pages/tracker/all.html' },
+      note: 'Against the Delivered milestone', link: '/pages/attention/queue.html' },
     { p: 3, requires: 'warehouses', label: 'Avg hub prep to dispatch', value: '1.6 days', delta: ['down', true, '0.2 days faster than Q3'],
       note: 'Target 2 days', link: '/pages/stock/warehouses.html' },
     { p: 4, requires: 'stock', label: 'Stock needing attention', value: '6', tone: 'warn',
@@ -402,13 +402,13 @@ window.DashboardWidgets = (() => {
 
     // Procurement: the orders themselves
     { p: 1, requires: 'purchase_orders', label: 'Vendor orders this quarter', value: '132', delta: ['up', null, '7% vs same days of Q3'],
-      note: 'Regular, rush and bulk', spark: SPARK.vendorOrders, link: '/pages/tracker/orders.html' },
+      note: 'Regular, rush and bulk', spark: SPARK.vendorOrders, link: '/pages/orders/board.html' },
     { p: 2, requires: 'purchase_orders', label: 'POs to place', value: '4', tone: 'warn',
-      note: '5 more awaiting client approval', link: '/pages/tracker/orders.html?status=attention' },
+      note: '5 more awaiting client approval', link: '/pages/orders/board.html?status=attention' },
     { p: 3, requires: 'purchase_orders', label: 'Late at vendor delivery', value: '3', tone: 'bad',
-      note: 'ORD-30398 · ORD-30421 · ONB-1188', link: '/pages/tracker/order.html?id=ORD-30398' },
+      note: 'ORD-30398 · ORD-30421 · ONB-1188', link: '/pages/orders/order.html?id=ORD-30398' },
     { p: 4, requires: 'purchase_orders', label: 'Partial deliveries', value: '2', tone: 'warn',
-      note: 'ONB-1182 · ONB-1193 · 1 line late on each', link: '/pages/tracker/onboarding.html' },
+      note: 'ONB-1182 · ONB-1193 · 1 line late on each', link: '/pages/services/onboarding.html' },
     { p: 5, requires: 'purchase_orders', label: 'Restock proposals', value: '3 to send', note: '1 awaiting client approval', link: '/pages/stock/restock.html' },
     { p: 6, requires: 'purchase_orders', label: 'Clients over / near cap', value: '1 / 3', note: 'Orders above cap need client approval', link: '/pages/clients/caps.html' },
 
@@ -418,9 +418,9 @@ window.DashboardWidgets = (() => {
     { p: 2, requires: 'vendor_performance', label: 'Courier deliveries on time', value: '91%', delta: ['down', false, '1.5 pts vs Q3'],
       note: 'Courier X · pickups 94% · 3 missed', link: '/pages/vendors/detail.html' },
     { p: 3, requires: 'vendor_performance', label: 'Repair partner turnaround', value: '5.2 days', delta: ['down', true, '0.4 days faster than Q3'],
-      note: 'iFix, FixPoint, TechCare', link: '/pages/tracker/repairs.html' },
+      note: 'iFix, FixPoint, TechCare', link: '/pages/services/repairs.html' },
     { p: 4, requires: 'vendor_performance', label: 'Disposal certificates on time', value: '97%', delta: ['up', true, '1 pt vs Q3'],
-      note: 'GreenCycle ITAD (on hold)', link: '/pages/tracker/disposal.html' },
+      note: 'GreenCycle ITAD (on hold)', link: '/pages/services/disposal.html' },
     { p: 5, requires: 'vendor_performance', label: 'Service gaps', value: String(COVERAGE_TOTALS.gaps), tone: COVERAGE_TOTALS.gaps ? 'bad' : '',
       note: `${COVERAGE_TOTALS.singles} more single-vendor · across ${COUNTRY_COVERAGE.length} countries`, link: '/pages/vendors/list.html' },
     { p: 6, requires: 'vendor_performance', label: 'Vendor contracts renewing', value: '1', note: 'Courier X, 31 Mar 2027 · 4 suppliers Jun 2027', link: '/pages/vendors/detail.html' }
@@ -441,7 +441,7 @@ window.DashboardWidgets = (() => {
     { section: 'clients', ...CS_LEAD, label: 'Active contracts', value: '5', note: '2 amendments pending · 1 expired', link: '/pages/clients/list.html' },
     { section: 'clients', ...CS_LEAD, label: 'Renewing by Jan 2027', value: '1', link: '/pages/clients/list.html' },
 
-    { section: 'operations', requires: 'work_orders', when: user => !isVisible(PANELS.sla, user), label: 'Open work orders', value: '115', note: '11 breached · 25 at risk', tone: 'down', link: '/pages/tracker/all.html' },
+    { section: 'operations', requires: 'work_orders', when: user => !isVisible(PANELS.sla, user), label: 'Open work orders', value: '115', note: '11 breached · 25 at risk', tone: 'down', link: '/pages/attention/queue.html' },
     { section: 'operations', requires: 'stock', label: 'Devices in stock', value: '155', note: '139 in hubs · 129 available', link: '/pages/stock/list.html' },
     { section: 'operations', requires: 'stock', label: 'Stock needing attention', value: '6', note: 'Below threshold, awaiting restock or aged', tone: 'down', link: '/pages/stock/list.html' },
     { section: 'operations', requires: 'shipments', label: 'Receiving', value: '5', note: '3 to inspect · 2 expected', link: '/pages/stock/receiving.html' },
@@ -449,8 +449,8 @@ window.DashboardWidgets = (() => {
     { section: 'vendors', requires: 'vendors', label: 'Active vendors', value: '9', note: '1 on hold · 1 offboarded', link: '/pages/vendors/list.html' },
     { section: 'vendors', requires: 'vendors', label: 'Vendor integrations', value: '1 failing', note: 'DHL Express', tone: 'down', link: '/pages/vendors/list.html' },
 
-    { section: 'it_euc', requires: 'breakfix', label: 'Open repairs', value: '8', note: '1 breached · 2 at risk', link: '/pages/tracker/repairs.html' },
-    { section: 'it_euc', requires: 'onboarding', label: 'Onboarding / offboarding', value: '24 / 19', note: 'Open work orders', link: '/pages/tracker/onboarding.html' },
+    { section: 'it_euc', requires: 'breakfix', label: 'Open repairs', value: '8', note: '1 breached · 2 at risk', link: '/pages/services/repairs.html' },
+    { section: 'it_euc', requires: 'onboarding', label: 'Onboarding / offboarding', value: '24 / 19', note: 'Open work orders', link: '/pages/services/onboarding.html' },
 
     { section: 'people', requires: 'people', label: 'Joiners', value: '6', note: 'Next: Hafiz Rahman, starts today', link: '/pages/people/joiners.html' },
     { section: 'people', requires: 'people', label: 'Leavers', value: '4', note: 'Next: Marcus Lee, 23 Oct', link: '/pages/people/leavers.html' },
@@ -475,7 +475,7 @@ window.DashboardWidgets = (() => {
     { section: 'clients', requires: 'clients', when: forTier('smb'), category: 'UPCOMING', title: 'MediaWorks term ends 3 Jan 2027', description: 'Start the renewal conversation', link: '/pages/clients/list.html' },
     { section: 'clients', requires: 'sla', when: user => scoped('sla')(user) && visible(user, 'sla', SAMPLE.slaAtRisk).length > 0, category: 'URGENT',
       title: user => `${plural(visible(user, 'sla', SAMPLE.slaAtRisk).length, 'work order')} at risk of SLA breach`,
-      description: user => clientNames(visible(user, 'sla', SAMPLE.slaAtRisk)), link: '/pages/tracker/all.html' },
+      description: user => clientNames(visible(user, 'sla', SAMPLE.slaAtRisk)), link: '/pages/attention/queue.html' },
     { section: 'clients', requires: 'clients', when: user => visible(user, 'clients', SAMPLE.reports).some(r => r.state === 'draft' || r.state === 'none'), category: 'NEEDS_ATTENTION',
       title: user => {
         const n = visible(user, 'clients', SAMPLE.reports).filter(r => r.state === 'draft' || r.state === 'none').length;
@@ -486,26 +486,26 @@ window.DashboardWidgets = (() => {
       link: '/pages/reports/service-reports.html' },
     { section: 'clients', requires: 'support', when: user => !itView(user) && visible(user, 'support', SAMPLE.supportAtRisk).length > 0, category: 'URGENT',
       title: user => `${plural(visible(user, 'support', SAMPLE.supportAtRisk).length, 'support ticket')} breached or at risk`,
-      description: user => visible(user, 'support', SAMPLE.supportAtRisk).map(t => `${t.id} ${t.client}: ${t.text}`).join(' · '), link: '/pages/tracker/support.html' },
+      description: user => visible(user, 'support', SAMPLE.supportAtRisk).map(t => `${t.id} ${t.client}: ${t.text}`).join(' · '), link: '/pages/support/board.html' },
 
     // Operations
-    { section: 'operations', requires: 'work_orders', when: user => !towerView(user), category: 'NEEDS_ATTENTION', title: '4 delivery proofs to match', description: '2 unmatched · 2 need a confirmed match', link: '/pages/tracker/sync-inbox.html' },
+    { section: 'operations', requires: 'work_orders', when: user => !towerView(user), category: 'NEEDS_ATTENTION', title: '4 delivery proofs to match', description: '2 unmatched · 2 need a confirmed match', link: '/pages/services/sync-inbox.html' },
 
     // Control Tower coordination (Vinh)
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'DHL Express updates not reaching the tracker', description: 'Webhook failing · UK collections and deliveries need manual status · OFF-2055 missed a second pickup', link: '/pages/vendors/list.html' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: '2 delivery proofs with no work order', description: 'FedEx 7712 4459 1187 (Grace Liu) · email scan from J. Whitfield with no tracking number', link: '/pages/tracker/sync-inbox.html' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'ORD-30398 stuck at customs', description: 'Acme Tech · broker, vendor and Procurement need a re-issued commercial invoice', link: '/pages/tracker/order.html?id=ORD-30398' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: '2 return receipts to confirm', description: 'OFF-2061 at Singapore Hub · OFF-2055 at Digital Solutions London', link: '/pages/tracker/sync-inbox.html' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'DSP-0207: wipe failed on 1 of 4 drives', description: 'FinanceExperts · 9d 13h overdue · confirm shred with the disposal partner', link: '/pages/tracker/disposal.html' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'REP-0871 waiting on a back-ordered part', description: 'TechGlobal · Dell ETA Friday · loaner already with the user', link: '/pages/tracker/work-order.html?wo=REP-0871' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: '2 delivery proofs with no work order', description: 'FedEx 7712 4459 1187 (Grace Liu) · email scan from J. Whitfield with no tracking number', link: '/pages/services/sync-inbox.html' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'ORD-30398 stuck at customs', description: 'Acme Tech · broker, vendor and Procurement need a re-issued commercial invoice', link: '/pages/orders/order.html?id=ORD-30398' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: '2 return receipts to confirm', description: 'OFF-2061 at Singapore Hub · OFF-2055 at Digital Solutions London', link: '/pages/services/sync-inbox.html' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'DSP-0207: wipe failed on 1 of 4 drives', description: 'FinanceExperts · 9d 13h overdue · confirm shred with the disposal partner', link: '/pages/services/disposal.html' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'REP-0871 waiting on a back-ordered part', description: 'TechGlobal · Dell ETA Friday · loaner already with the user', link: '/pages/services/work-order.html?wo=REP-0871' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'Courier X invite pending for Sophie Tran', description: 'AU courier · invited 14 Oct, not signed in · 0 jobs assigned', link: '/pages/vendors/access.html' },
     { section: 'operations', requires: 'stock', category: 'NEEDS_ATTENTION', title: '3 restock proposals to send', description: 'Thresholds below minimum · 1 more awaiting client', link: '/pages/stock/restock.html' },
     { section: 'operations', requires: 'shipments', category: 'NEEDS_ATTENTION', title: '3 devices to inspect', description: 'Received at hub, intake not done', link: '/pages/stock/receiving.html' },
     { section: 'operations', requires: 'stock', category: 'UPCOMING', title: '68 devices stored 90+ days', description: 'Review with clients: redeploy or dispose', link: '/pages/stock/fees.html' },
 
     // Procurement
-    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at hub 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/tracker/order.html?id=ORD-30398' },
-    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ONB-1188: vendor backorder on the 14" model', description: 'FinanceExperts · confirm the 16" substitute with the client', link: '/pages/tracker/onboarding.html' },
+    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at hub 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/orders/order.html?id=ORD-30398' },
+    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ONB-1188: vendor backorder on the 14" model', description: 'FinanceExperts · confirm the 16" substitute with the client', link: '/pages/services/onboarding.html' },
     { section: 'procurement', requires: 'purchase_orders', category: 'NEEDS_ATTENTION', title: '2 joiners need devices ordered this week', description: 'No stock in the client hub · Priya Nair (Acme Tech, 26 Oct) · Daniel Okafor (TechGlobal, 28 Oct)', link: '/pages/people/joiners.html' },
     { section: 'procurement', requires: 'purchase_orders', when: user => !user.can('stock'), category: 'NEEDS_ATTENTION', title: '3 restock proposals to quote', description: 'Thresholds below minimum · 1 more awaiting client approval', link: '/pages/stock/restock.html' },
     { section: 'procurement', requires: 'purchase_orders', when: user => !user.can(null, CS_LEAD), category: 'NEEDS_ATTENTION', title: '1 client over procurement cap', description: 'Orders above the cap need client approval · 3 more near cap', link: '/pages/clients/caps.html' },
@@ -527,14 +527,14 @@ window.DashboardWidgets = (() => {
     // IT Services: ticket and device work for today
     { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5538: laptop won’t boot after update', description: 'TechGlobal · Sarah Kim · urgent · unassigned · first response due in 18m', link: SUPPORT },
     { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5517 resolution 2h 15m overdue', description: 'TechGlobal · screen flicker · blocked on a part with Kelvin Tan', link: SUPPORT },
-    { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5521: 52m left to resolve', description: 'Acme Tech · VPN drops every 20 minutes · profile reissued, confirm with the user', link: '/pages/tracker/support-detail.html' },
-    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1186: finish Jamf enrolment', description: 'Acme Tech · Sophie Tan started 19 Oct · device at Singapore Hub', link: '/pages/tracker/onboarding-detail.html?id=ONB-1186' },
-    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1179: get setup sign-off', description: 'MediaWorks · Mei Lin Tan · delivered, waiting on the employee', link: '/pages/tracker/onboarding.html' },
+    { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5521: 52m left to resolve', description: 'Acme Tech · VPN drops every 20 minutes · profile reissued, confirm with the user', link: '/pages/support/ticket.html' },
+    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1186: finish Jamf enrolment', description: 'Acme Tech · Sophie Tan started 19 Oct · device at Singapore Hub', link: '/pages/services/onboarding-detail.html?id=ONB-1186' },
+    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1179: get setup sign-off', description: 'MediaWorks · Mei Lin Tan · delivered, waiting on the employee', link: '/pages/services/onboarding.html' },
     { section: 'it_euc', requires: 'support', when: itView, category: 'UPCOMING', title: '2 tickets waiting on the client', description: 'SUP-5509 confirm fix (1d) · SUP-5503 cost approval (2d)', link: SUPPORT },
 
     // IT
-    { section: 'it_euc', requires: 'breakfix', category: 'NEEDS_ATTENTION', title: '2 repair quotes need action', description: 'REP-0874 has no vendor quote from FixPoint London yet', link: '/pages/tracker/repair-quotes.html' },
-    { section: 'it_euc', requires: 'breakfix', category: 'NEEDS_ATTENTION', title: 'REP-0858 quote expired', description: 'Acme Tech · no decision after 7 days', link: '/pages/tracker/repair-quotes.html' },
+    { section: 'it_euc', requires: 'breakfix', category: 'NEEDS_ATTENTION', title: '2 repair quotes need action', description: 'REP-0874 has no vendor quote from FixPoint London yet', link: '/pages/services/repair-quotes.html' },
+    { section: 'it_euc', requires: 'breakfix', category: 'NEEDS_ATTENTION', title: 'REP-0858 quote expired', description: 'Acme Tech · no decision after 7 days', link: '/pages/services/repair-quotes.html' },
 
     // People (shared)
     { section: 'people', requires: 'people', when: forTier('smb'), category: 'URGENT', title: 'Hafiz Rahman starts today', description: 'MediaWorks · Malaysia · added by client', link: '/pages/people/joiners.html?open=p4' },
@@ -560,9 +560,9 @@ window.DashboardWidgets = (() => {
 
   const SECTION_LINKS = {
     clients: '/pages/clients/list.html',
-    operations: '/pages/tracker/all.html',
+    operations: '/pages/attention/queue.html',
     vendors: '/pages/vendors/list.html',
-    it_euc: '/pages/tracker/repairs.html',
+    it_euc: '/pages/services/repairs.html',
     people: '/pages/people/directory.html',
     integrations: '/pages/integrations/list.html'
   };
@@ -1506,11 +1506,11 @@ window.DashboardWidgets = (() => {
     { label: 'Arriving at hub', n: 3 }
   ];
   const WAITING_ON_VENDORS = [
-    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', state: 'bad', status: '5d 7h overdue', note: 'Customs hold: missing import permit', link: '/pages/tracker/order.html?id=ORD-30398' },
-    { id: 'ORD-30421', client: 'MediaWorks', cc: 'SG', state: 'bad', status: '4d 5h overdue', note: 'Ingram Micro confirms the last line arrives today', link: '/pages/tracker/order.html?id=ORD-30421' },
-    { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', state: 'bad', status: '5d 18h overdue', note: 'Backorder on the 14" model · 16" offered', link: '/pages/tracker/onboarding.html' },
-    { id: 'ONB-1182', client: 'MediaWorks', cc: 'SG', state: 'warn', status: '2 of 3 lines in', note: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' },
-    { id: 'ONB-1193', client: 'BrightPath Education', cc: 'MY', state: 'warn', status: '1 of 2 lines in', note: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' }
+    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', state: 'bad', status: '5d 7h overdue', note: 'Customs hold: missing import permit', link: '/pages/orders/order.html?id=ORD-30398' },
+    { id: 'ORD-30421', client: 'MediaWorks', cc: 'SG', state: 'bad', status: '4d 5h overdue', note: 'Ingram Micro confirms the last line arrives today', link: '/pages/orders/order.html?id=ORD-30421' },
+    { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', state: 'bad', status: '5d 18h overdue', note: 'Backorder on the 14" model · 16" offered', link: '/pages/services/onboarding.html' },
+    { id: 'ONB-1182', client: 'MediaWorks', cc: 'SG', state: 'warn', status: '2 of 3 lines in', note: '1 line ETA after due date', link: '/pages/services/onboarding.html' },
+    { id: 'ONB-1193', client: 'BrightPath Education', cc: 'MY', state: 'warn', status: '1 of 2 lines in', note: '1 line ETA after due date', link: '/pages/services/onboarding.html' }
   ];
 
   // Procurement: day-to-day view of the suppliers on open orders. Jobs and ordering method from Vendors.
@@ -1555,10 +1555,10 @@ window.DashboardWidgets = (() => {
     { vendor: 'FedEx', type: 'Courier', countries: ['US'], metric: 'Last mile 2–4d · 21 jobs', vsTarget: 'Within target', state: 'ok', link: '/pages/vendors/list.html' },
     { vendor: 'Hub SG Logistics', type: '3PL', countries: ['SG'], metric: '38 jobs · integration healthy', vsTarget: 'Within target', state: 'ok', link: '/pages/warehouses/list.html' },
     { vendor: 'Kerry Logistics', type: '3PL', countries: ['MY', 'AU'], metric: '17 jobs · portal only', vsTarget: 'Within target', state: 'ok', link: '/pages/warehouses/list.html' },
-    { vendor: 'FixPoint London', type: 'Repair', countries: ['GB'], metric: 'Turnaround 4.8d · 9 jobs', vsTarget: 'Within 5d target', state: 'ok', link: '/pages/tracker/repairs.html' },
-    { vendor: 'iFix Kuala Lumpur', type: 'Repair', countries: ['MY'], metric: 'Turnaround 5.6d · 2 quotes this month', vsTarget: 'Within 7d target', state: 'ok', link: '/pages/tracker/repair-quotes.html' },
-    { vendor: 'TechCare New Jersey', type: 'Repair', countries: ['US'], metric: 'Turnaround 4.1d · 1 quote this month', vsTarget: 'Within 5d target', state: 'ok', link: '/pages/tracker/repair-quotes.html' },
-    { vendor: 'Dell Service Centre Singapore', type: 'Repair', countries: ['SG'], metric: 'Warranty repairs · REP-0871 awaiting part', vsTarget: 'Part back-ordered', state: 'warn', link: '/pages/tracker/work-order.html?wo=REP-0871' },
+    { vendor: 'FixPoint London', type: 'Repair', countries: ['GB'], metric: 'Turnaround 4.8d · 9 jobs', vsTarget: 'Within 5d target', state: 'ok', link: '/pages/services/repairs.html' },
+    { vendor: 'iFix Kuala Lumpur', type: 'Repair', countries: ['MY'], metric: 'Turnaround 5.6d · 2 quotes this month', vsTarget: 'Within 7d target', state: 'ok', link: '/pages/services/repair-quotes.html' },
+    { vendor: 'TechCare New Jersey', type: 'Repair', countries: ['US'], metric: 'Turnaround 4.1d · 1 quote this month', vsTarget: 'Within 5d target', state: 'ok', link: '/pages/services/repair-quotes.html' },
+    { vendor: 'Dell Service Centre Singapore', type: 'Repair', countries: ['SG'], metric: 'Warranty repairs · REP-0871 awaiting part', vsTarget: 'Part back-ordered', state: 'warn', link: '/pages/services/work-order.html?wo=REP-0871' },
     { vendor: 'GreenCycle ITAD', type: 'ITAD', countries: ['SG', 'AU'], metric: 'Certificates on time 97%', vsTarget: 'On hold', state: 'warn', link: '/pages/vendors/list.html' }
   ];
   // Contract end dates from the vendor pages
@@ -1663,7 +1663,7 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Waiting on vendors</h2>
           <span class="dash-panel-meta">${total} open orders</span>
-          <a href="/pages/tracker/orders.html" class="dash-link">Tracker</a>
+          <a href="/pages/orders/board.html" class="dash-link">Tracker</a>
         </header>
         <div class="proc-pipeline">
           ${ORDER_PIPELINE.map(p => `<div class="proc-stage" ${p.state ? `data-state="${p.state}"` : ''}><span class="proc-stage-n">${p.n}</span><span class="proc-stage-label">${p.label}</span></div>`).join('')}
@@ -1730,7 +1730,7 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Order fulfillment pipeline</h2>
           <span class="dash-panel-meta">${OMS_OPEN} open work orders by service and stage</span>
-          <a href="/pages/tracker/all.html" class="dash-link">Open tracker</a>
+          <a href="/pages/attention/queue.html" class="dash-link">Open tracker</a>
         </header>
         <div class="oms-stage-totals">
           ${OMS_STAGES.map(s => `
@@ -1776,7 +1776,7 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Priority orders</h2>
           <span class="dash-panel-meta">Rush, start-date critical and exec requests · most urgent first</span>
-          <a href="/pages/tracker/all.html" class="dash-link">All by risk</a>
+          <a href="/pages/attention/queue.html" class="dash-link">All by risk</a>
         </header>
         <table class="client-table">
           <thead><tr><th>Work order</th><th>Client</th><th>Priority</th><th>Current milestone</th><th>Waiting on</th><th>Owner</th><th class="num">SLA</th></tr></thead>
@@ -1819,11 +1819,11 @@ window.DashboardWidgets = (() => {
   };
   // Q4 to date vs Q3, by work order type that IT EUC owns
   const IT_SLA = [
-    { label: 'Support', q4: 93.4, q3: 91.6, target: 95, link: '/pages/tracker/support.html' },
-    { label: 'Repairs', q4: 88.5, q3: 86.0, target: 90, link: '/pages/tracker/repairs.html' },
-    { label: 'Onboarding', q4: 84.2, q3: 87.3, target: 92, link: '/pages/tracker/onboarding.html' },
-    { label: 'Offboarding', q4: 94.7, q3: 93.1, target: 92, link: '/pages/tracker/offboarding.html' },
-    { label: 'Redeployments', q4: 85.7, q3: 90.0, target: 90, link: '/pages/tracker/redeployments.html' }
+    { label: 'Support', q4: 93.4, q3: 91.6, target: 95, link: '/pages/support/board.html' },
+    { label: 'Repairs', q4: 88.5, q3: 86.0, target: 90, link: '/pages/services/repairs.html' },
+    { label: 'Onboarding', q4: 84.2, q3: 87.3, target: 92, link: '/pages/services/onboarding.html' },
+    { label: 'Offboarding', q4: 94.7, q3: 93.1, target: 92, link: '/pages/services/offboarding.html' },
+    { label: 'Redeployments', q4: 85.7, q3: 90.0, target: 90, link: '/pages/services/redeployments.html' }
   ];
   // What tickets are about this quarter (486). Categories from Support ticket titles.
   const IT_CATEGORIES = [
@@ -1967,7 +1967,7 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Team workload</h2>
           <span class="dash-panel-meta">Open work by owner</span>
-          <a href="/pages/tracker/all.html" class="dash-link">Tracker</a>
+          <a href="/pages/attention/queue.html" class="dash-link">Tracker</a>
         </header>
         <ul class="itl-hbars">
           ${IT_WORKLOAD.map(p => `
@@ -2109,11 +2109,11 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Repairs in flight</h2>
           <span class="dash-panel-meta">8 open · 2 quotes need action</span>
-          <a href="/pages/tracker/repairs.html" class="dash-link">Repairs</a>
+          <a href="/pages/services/repairs.html" class="dash-link">Repairs</a>
         </header>
         <ul class="proc-wait">
           ${REPAIRS_IN_FLIGHT.map(r => `
-            <li><a href="/pages/tracker/work-order.html?wo=${r.id}" data-state="${r.state}">
+            <li><a href="/pages/services/work-order.html?wo=${r.id}" data-state="${r.state}">
               <span class="sla-overdue-top"><span class="sla-overdue-id">${r.id}</span><span class="proc-wait-status">${r.back}</span></span>
               <span class="sla-overdue-sub">${r.device} · ${r.client}</span>
               <span class="sla-overdue-sub">${r.facility}${r.note ? ` · ${r.note}` : ''}</span>
@@ -2128,7 +2128,7 @@ window.DashboardWidgets = (() => {
         <header class="dash-panel-header">
           <h2>Device work this week</h2>
           <span class="dash-panel-meta">Provisioning, dispatch, setup sign-off and collections</span>
-          <a href="/pages/tracker/onboarding.html" class="dash-link">Onboarding</a>
+          <a href="/pages/services/onboarding.html" class="dash-link">Onboarding</a>
         </header>
         <table class="client-table">
           <thead><tr><th>When</th><th>Task</th><th>Work order</th><th>Person</th><th>What’s needed</th></tr></thead>
@@ -2137,7 +2137,7 @@ window.DashboardWidgets = (() => {
               <tr>
                 <td class="${d.state === 'bad' ? 'is-bad' : d.state === 'warn' ? 'is-warn' : ''}">${d.when}</td>
                 <td><span class="cs-kind" data-kind="${d.kind === 'Collect' ? 'leaver' : 'joiner'}">${d.kind}</span></td>
-                <td>${d.id === 'OFF' ? '<span class="muted">Not raised</span>' : `<a href="/pages/tracker/onboarding-detail.html?id=${d.id}">${d.id}</a>`}</td>
+                <td>${d.id === 'OFF' ? '<span class="muted">Not raised</span>' : `<a href="/pages/services/onboarding-detail.html?id=${d.id}">${d.id}</a>`}</td>
                 <td>${d.person} <span class="muted">· ${d.client}</span></td>
                 <td>${d.task}</td>
               </tr>`).join('')}

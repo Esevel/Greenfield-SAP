@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders · Templates - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/warehouses.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+  <link rel="stylesheet" href="/styles/orders.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <span class="breadcrumb-current">Orders</span>
+        </nav>
+        <div id="orderHeader"></div>
+        
+        <div class="asset-toolbar">
+          <div class="filter-chips stock-filters">
+            <div class="search-bar search-bar-sm"><span class="search-icon">🔍</span><input type="text" class="search-input" id="tpQ" placeholder="Template or item" aria-label="Search templates"></div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table catalogue-table tpl-table">
+            <thead class="catalogue-table-header"><tr><th>Template</th><th>Items</th><th class="num">Units</th><th>Type</th><th class="num">Orders created</th><th></th></tr></thead>
+            <tbody id="tpRows"></tbody>
+          </table>
+        </div>
+        <div class="table-footer-count" id="tpCount"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/calendar-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/orders-data.js"></script>
+  <script src="/scripts/orders-engine.js"></script>
+  <script src="/scripts/orders-ui.js"></script>
+  <script src="/scripts/orders-templates.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

@@ -31,7 +31,7 @@ function initJoiners() {
   const RISK_ORDER = { late: 0, tight: 1, ok: 2 };
 
   // Existing onboarding records open their detail page; ones created here aren't in tracker data
-  const woHref = j => (j.woNew ? '/pages/tracker/onboarding.html' : `/pages/tracker/onboarding-detail.html?id=${j.wo}`);
+  const woHref = j => (j.woNew ? '/pages/services/onboarding.html' : `/pages/services/onboarding-detail.html?id=${j.wo}`);
 
   function render() {
     const f = { client: $('fClient').value, cc: $('fCountry').value, comp: $('fComp').value, status: $('fStatus').value };

@@ -51,7 +51,7 @@ function renderBillableUsers(clientId) {
       </table>`;
   } else {
     const counts = MU_BILLABLE[clientId] || [];
-    const seats = MU_SEATS[clientId];
+    const seats = MU_SEATS[clientId] || 0;
     const log = MU_CHANGES[clientId] || [];
     body = `<table class="device-list-table mu-table">
         <thead><tr><th>Month</th><th class="num">Plan seats</th><th class="num">Billable</th><th class="num">Change</th><th>Amount</th><th>Snapshot</th></tr></thead>

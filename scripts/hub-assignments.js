@@ -99,6 +99,7 @@ function initHubAssignments() {
       else HUB_ASSIGNMENTS[c.id][cc] = v;
     });
     Object.keys(draft).forEach(k => delete draft[k]);
+    saveNewClients();
     const describe = ([c, cc]) => {
       const v = saved(c.id, cc);
       const target = v === 'na' ? 'not active' : v === 'none' ? 'no hub (client sites)' : WAREHOUSES.find(w => w.id === v).name;

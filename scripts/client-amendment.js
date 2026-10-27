@@ -12,15 +12,17 @@ function initAmendment() {
 
   document.title = `v${ver.v} amendment · ${client.name} - Admin Portal`;
   $('amClientCrumb').textContent = client.name;
-  $('amClientCrumb').href = clientHref(activeVersion(k).v);
-  $('amCrumb').textContent = `v${ver.v} amendment`;
+  const initial = !activeVersion(k) && ver.v === 1;
+  $('amClientCrumb').href = clientHref((activeVersion(k) || ver).v);
+  $('amCrumb').textContent = initial ? 'Initial contract' : `v${ver.v} amendment`;
+  if (initial) document.title = `Initial contract · ${client.name} - Admin Portal`;
 
-  const termsOf = v => (v.status === 'draft' ? v.terms : contractTerms(k, v.v));
+  const termsOf = v => (v.status === 'draft' || v.terms ? v.terms : contractTerms(k, v.v));
 
   function render() {
     const base = compareBase(k, ver);
     const [label, cls] = STATUS[ver.status];
-    $('amTitle').textContent = `Amendment v${ver.v}`;
+    $('amTitle').textContent = initial ? 'Initial contract v1' : `Amendment v${ver.v}`;
     $('amTags').innerHTML = `<span class="badge ${cls}">${label}</span><span class="text-muted">· ${escapeHtml(client.name)}${base ? ` · compared with v${base.v}` : ' · initial contract'}</span>`;
 
     const actions = [`<a class="btn btn-secondary" href="${clientHref(ver.v)}">${ver.status === 'draft' ? 'Edit draft' : 'View full terms'}</a>`];
@@ -49,7 +51,7 @@ function initAmendment() {
     const changedPaths = new Set(diffs.map(d => d.rowPath || d.path));
     const rows = contractRows(b);
     const aRows = a ? contractRows(a) : [];
-    const shown = $('amOnlyChanged').checked ? rows.filter(r => changedPaths.has(r.path)) : rows;
+    const shown = $('amOnlyChanged').checked && a ? rows.filter(r => changedPaths.has(r.path)) : rows;
     let lastSection = '';
     $('amRows').innerHTML = shown.map(r => {
       const was = aRows.find(x => x.path === r.path);
@@ -69,7 +71,14 @@ function initAmendment() {
   function renderSide(diffs) {
     // Publish card (drafts only)
     $('amPublishCard').hidden = ver.status !== 'draft';
-    $('amPublish').disabled = !diffs.length;
+    $('amOnlyChanged').closest('label').style.display = initial ? 'none' : '';
+    $('amPublish').textContent = initial ? 'Send for acceptance' : 'Publish';
+    $('amPublishCard').querySelector('.card-title').textContent = initial ? 'Send to client admin' : 'Publish to client';
+    $('amPublish').disabled = !initial && !diffs.length;
+    if (initial && ver.status === 'draft') {
+      $('amEffective').value = $('amEffective').value || k.start;
+      $('amNote').value = $('amNote').value || 'Initial contract';
+    }
 
     // Details
     const rowsInfo = [
@@ -92,7 +101,7 @@ function initAmendment() {
           <div class="info-row am-info"><span class="info-label">Version accepted</span><span class="info-value">v${ver.v}</span></div>
         </div>`;
     } else if (ver.status === 'pending') {
-      accept = `<div class="accept-wait">Waiting for ${escapeHtml(clientAdminFor(k))}</div><div class="readonly-note">Sent to the client admin in their portal. Terms stay locked; the active contract (v${activeVersion(k).v}) keeps applying until acceptance.</div>`;
+      accept = `<div class="accept-wait">Waiting for ${escapeHtml(clientAdminFor(k))}</div><div class="readonly-note">Sent to the client admin in their portal. Terms stay locked; ${initial ? 'nothing is billed and orders can\'t be raised until the client accepts' : `the active contract (v${activeVersion(k).v}) keeps applying until acceptance`}.</div>`;
     } else if (ver.status === 'withdrawn') {
       accept = '<div class="text-muted">Withdrawn before acceptance.</div>';
     } else {
@@ -116,6 +125,14 @@ function initAmendment() {
     $('amError').textContent = msg;
     $('amError').hidden = !msg;
     if (msg) return;
+    if (initial) {
+      // The first contract keeps its full terms; there is nothing earlier to diff against
+      Object.assign(ver, { status: 'pending', effective: eff, note: txt, changes: [], publishedBy: 'You', publishedAt: '2026-10-16 16:40 SGT' });
+      k.start = eff;
+      saveContracts();
+      note(`Sent to ${clientAdminFor(k)} for acceptance. ${client.name} becomes active once they accept.`);
+      return render();
+    }
     const changes = contractDiff(contractTerms(k, activeVersion(k).v), ver.terms);
     Object.assign(ver, { status: 'pending', effective: eff, note: txt, changes, publishedBy: 'You', publishedAt: '2026-10-16 16:40 SGT' });
     delete ver.terms;
@@ -126,7 +143,26 @@ function initAmendment() {
   });
 
   $('amActions').addEventListener('click', e => {
-    if (e.target.id === 'amWithdraw') {
+    if (e.target.id === 'amWithdraw' && initial) {
+      // Withdrawing the first contract sends it back to draft so terms can be changed and re-sent
+      Object.assign(ver, { status: 'draft', publishedAt: '', publishedBy: '' });
+      saveContracts();
+      note('Initial contract withdrawn and back in draft. Edit the terms, then send it again.');
+      render();
+    } else if (e.target.id === 'amAccept' && initial) {
+      const t = cloneTerms(ver.terms);
+      k.tier = t.tier || k.tier;
+      k.end = t.end || k.end;
+      delete t.tier;
+      delete t.end;
+      k.terms = t;
+      delete ver.terms;
+      Object.assign(ver, { status: 'active', acceptedBy: clientAdminFor(k), acceptedAt: '2026-10-16 16:52 SGT', ip: '203.0.113.24' });
+      k.status = 'active';
+      saveContracts();
+      note(`Accepted by ${ver.acceptedBy}. ${client.name} is now an active client from ${billingDate(ver.effective)}.`);
+      render();
+    } else if (e.target.id === 'amWithdraw') {
       ver.status = 'withdrawn';
       k.status = 'active';
       saveContracts();
@@ -149,6 +185,7 @@ function initAmendment() {
   });
 
   render();
+  if (params.get('created')) note(`${client.name} created and the initial contract sent to ${clientAdminFor(k)}${k.adminEmail ? ` (${k.adminEmail})` : ''} for acceptance.`);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAmendment);

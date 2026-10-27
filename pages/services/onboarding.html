@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Onboarding - Admin Portal</title>
+  <title>Services · Onboarding - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/support.css">
 </head>
 <body>
   <div class="app-container">
@@ -18,12 +19,12 @@
       <div id="header-container"></div>
       
       <div class="page-content">
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Work order tracker</h1>
-          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
-        </div>
-        
-        <nav id="trackerTabs" data-active="onboarding"></nav>
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/services/onboarding.html" class="breadcrumb-link">Services</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Onboarding</span>
+        </nav>
+        <div id="servicesHeader" data-active="onboarding"></div>
         
         <div class="board board-fit board-6" id="onbBoard"></div>
         
@@ -34,11 +35,11 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
+  <script src="/scripts/services-tabs.js"></script>
   <script src="/scripts/tracker-onboarding.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

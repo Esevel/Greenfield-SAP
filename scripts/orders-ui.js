@@ -1,22 +1,74 @@
 // Shared Orders UI: page header actions, Board | List | Insights toggle, filters, CSV export, daily digest,
 // templates, reason prompt and toast. Needs orders-engine.js.
 
-const ORDER_VIEWS = [['board', 'Board', '/pages/tracker/orders.html'], ['list', 'List', '/pages/tracker/orders-list.html'], ['insights', 'Insights', '/pages/tracker/orders-insights.html']];
+const ORDER_VIEWS = [['board', 'Board', '/pages/orders/board.html'], ['list', 'List', '/pages/orders/list.html'], ['insights', 'Insights', '/pages/orders/insights.html'], ['templates', 'Templates', '/pages/orders/templates.html']];
 
-function orderViewToggleHtml(active) {
-  return `<nav class="segmented-control view-toggle">${ORDER_VIEWS.map(([k, l, h]) => `<a href="${h}" class="segment-button${k === active ? ' active' : ''}">${l}</a>`).join('')}</nav>`;
+// Module header shared by Board, List, Insights and Templates: title, New order, More menu, view tabs
+function renderOrderHeader(active, getScope) {
+  const el = document.getElementById('orderHeader');
+  el.innerHTML = `<div class="page-header order-module-header">
+      <div class="flex-between">
+        <h1 class="page-title">Orders</h1>
+        <div class="header-actions">
+          ${orderMenuHtml('More', [['data-order-export', 'Export CSV…'], ['data-order-digest', 'Daily digest…']])}
+          <a href="/pages/orders/new.html" class="btn btn-primary">New order</a>
+        </div>
+      </div>
+      <p class="page-description">Purchase orders from submission to delivery, with SLA timing in business hours.</p>
+    </div>
+    <nav class="tab-strip order-tabs">${ORDER_VIEWS.map(([k, l, h]) => `<a href="${h}" class="tab-link${k === active ? ' active' : ''}">${l}${k === 'board' || k === 'list' ? ` <span class="tab-count">${openOrders().length}</span>` : k === 'templates' ? ` <span class="tab-count">${ORDER_TEMPLATES.length}</span>` : ''}</a>`).join('')}</nav>`;
+  orderBindHeader(getScope);
 }
 
-function orderHeaderActionsHtml() {
-  return `<button type="button" class="btn btn-secondary" data-order-digest>Digest</button>
-    <button type="button" class="btn btn-secondary" data-order-export>Export</button>
-    <button type="button" class="btn btn-secondary" data-order-templates>Templates</button>
-    <a href="/pages/tracker/order-new.html" class="btn btn-primary">New order</a>`;
+// Small menu button; items: [[attr, label, extraClass]]
+function orderMenuHtml(label, items, align = 'right') {
+  return `<div class="order-menu">
+    <button type="button" class="btn btn-secondary" data-menu-toggle aria-haspopup="true" aria-expanded="false">${label} ▾</button>
+    <div class="order-menu-list order-menu-${align}" role="menu" hidden>${items.filter(Boolean).map(([attr, l, cls = '']) => `<button type="button" role="menuitem" class="order-menu-item ${cls}" ${attr}>${l}</button>`).join('')}</div>
+  </div>`;
 }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-menu-toggle]');
+  document.querySelectorAll('.order-menu-list').forEach(m => {
+    const mine = t && m.previousElementSibling === t;
+    m.hidden = mine ? !m.hidden : true;
+    m.previousElementSibling.setAttribute('aria-expanded', String(!m.hidden));
+  });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.order-menu-list').forEach(m => { m.hidden = true; }); });
+
+// Summary tiles shared by Board and List. Each tile is a status filter.
+function orderTilesHtml(f) {
+  const open = openOrders();
+  const n = st => open.filter(o => orderState(o) === st).length;
+  const risk = open.filter(orderAtRisk).length;
+  const delivered = ORDERS.filter(orderDeliveredRecently).length;
+  const tile = (status, label, value, cls = '') => `<button type="button" class="summary-tile summary-tile-link ${cls}${f.status === status ? ' active' : ''}" data-status="${status}" aria-pressed="${f.status === status}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div></button>`;
+  return tile('open', 'Open', open.length)
+    + tile('overdue', 'Overdue', n('overdue'), n('overdue') ? 'summary-tile-breached' : '')
+    + tile('risk', 'At risk', risk, risk ? 'summary-tile-alert' : '')
+    + tile('pending', 'Awaiting approval', n('pending'), n('pending') ? 'summary-tile-alert' : '')
+    + tile('hold', 'Payment hold', n('hold'), n('hold') ? 'summary-tile-alert' : '')
+    + tile('delivered', 'Delivered · 7 days', delivered, 'summary-tile-ok');
+}
+function orderBindTiles(el, f, onChange) {
+  el.addEventListener('click', e => {
+    const t = e.target.closest('[data-status]');
+    if (!t) return;
+    f.status = f.status === t.dataset.status && t.dataset.status !== 'open' ? 'open' : t.dataset.status;
+    orderFiltersSave(f);
+    const sel = document.getElementById('ofStatus');
+    if (sel) sel.value = f.status;
+    onChange(f);
+  });
+}
+
+const orderAtRisk = o => orderState(o) === 'progress' && orderSla(o).health === 'risk';
+const orderDeliveredRecently = o => !!o.deliveredAt && new Date(o.deliveredAt) >= new Date(ORDER_NOW.getTime() - 7 * 864e5);
 
 /* ---------- Filters ---------- */
 
-const ORDER_STATUS_FILTERS = [['open', 'Open'], ['overdue', 'Overdue only'], ['attention', 'Needs attention'], ['cancelled', 'Cancelled'], ['all', 'All incl. done']];
+const ORDER_STATUS_FILTERS = [['open', 'Open'], ['attention', 'Needs attention'], ['overdue', 'Overdue'], ['risk', 'At risk'], ['pending', 'Awaiting approval'], ['hold', 'Payment hold'], ['paused', 'SLA paused'], ['delivered', 'Delivered · 7 days'], ['cancelled', 'Cancelled'], ['all', 'All incl. delivered']];
 
 function orderFilterBarHtml(f) {
   const opt = (v, l, cur) => `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`;
@@ -51,10 +103,15 @@ function orderMatches(o, f) {
   const statusOk = {
     open: !['complete', 'cancelled'].includes(st),
     overdue: st === 'overdue',
-    attention: ['overdue', 'pending', 'hold'].includes(st) || (st === 'progress' && orderSla(o).health === 'risk'),
+    risk: orderAtRisk(o),
+    pending: st === 'pending',
+    hold: st === 'hold',
+    paused: st === 'paused',
+    delivered: orderDeliveredRecently(o),
+    attention: ['overdue', 'pending', 'hold'].includes(st) || orderAtRisk(o),
     cancelled: st === 'cancelled',
     all: true
-  }[f.status || 'open'];
+  }[f.status] ?? !['complete', 'cancelled'].includes(st);
   if (!statusOk) return false;
   if (f.priority && o.priority !== f.priority) return false;
   if (f.client && o.client !== f.client) return false;
@@ -235,33 +292,12 @@ async function orderDigestDialog() {
 
 const orderTemplateSummary = t => t.lines.map(([m, q]) => `${q} × ${orderModelName(m)}`).join(', ');
 
-async function orderTemplatesDialog() {
-  const render = () => (ORDER_TEMPLATES.length ? `<table class="table doc-table tpl-table"><thead><tr><th>Template</th><th>Items</th><th>Type</th><th></th></tr></thead><tbody>${ORDER_TEMPLATES.map(t => `<tr>
-      <td><strong>${escapeHtml(t.name)}</strong><div class="stock-sub">by ${escapeHtml(t.by)}</div></td>
-      <td>${escapeHtml(orderTemplateSummary(t))}${t.fees.length ? `<div class="stock-sub">+ ${t.fees.map(escapeHtml).join(', ')}</div>` : ''}</td>
-      <td>${slaType(t.type).name}${t.priority !== 'Normal' ? ` · ${t.priority}` : ''}</td>
-      <td class="tpl-actions"><a href="/pages/tracker/order-new.html?template=${t.id}" class="btn btn-primary btn-sm">Use</a><button type="button" class="btn-text" data-tpl-del="${t.id}">Delete</button></td>
-    </tr>`).join('')}</tbody></table>` : '<p class="text-muted">No templates yet. Save one from the New order form.</p>');
-  const p = orderDialog({ title: 'Order templates', wide: true, body: `<p class="dlg-text">Templates prefill items, type, priority and fees on a new order. Prices come from the client’s contract when used.</p><div id="tplBody">${render()}</div>`, confirm: '' });
-  document.getElementById('tplBody').addEventListener('click', e => {
-    const b = e.target.closest('[data-tpl-del]');
-    if (!b) return;
-    const i = ORDER_TEMPLATES.findIndex(t => t.id === b.dataset.tplDel);
-    const [gone] = ORDER_TEMPLATES.splice(i, 1);
-    saveOrderTemplates();
-    document.getElementById('tplBody').innerHTML = render();
-    orderToast(`Template “${gone.name}” deleted.`);
-  });
-  await p;
-}
-
 /* ---------- Header wiring ---------- */
 
 function orderBindHeader(getScope) {
   document.addEventListener('click', e => {
     if (e.target.closest('[data-order-export]')) orderExportDialog(getScope ? getScope() : null);
     if (e.target.closest('[data-order-digest]')) orderDigestDialog();
-    if (e.target.closest('[data-order-templates]')) orderTemplatesDialog();
   });
 }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work order tracker · Orders insights - Admin Portal</title>
+  <title>Orders · Insights - Admin Portal</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
@@ -24,18 +24,11 @@
       
       <div class="page-content">
         <nav class="breadcrumbs-custom">
-          <a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a>
-          <span class="breadcrumb-separator">›</span>
           <span class="breadcrumb-current">Orders</span>
         </nav>
-        <div class="page-header tracker-header">
-          <h1 class="page-title">Work order tracker</h1>
-          <span class="tracker-header-actions" id="orderActions"></span>
-        </div>
+        <div id="orderHeader"></div>
         
-        <nav id="trackerTabs" data-active="orders"></nav>
-        
-        <div class="tracker-controls">
+        <div class="tracker-controls insights-controls">
           <div class="asset-toolbar">
             <div class="filter-chips stock-filters">
               <div class="segmented-control segmented-sm" id="oiPeriod" role="group" aria-label="Period">
@@ -47,7 +40,6 @@
               <span class="text-muted" id="oiRange"></span>
             </div>
           </div>
-          <div id="oiView"></div>
         </div>
         
         <div class="inventory-summary stock-summary insights-kpis" id="oiKpis"></div>
@@ -86,7 +78,6 @@
   <script src="/scripts/orders-data.js"></script>
   <script src="/scripts/orders-engine.js"></script>
   <script src="/scripts/orders-ui.js"></script>
-  <script src="/scripts/tracker-tabs.js"></script>
   <script src="/scripts/orders-insights.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

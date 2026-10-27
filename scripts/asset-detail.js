@@ -22,8 +22,8 @@ function renderRelatedAssetTickets() {
   related.sort((a, b) => new Date(b.item.start) - new Date(a.item.start));
   const typeLabels = { repair: 'Repair', support: 'Support', onboarding: 'Onboarding', offboarding: 'Offboarding', redeploy: 'Redeployment', storage: 'Storage', disposal: 'Disposal' };
   const ticketHref = item => item.href || (item.type === 'onboarding'
-    ? `/pages/tracker/onboarding-detail.html?id=${encodeURIComponent(item.id)}`
-    : item.type === 'support' ? '/pages/tracker/support-detail.html' : `/pages/tracker/work-order.html?wo=${encodeURIComponent(item.id)}`);
+    ? `/pages/services/onboarding-detail.html?id=${encodeURIComponent(item.id)}`
+    : item.type === 'support' ? '/pages/support/ticket.html' : `/pages/services/work-order.html?wo=${encodeURIComponent(item.id)}`);
   const opened = value => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const rowHtml = ({ item, sla }) => `<tr>
     <td><a class="link-sm" href="${ticketHref(item)}">${escapeHtml(item.id)}</a></td>

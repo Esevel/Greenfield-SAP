@@ -8,9 +8,7 @@
   let client = '';
   const expanded = new Set();
 
-  $('orderActions').innerHTML = orderHeaderActionsHtml();
-  $('oiView').innerHTML = orderViewToggleHtml('insights');
-  orderBindHeader(() => inPeriod(days, 0));
+  renderOrderHeader('insights', () => inPeriod(days, 0));
   $('oiClient').innerHTML = '<option value="">All</option>' + WH_CLIENTS.filter(c => ORDERS.some(o => o.client === c.id)).map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
 
   const DAY = 864e5;
@@ -158,7 +156,7 @@
     const rows = [...new Set(list.map(o => o.client))].map(c => ({ c, l: list.filter(o => o.client === c) })).map(r => ({ ...r, rev: sgd(r.l), m: marginOf(r.l), comp: compliance(r.l) })).sort((a, b) => b.rev - a.rev).slice(0, 10);
     $('oiClients').innerHTML = rows.length ? `<table class="table insights-table"><thead><tr><th></th><th>Client</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Margin</th><th class="num">SLA</th></tr></thead><tbody>
       ${rows.map(r => `<tr class="has-detail" data-client="${r.c}"><td><button type="button" class="expand-button" aria-expanded="${expanded.has(r.c)}" aria-label="Show orders">${expanded.has(r.c) ? '▼' : '▶'}</button></td><td>${escapeHtml(orderClient(r.c).name)}</td><td class="num">${r.l.length}</td><td class="num">${fmtSgd(r.rev)}</td><td class="num">${r.m == null ? '—' : marginBadge(r.m)}</td><td class="num">${r.comp == null ? '—' : `${r.comp.toFixed(0)}%`}</td></tr>
-        ${expanded.has(r.c) ? `<tr class="client-expand"><td colspan="6"><table>${r.l.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(o => `<tr><td><a href="/pages/tracker/order.html?id=${o.id}" class="link-sm">${o.id}</a></td><td>${fmtOrderDate(o.createdAt)}</td><td>${escapeHtml(o.recipient)}</td><td>${orderStateBadge(o)}</td><td class="num">${fmtAmount(o.currency, orderPricing(o).subRev)}</td></tr>`).join('')}</table></td></tr>` : ''}`).join('')}</tbody></table>` : '<p class="text-muted">No orders in this period.</p>';
+        ${expanded.has(r.c) ? `<tr class="client-expand"><td colspan="6"><table>${r.l.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(o => `<tr><td><a href="/pages/orders/order.html?id=${o.id}" class="link-sm">${o.id}</a></td><td>${fmtOrderDate(o.createdAt)}</td><td>${escapeHtml(o.recipient)}</td><td>${orderStateBadge(o)}</td><td class="num">${fmtAmount(o.currency, orderPricing(o).subRev)}</td></tr>`).join('')}</table></td></tr>` : ''}`).join('')}</tbody></table>` : '<p class="text-muted">No orders in this period.</p>';
   }
 
   function render() {

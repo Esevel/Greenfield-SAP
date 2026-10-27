@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New client - Clients - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/vendors.css">
+  <link rel="stylesheet" href="/styles/sla-config.css">
+  <link rel="stylesheet" href="/styles/billing.css">
+  <link rel="stylesheet" href="/styles/orders.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+      <div id="header-container"></div>
+      
+      <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/clients/list.html" class="breadcrumb-link">Clients</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">New client</span>
+        </nav>
+        <div class="page-header">
+          <h1 class="page-title">New client</h1>
+          <p class="page-description">Set up the client, where they operate and their first contract. The contract starts as v1 and becomes active when the client admin accepts it.</p>
+        </div>
+        <div id="cnRoot"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/billing-settings-data.js"></script>
+  <script src="/scripts/markup-data.js"></script>
+  <script src="/scripts/client-new.js"></script>
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

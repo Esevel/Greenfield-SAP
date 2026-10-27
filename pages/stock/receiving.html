@@ -141,7 +141,7 @@
             <td>${clientCell(r.client)}</td>
             <td>${escapeHtml(r.from)}</td>
             <td>${escapeHtml(stockLoc(r.hub).name)}</td>
-            <td><a href="/pages/tracker/offboarding-detail.html" class="link-sm">${r.wo}</a></td>
+            <td><a href="/pages/services/offboarding-detail.html" class="link-sm">${r.wo}</a></td>
             <td>${fmt(r.eta)}${r.tracking ? `<div class="stock-sub">${escapeHtml(r.tracking)}</div>` : ''}</td>
             <td>${OUTCOME[r.outcome]}</td>
             <td>${r.grade ? `<span class="grade-cell">${r.grade}</span>` : '<span class="text-muted">—</span>'}</td>
@@ -171,7 +171,7 @@
         $('rcMeta').textContent = `${r.serial} · ${stockClient(r.client).name}`;
         const rate = storageRate(r.client, stockLoc(r.hub).country);
         $('rcInfo').innerHTML = [
-          ['From', escapeHtml(r.from)], ['Work order', `<a href="/pages/tracker/offboarding-detail.html">${r.wo}</a>`], ['Hub', escapeHtml(stockLoc(r.hub).name)],
+          ['From', escapeHtml(r.from)], ['Work order', `<a href="/pages/services/offboarding-detail.html">${r.wo}</a>`], ['Hub', escapeHtml(stockLoc(r.hub).name)],
           ['Outcome', OUTCOME[r.outcome]], ['Storage', rate.perDay ? `${money(rate.cur, rate.perDay)} / day from intake${rate.fx ? `<div class="stock-sub">${money(rate.local.cur, rate.local.perDay)} local fee at ${rate.fx.rate.toFixed(4)} (${escapeHtml(rate.fx.source)})</div>` : ''}` : 'Not billable on contract']
         ].map(([a, b]) => `<div class="info-row"><span class="info-label">${a}</span><span class="info-value">${b}</span></div>`).join('');
         setCond(form.condition);

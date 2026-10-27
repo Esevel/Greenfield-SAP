@@ -112,8 +112,8 @@
       }
 
       const orders = [];
-      if (p.joiner && p.joiner.wo) orders.push(`<a href="/pages/tracker/onboarding-detail.html?id=${p.joiner.wo}" class="link-sm">${p.joiner.wo}</a> · Onboarding · ${escapeHtml(p.joiner.pkg)}`);
-      if (p.leaver && p.leaver.wo) orders.push(`<a href="/pages/tracker/offboarding-detail.html" class="link-sm">${p.leaver.wo}</a> · Offboarding · ${RETRIEVAL_METHODS[p.leaver.method].label}`);
+      if (p.joiner && p.joiner.wo) orders.push(`<a href="/pages/services/onboarding-detail.html?id=${p.joiner.wo}" class="link-sm">${p.joiner.wo}</a> · Onboarding · ${escapeHtml(p.joiner.pkg)}`);
+      if (p.leaver && p.leaver.wo) orders.push(`<a href="/pages/services/offboarding-detail.html" class="link-sm">${p.leaver.wo}</a> · Offboarding · ${RETRIEVAL_METHODS[p.leaver.method].label}`);
       $('pOrders').innerHTML = orders.length ? orders.map(o => `<div class="order-line">${o}</div>`).join('') : '<span class="text-muted">None</span>';
       $('pSource').innerHTML = `<div>${escapeHtml(p.source)}</div><div class="readonly-note">${p.source.startsWith('HRIS') ? 'Fields are overwritten on each sync. Edit in the HRIS, or fix missing fields from the Joiners / Leavers queue.' : 'Added manually by the client in their portal.'}</div>`;
     })();

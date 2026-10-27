@@ -47,7 +47,7 @@ function initLeavers() {
         <td>${m.label}${l.date ? `<div class="stock-sub">${peopleFmt(l.date, false)}</div>` : ''}</td>
         <td>${l.reminder ? peopleFmt(cutoffReminderDate(p.end), false) : '<span class="text-muted">Off</span>'}</td>
         <td><span class="badge ${sCls} badge-sm">${sLabel}</span></td>
-        <td>${l.wo ? `<a href="/pages/tracker/offboarding-detail.html" class="link-sm">${l.wo}</a>` : '<span class="text-muted">—</span>'}</td>
+        <td>${l.wo ? `<a href="/pages/services/offboarding-detail.html" class="link-sm">${l.wo}</a>` : '<span class="text-muted">—</span>'}</td>
       </tr>`;
     }).join('') || `<tr><td colspan="9" class="text-muted sla-empty">${f.status === 'open' ? 'No open leavers. Departures appear here from HRIS or when the client schedules one.' : 'No leavers match'}</td></tr>`;
 
@@ -103,7 +103,7 @@ function initLeavers() {
 
     $('lvSchedule').hidden = locked;
     $('lvDone').hidden = !locked;
-    $('lvDone').innerHTML = locked ? `✓ Work order <a href="/pages/tracker/offboarding-detail.html">${l.wo}</a> created. Track retrieval in Tracker › Offboarding.` : '';
+    $('lvDone').innerHTML = locked ? `✓ Work order <a href="/pages/services/offboarding-detail.html">${l.wo}</a> created. Track retrieval in Tracker › Offboarding.` : '';
   }
 
   function open(p) {

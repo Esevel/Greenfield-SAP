@@ -128,6 +128,8 @@ const SLA_CLIENT_VERSIONS = {
   brightpath: { version: 1, date: '15 Aug 2026' }
 };
 
+WH_CLIENTS.forEach(c => { if (!SLA_CLIENT_VERSIONS[c.id]) SLA_CLIENT_VERSIONS[c.id] = { version: 1, date: 'Today' }; });
+
 const slaType = key => SLA_TYPES.find(t => t.key === key);
 
 // Index of a milestone that follows the vendor's quoted lead time. Order stages are now fixed business-hour

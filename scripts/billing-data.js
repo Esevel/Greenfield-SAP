@@ -32,7 +32,8 @@ function amountsHtml(byCur, dp = 2) {
 /* ---------- Contracts ---------- */
 
 const PLAN_TIERS = ['Essentials', 'Growth', 'Enterprise'];
-const CONTRACT_STATUS = { active: ['Active', 'badge-success'], amendment: ['Amendment pending', 'badge-warning'], expired: ['Expired', 'badge-neutral'] };
+// onboarding: a new client whose first contract (v1) is a draft or waiting for the client admin to accept
+const CONTRACT_STATUS = { onboarding: ['Onboarding', 'badge-info'], active: ['Active', 'badge-success'], amendment: ['Amendment pending', 'badge-warning'], expired: ['Expired', 'badge-neutral'] };
 const INVOICE_SPLITS = { entity: 'Billing entity', costCentre: 'Cost centre', country: 'Country', po: 'PO number' };
 
 // Lifecycle events billed per country; fee events map from request types
@@ -375,15 +376,27 @@ const CONTRACTS_KEY = 'sap-contracts-v2';
 sessionStorage.removeItem('sap-contracts-v1');
 function saveContracts() {
   const data = {};
-  Object.entries(CONTRACTS).forEach(([id, k]) => { data[id] = { status: k.status, tier: k.tier, end: k.end, terms: k.terms, versions: k.versions }; });
+  // Onboarding clients edit tier and term end inside their v1 terms; mirror them for list pages
+  Object.values(CONTRACTS).forEach(k => { if (!activeVersion(k) && k.terms.tier) { k.tier = k.terms.tier; k.end = k.terms.end; } });
+  Object.entries(CONTRACTS).forEach(([id, k]) => { data[id] = { status: k.status, tier: k.tier, start: k.start, end: k.end, admin: k.admin, adminEmail: k.adminEmail, terms: k.terms, versions: k.versions }; });
   sessionStorage.setItem(CONTRACTS_KEY, JSON.stringify(data));
 }
 try {
   const saved = JSON.parse(sessionStorage.getItem(CONTRACTS_KEY) || 'null');
-  if (saved) Object.entries(saved).forEach(([id, d]) => { if (CONTRACTS[id]) Object.assign(CONTRACTS[id], d); });
+  if (saved) {
+    Object.entries(saved).forEach(([id, d]) => {
+      if (CONTRACTS[id]) Object.assign(CONTRACTS[id], d);
+      else if (WH_CLIENTS.some(c => c.id === id && c.isNew)) CONTRACTS[id] = d;
+    });
+  }
 } catch (e) { sessionStorage.removeItem(CONTRACTS_KEY); }
+// A new client without a contract (storage cleared mid-session) can't be shown
+for (let i = WH_CLIENTS.length - 1; i >= 0; i--) if (!CONTRACTS[WH_CLIENTS[i].id]) WH_CLIENTS.splice(i, 1);
 
-const clientAdminFor = k => (k.versions.find(v => v.acceptedBy) || {}).acceptedBy || 'Client admin';
+const isOnboarding = k => !activeVersion(k);
+// While onboarding, the client's terms are its v1 draft or pending terms (edited in place)
+Object.values(CONTRACTS).forEach(k => { if (isOnboarding(k)) k.terms = pendingVersion(k).terms; });
+const clientAdminFor = k => (k.versions.find(v => v.acceptedBy) || {}).acceptedBy || k.admin || 'Client admin';
 
 /* ---------- Procurement caps ---------- */
 
@@ -399,6 +412,7 @@ const CAP_SPEND = {
   northwind: { byEntity: { e1: 221300, e2: 64800, e3: 22300 }, orders: [['ORD-58808', '2026-10-14', 'Onboarding kit × 1', 'e3', 3120], ['ORD-58770', '2026-10-04', 'Clinics laptops × 18', 'e2', 27360]] },
   brightpath: { byEntity: { e1: 12600 }, orders: [['ORD-58730', '2026-09-28', 'Teacher laptops × 6', 'e1', 12600]] }
 };
+WH_CLIENTS.forEach(c => { if (!CAP_SPEND[c.id]) CAP_SPEND[c.id] = { byEntity: {}, orders: [] }; });
 const CAP_STATUS = { healthy: ['Healthy', 'badge-success'], near: ['Near cap', 'badge-warning'], over: ['Over cap', 'badge-error'] };
 const capCurrency = t => t.cap.currency;
 

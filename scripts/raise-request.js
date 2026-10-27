@@ -268,14 +268,14 @@ function initRaiseRequest() {
     let text;
     if (type === 'storage') {
       text = `✓ Created ${newId('STO')} for ${clientName()}: collect ${devices} into storage at ${destinations().map(d => d.name).join(', ')}. Storage fees start at intake.`;
-      links.push(['/pages/tracker/storage.html', 'Open Storage']);
+      links.push(['/pages/services/storage.html', 'Open Storage']);
     } else if (type === 'disposal') {
       text = `✓ Created ${newId('DSP')} for ${clientName()}: dispose of ${devices}. The certificate will be shared with the client.`;
-      links.push(['/pages/tracker/disposal.html', 'Open Disposal']);
+      links.push(['/pages/services/disposal.html', 'Open Disposal']);
     } else {
       const from = source() === 'hub' ? `from ${hubFor(clientId(), destCountry()).name}` : 'starting with collection';
       text = `✓ Created ${newId('RED')} for ${clientName()}: ${devices} to ${$('reqRecipient').value.trim()}, ${from}.`;
-      links.push(['/pages/tracker/redeployments.html', 'Open Redeployments']);
+      links.push(['/pages/services/redeployments.html', 'Open Redeployments']);
     }
     $('successText').textContent = text;
     $('successLinks').innerHTML = links.map(([href, label]) => `<a href="${href}" class="link-sm">${label}</a>`).join('');
