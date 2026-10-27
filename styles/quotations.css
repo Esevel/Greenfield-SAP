@@ -162,6 +162,11 @@
 .qt-fx-client-row select { min-height: 38px; padding: 0 11px; border: 1px solid #dfe3eb; border-radius: 8px; color: #303746; background: #fff; font: inherit; font-size: 14px; outline: none; min-width: 200px; }
 .qt-fx-client-row select:focus { border-color: #8370d2; box-shadow: 0 0 0 3px #7966d51a; }
 
+/* FX buffer row above table */
+.qt-fx-buffer-row { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; flex-wrap: wrap; }
+.qt-fx-buffer-label { color: #555d6c; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.qt-fx-buffer-hint { color: #8a909c; font-size: 12px; font-style: italic; }
+
 /* FX table */
 .qt-fx-table-wrap { overflow-x: auto; border: 1px solid #e5e8ef; border-radius: 10px; }
 .qt-fx-table { width: 100%; border-collapse: collapse; font-size: 13px; }

@@ -234,7 +234,7 @@
       const currency = COUNTRY_CURRENCY[code] || code;
       general[code] = { currency, fxRate: FX_RATES[currency] || 1, taxRate: COUNTRY_DEFAULT_TAX[code] ?? 0 };
     });
-    return { general, clients: {} };
+    return { general, fxBuffer: 0, clients: {} };
   }
   function loadFxSettings() {
     try {
@@ -272,6 +272,12 @@
     if (clientName && s.clients[clientName]?.[countryCode]?.taxRate != null) return number(s.clients[clientName][countryCode].taxRate);
     if (s.general[countryCode]?.taxRate != null) return number(s.general[countryCode].taxRate);
     return COUNTRY_DEFAULT_TAX[countryCode] ?? 0;
+  }
+  // Returns the effective FX buffer %, checking client-specific then general setting
+  function getFxBufferForClient(clientName) {
+    const s = loadFxSettings();
+    if (clientName && s.clients[clientName]?.fxBuffer != null) return number(s.clients[clientName].fxBuffer);
+    return s.fxBuffer != null ? number(s.fxBuffer) : 0;
   }
 
   function evaluatePolicy(record, policy) {
@@ -407,6 +413,11 @@
     const fxInput = $('qt-fxRate');
     if (fxInput && (lastCurrency === '' || !fxInput.value || number(fxInput.value) === number(getFxRateForCurrency(lastCurrency, lastClient)))) {
       fxInput.value = String(getFxRateForCurrency(currency, client));
+    }
+    // Auto-fill FX buffer when client changes (or on fresh open)
+    const fxBufferInput = $('qt-fxBuffer');
+    if (fxBufferInput && (lastClient === '' || number(fxBufferInput.value) === getFxBufferForClient(lastClient))) {
+      fxBufferInput.value = String(getFxBufferForClient(client));
     }
     // Auto-fill tax rate on product lines when country or client changes
     if (country !== lastCountry || client !== lastClient) {
@@ -723,8 +734,10 @@
     $('qtPolicyMinMarkup').value = policy.minMarkupPercent ?? '';
     $('qtPolicyMaxMrpPremium').value = policy.maxMrpPremiumPercent ?? '';
     const settings = loadFxSettings();
+    $('qtFxGeneralBuffer').value = settings.fxBuffer != null ? settings.fxBuffer : '';
     renderFxTableBody($('qtFxGeneralTable').querySelector('tbody'), settings.general, settings.general);
     $('qtFxClientSelect').value = '';
+    $('qtFxClientBuffer').value = '';
     $('qtFxClientTableWrap').hidden = true;
     document.querySelectorAll('.qt-fxtab').forEach(t => { t.classList.toggle('active', t.dataset.fxtab === 'general'); t.setAttribute('aria-selected', t.dataset.fxtab === 'general'); });
     $('qtFxGeneral').hidden = false; $('qtFxClient').hidden = true;
@@ -771,9 +784,11 @@
   });
   $('qtFxClientSelect').addEventListener('change', () => {
     const clientName = $('qtFxClientSelect').value;
-    if (!clientName) { $('qtFxClientTableWrap').hidden = true; return; }
+    if (!clientName) { $('qtFxClientBuffer').value = ''; $('qtFxClientTableWrap').hidden = true; return; }
     const settings = loadFxSettings();
-    renderFxTableBody($('qtFxClientTable').querySelector('tbody'), settings.clients[clientName] || {}, settings.general);
+    const clientData = settings.clients[clientName] || {};
+    $('qtFxClientBuffer').value = clientData.fxBuffer != null ? clientData.fxBuffer : '';
+    renderFxTableBody($('qtFxClientTable').querySelector('tbody'), clientData, settings.general);
     $('qtFxClientTableWrap').hidden = false;
   });
 
@@ -781,6 +796,10 @@
   $('qtFxGeneralSave').addEventListener('click', () => {
     const settings = loadFxSettings();
     const auditEntries = [];
+    // FX buffer
+    const newBuf = $('qtFxGeneralBuffer').value !== '' ? number($('qtFxGeneralBuffer').value) : 0;
+    if (String(settings.fxBuffer ?? 0) !== String(newBuf)) auditEntries.push({ scope: 'General', country: '(all countries)', field: 'FX Buffer %', oldValue: settings.fxBuffer ?? 0, newValue: newBuf });
+    settings.fxBuffer = newBuf;
     $('qtFxGeneralTable').querySelectorAll('tbody tr').forEach(row => {
       const code = row.dataset.country;
       const [, name] = WH_COUNTRIES[code];
@@ -795,7 +814,7 @@
     });
     saveFxSettings(settings);
     addAuditEntries(auditEntries);
-    showToast(auditEntries.length ? 'General FX rates saved' : 'No changes to save');
+    showToast(auditEntries.length ? 'General rates saved' : 'No changes to save');
   });
   $('qtFxGeneralCancel').addEventListener('click', closeSettings);
 
@@ -806,6 +825,12 @@
     const settings = loadFxSettings();
     if (!settings.clients[clientName]) settings.clients[clientName] = {};
     const auditEntries = [];
+    // FX buffer for this client
+    const newBuf = $('qtFxClientBuffer').value !== '' ? number($('qtFxClientBuffer').value) : null;
+    const oldBuf = settings.clients[clientName].fxBuffer ?? null;
+    if (String(oldBuf ?? '') !== String(newBuf ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: '(all countries)', field: 'FX Buffer %', oldValue: oldBuf ?? '(general)', newValue: newBuf ?? '(general)' });
+    if (newBuf != null) settings.clients[clientName].fxBuffer = newBuf;
+    else delete settings.clients[clientName].fxBuffer;
     $('qtFxClientTable').querySelectorAll('tbody tr').forEach(row => {
       const code = row.dataset.country;
       const [, name] = WH_COUNTRIES[code];
