@@ -1,8 +1,8 @@
 // RBAC resolver: derives each person's access from their positions in ORG_DATA.
 window.RBAC = (() => {
   const { CAPABILITIES, PEOPLE, ORG } = window.ORG_DATA;
-  const LEVELS = { member: 1, team_lead: 2, function_lead: 3, head: 4 };
-  const LEVEL_LABELS = { member: 'Member', team_lead: 'Team lead', function_lead: 'Function lead', head: 'Head' };
+  const LEVELS = { member: 1, team_lead: 2, function_lead: 3, head: 4, super_admin: 5 };
+  const LEVEL_LABELS = { member: 'Member', team_lead: 'Team lead', function_lead: 'Function lead', head: 'Head', super_admin: 'Super Admin' };
   const USER_KEY = 'greenfield-demo-user';
 
   const higher = (a, b) => (!a || LEVELS[b] > LEVELS[a] ? b : a);
@@ -11,7 +11,7 @@ window.RBAC = (() => {
     const positions = [];
     if (ORG.head === personId) positions.push({ level: 'head', label: 'Head of Operations' });
     ORG.functions.forEach(fn => {
-      if (fn.lead === personId) positions.push({ functionId: fn.id, level: 'function_lead', label: `${fn.name} lead` });
+      if (fn.lead === personId) positions.push({ functionId: fn.id, level: 'function_lead', label: fn.leadLabel || `${fn.name} lead` });
       if (fn.teamLead === personId) positions.push({ functionId: fn.id, level: 'team_lead', label: `${fn.name} team lead` });
       fn.teams.forEach(team => {
         if (team.members.includes(personId)) {
@@ -19,6 +19,12 @@ window.RBAC = (() => {
         }
       });
     });
+    if (window.RoleAccess?.isSuperAdmin(personId)) {
+      const user = window.RoleAccess.userById(personId);
+      user.roles.map(roleId => window.RoleAccess.ROLES.find(role => role.id === roleId))
+        .filter(role => role?.kind === 'super-admin')
+        .forEach(role => positions.push({ functionId: role.functionId || null, level: 'super_admin', label: role.label }));
+    }
     return positions;
   }
 
@@ -26,8 +32,8 @@ window.RBAC = (() => {
   function grantsFor(positions) {
     const grants = [];
     positions.forEach(pos => {
-      if (pos.level === 'head') {
-        Object.keys(CAPABILITIES).forEach(cap => grants.push({ capability: cap, level: 'head', scope: null }));
+      if (pos.level === 'head' || pos.level === 'super_admin') {
+        Object.keys(CAPABILITIES).forEach(cap => grants.push({ capability: cap, level: pos.level, scope: null }));
         return;
       }
       const fn = ORG.functions.find(f => f.id === pos.functionId);
@@ -53,6 +59,7 @@ window.RBAC = (() => {
 
     const positions = positionsFor(personId);
     const isHead = positions.some(p => p.level === 'head');
+    const isSuperAdmin = positions.some(p => p.level === 'super_admin');
 
     const levelByFunction = {};
     positions.forEach(p => {
@@ -66,7 +73,7 @@ window.RBAC = (() => {
       if (entry.scopes !== null) entry.scopes = scope ? [...entry.scopes, scope] : null;
     });
 
-    const levelIn = functionId => (isHead ? 'head' : levelByFunction[functionId] || null);
+    const levelIn = functionId => (isHead ? 'head' : isSuperAdmin ? 'super_admin' : levelByFunction[functionId] || null);
     const meets = (level, minLevel) => !!level && LEVELS[level] >= LEVELS[minLevel || 'member'];
 
     return {
@@ -79,10 +86,12 @@ window.RBAC = (() => {
 
       // can('stock') · can('assets', { minLevel: 'team_lead', function: 'it_euc' }) · can(null, { minLevel: 'head' })
       can(capability, { minLevel = 'member', function: functionId } = {}) {
+        const moduleId = capability && window.RoleAccess?.CAPABILITY_MODULE[capability];
+        if (moduleId && !window.RoleAccess.canAccess(moduleId, personId)) return false;
         if (capability && !capabilities[capability]) return false;
         if (functionId) return meets(levelIn(functionId), minLevel);
         if (capability) return meets(capabilities[capability].level, minLevel);
-        return isHead || meets(Object.values(levelByFunction).reduce(higher, null), minLevel);
+        return isHead || isSuperAdmin || meets(Object.values(levelByFunction).reduce(higher, null), minLevel);
       },
 
       // null = unrestricted, [] = no access, otherwise scope objects to match records against

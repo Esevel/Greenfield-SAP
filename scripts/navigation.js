@@ -26,6 +26,7 @@ async function initLayout() {
   }
   
   // After loading templates, initialize components
+  if (window.RoleAccess) window.RoleAccess.applyNavigation();
   initActiveNavigation();
   initBreadcrumbs();
   initDropdowns();
@@ -134,7 +135,11 @@ function initDropdowns() {
 
 // Initialize on page load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLayout);
+  document.addEventListener('DOMContentLoaded', () => {
+    initLayout();
+    if (window.RoleAccess) window.RoleAccess.guardCurrentPage();
+  });
 } else {
   initLayout();
+  if (window.RoleAccess) window.RoleAccess.guardCurrentPage();
 }

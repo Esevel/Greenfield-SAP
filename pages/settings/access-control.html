@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role access & users - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/role-access.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    <main class="main-content">
+      <div id="header-container"></div>
+      <div class="page-content access-page">
+        <div class="page-header access-page-heading">
+          <div><p class="access-eyebrow">ADMINISTRATION</p><h1 class="page-title">Role access & users</h1><p class="page-description">Manage what each role can see, and assign one or more roles to every user.</p></div>
+          <label class="access-view-as">Preview access as<select id="raPreviewUser" aria-label="Preview access as user"></select></label>
+        </div>
+
+        <div class="access-summary" id="raSummary"></div>
+        <nav class="access-tabs" aria-label="Access management sections">
+          <button type="button" class="access-tab active" data-tab="roles">Role permissions <span id="raRoleCount"></span></button>
+          <button type="button" class="access-tab" data-tab="users">Users & assignments <span id="raUserCount"></span></button>
+        </nav>
+
+        <section class="access-panel" id="raRolesPanel" aria-label="Configure role permissions">
+          <aside class="role-list-panel"><div class="access-panel-heading"><div><h2>Roles</h2><p>Choose a role to configure module access.</p></div></div><div class="role-list" id="raRoleList"></div></aside>
+          <div class="role-editor" id="raRoleEditor"></div>
+        </section>
+
+        <section class="users-panel" id="raUsersPanel" hidden aria-label="Manage users and role assignments">
+          <div class="users-toolbar"><div><h2>Users</h2><p>Add team members and give each person multiple roles when needed.</p></div><button class="btn btn-primary" type="button" id="raAddUser">＋ Add user</button></div>
+          <div class="users-filters"><label class="access-search"><span class="sr-only">Search users</span><input id="raUserSearch" type="search" placeholder="Search name or email"></label><span id="raFilteredCount"></span></div>
+          <div class="table-container access-table-wrap"><table class="table access-users-table"><thead><tr><th>User</th><th>Title</th><th>Assigned roles</th><th>Module access</th><th></th></tr></thead><tbody id="raUsers"></tbody></table></div>
+          <p class="access-footnote">Role changes are saved in this browser prototype. They are not a substitute for server-side authorization.</p>
+        </section>
+        <div class="access-toast" id="raToast" role="status" aria-live="polite" hidden></div>
+      </div>
+    </main>
+  </div>
+  <dialog class="ra-dialog" id="raAddDialog" aria-labelledby="raDialogTitle">
+    <form id="raAddForm" method="dialog">
+      <div class="ra-dialog-top"><div><p class="access-eyebrow">NEW ACCOUNT</p><h2 id="raDialogTitle">Add a user</h2></div><button class="ra-icon-button" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <label class="ra-field">Full name<input name="name" required maxlength="80" placeholder="e.g. Alex Morgan"></label>
+      <label class="ra-field">Work email<input name="email" type="email" required maxlength="120" placeholder="alex@company.com"></label>
+      <label class="ra-field">Job title <span class="optional">Optional</span><input name="title" maxlength="80" placeholder="e.g. Operations manager"></label>
+      <fieldset class="ra-role-picker"><legend>Assign roles <span class="optional">Select one or more</span></legend><div id="raNewUserRoles"></div></fieldset>
+      <p class="ra-form-error" id="raFormError" hidden></p>
+      <div class="ra-dialog-actions"><button class="btn btn-secondary" type="button" data-close-dialog>Cancel</button><button class="btn btn-primary" type="submit">Add user</button></div>
+    </form>
+  </dialog>
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/role-admin.js"></script>
+</body>
+</html>

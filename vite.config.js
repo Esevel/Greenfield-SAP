@@ -36,7 +36,7 @@ export default defineConfig({
   plugins: [{
     name: 'emit-classic-scripts',
     transformIndexHtml(html) {
-      return html.replace('</head>', '  <script src="/scripts/auth.js"></script>\n</head>');
+      return html.replace('</head>', '  <script src="/scripts/auth.js"></script>\n  <script src="/scripts/role-access.js"></script>\n</head>');
     },
     generateBundle() {
       for (const filePath of [...scriptFiles, ...staticAssetFiles]) {
