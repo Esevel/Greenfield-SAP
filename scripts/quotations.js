@@ -568,7 +568,13 @@
       ? `<button type="button" class="qt-approve" data-approve-quote="${html(record.quoteNumber)}">Approve</button><button type="button" class="qt-reject" data-reject-quote="${html(record.quoteNumber)}">Reject</button>`
       : '';
 
-    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>${hodBadge}</div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCTS · ${products.length}</small><strong title="${html(productNames)}">${html(productNames)}</strong></div><div><small>VENDORS</small><strong title="${html(vendorNames)}">${html(vendorNames)}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View calculation breakdown & quotation fields <span>⌄</span></summary>${productBreakdown(products, record)}${details}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${record.orderNumber ? ` · Order ${html(record.orderNumber)}` : ''}</span><div class="qt-card-actions">${hodActions}<button type="button" class="qt-edit" data-edit-quote="${html(record.quoteNumber)}">Edit</button><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></div></article>`;
+    // Show "Convert to Order" for approved/accepted quotes not yet linked to an order
+    const canConvert = (record.hodApprovalStatus === 'Approved' || record.quoteStatus === 'Accepted' || record.finalStatus === 'Approved')
+      && !record.orderNumber && record.quoteNumber;
+    const convertBtn = canConvert ? `<button type="button" class="qt-convert" data-convert-quote="${html(record.quoteNumber)}">→ Convert to Order</button>` : '';
+    const orderLink = record.orderNumber ? `<a href="/pages/orders/board.html?open=${html(record.orderNumber)}" class="qt-order-link">Order ${html(record.orderNumber)}</a>` : '';
+
+    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>${hodBadge}</div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCTS · ${products.length}</small><strong title="${html(productNames)}">${html(productNames)}</strong></div><div><small>VENDORS</small><strong title="${html(vendorNames)}">${html(vendorNames)}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View calculation breakdown & quotation fields <span>⌄</span></summary>${productBreakdown(products, record)}${details}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${orderLink}</span><div class="qt-card-actions">${convertBtn}${hodActions}<button type="button" class="qt-edit" data-edit-quote="${html(record.quoteNumber)}">Edit</button><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></div></article>`;
   }
 
   function renderList() {
@@ -651,6 +657,20 @@
       quotes = quotes.filter(quote => quote !== record);
       if (editingQuoteNumber === record.quoteNumber) closeForm();
       persist(); refreshFilterOptions(); renderList(); showToast('Quotation deleted');
+      return;
+    }
+    const convert = event.target.closest('[data-convert-quote]');
+    if (convert) {
+      const record = quotes.find(quote => quote.quoteNumber === convert.dataset.convertQuote);
+      if (!record) return;
+      if (!window.orderConvertFromQuotation) { showToast('Orders module not loaded — open the Board tab first'); return; }
+      try {
+        const order = window.orderConvertFromQuotation(record);
+        record.orderNumber = order.id;
+        record.finalStatus = 'Converted to order';
+        persist(); renderList();
+        showToast(`Order ${order.id} created · Quotation stage on the board`);
+      } catch (err) { showToast(`Could not convert: ${err.message}`); }
       return;
     }
     const approve = event.target.closest('[data-approve-quote]');
