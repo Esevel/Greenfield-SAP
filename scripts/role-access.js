@@ -6,6 +6,7 @@ window.RoleAccess = (() => {
   const MODULES = [
     { id: 'dashboard', label: 'Dashboard', group: 'Workspace' },
     { id: 'people', label: 'People', group: 'Workspace' },
+    { id: 'quotation', label: 'Orders · Quotation', group: 'Orders' },
     { id: 'attention', label: 'Needs attention', group: 'Operations' },
     { id: 'orders', label: 'Orders', group: 'Operations' },
     { id: 'services', label: 'Services', group: 'Operations' },
@@ -34,17 +35,17 @@ window.RoleAccess = (() => {
   };
 
   const FUNCTION_GROUPS = [
-    { id: 'customer_success', label: 'Customer Success', modules: ['dashboard', 'people', 'attention', 'clients', 'services', 'support', 'reports'] },
-    { id: 'partnerships', label: 'Partnerships', modules: ['dashboard', 'attention', 'vendors', 'reports', 'integrations'] },
-    { id: 'supply_chain', label: 'Supply Chain', modules: ['dashboard', 'attention', 'orders', 'services', 'stock', 'warehouses', 'vendors', 'sla-config', 'operating-calendar'] },
+    { id: 'customer_success', label: 'Customer Success', modules: ['dashboard', 'people', 'attention', 'clients', 'services', 'support', 'reports', 'quotation'] },
+    { id: 'partnerships', label: 'Partnerships', modules: ['dashboard', 'attention', 'vendors', 'reports', 'integrations', 'quotation'] },
+    { id: 'supply_chain', label: 'Supply Chain', modules: ['dashboard', 'attention', 'orders', 'services', 'stock', 'warehouses', 'vendors', 'sla-config', 'operating-calendar', 'quotation'] },
     { id: 'it', label: 'IT', modules: ['dashboard', 'people', 'services', 'support', 'assets', 'integrations'] },
-    { id: 'commercial', label: 'Commercial', modules: ['dashboard', 'attention', 'orders', 'clients', 'billing', 'reports'] },
-    { id: 'administrative_finance', label: 'Administrative · Finance', modules: ['dashboard', 'clients', 'billing', 'fees', 'reports', 'integrations'] },
+    { id: 'commercial', label: 'Commercial', modules: ['dashboard', 'attention', 'orders', 'clients', 'billing', 'reports', 'quotation'] },
+    { id: 'administrative_finance', label: 'Administrative · Finance', modules: ['dashboard', 'clients', 'billing', 'fees', 'reports', 'integrations', 'quotation'] },
     { id: 'product', label: 'Product', modules: ['dashboard', 'catalogue', 'reports', 'integrations'] },
     { id: 'engineering', label: 'Engineering', modules: ['dashboard', 'assets', 'integrations', 'reports'] }
   ];
 
-  const opsModules = [...new Set([...FUNCTION_GROUPS.slice(0, 4).flatMap(fn => fn.modules), 'access-control'])];
+  const opsModules = [...new Set([...FUNCTION_GROUPS.slice(0, 4).flatMap(fn => fn.modules), 'access-control', 'quotation'])];
   const allModules = MODULES.map(module => module.id);
   const ROLES = [
     { id: 'head_operations', label: 'Head of Operations', description: 'Oversight across Customer Success, Partnerships, Supply Chain and IT.', modules: opsModules, kind: 'executive' },
@@ -78,6 +79,7 @@ window.RoleAccess = (() => {
 
   function defaultState() {
     return {
+      schemaVersion: 4,
       users: seedUsers.map(user => ({ ...user, roles: [...user.roles] })),
       grants: Object.fromEntries(ROLES.map(role => [role.id, [...role.modules]]))
     };
@@ -101,6 +103,16 @@ window.RoleAccess = (() => {
         }
         if (!users.some(user => user.id === 'samnan')) users.push(defaults.users.find(user => user.id === 'samnan'));
         stored.grants = { ...defaults.grants, ...stored.grants };
+        if ((stored.schemaVersion || 0) < 3) {
+          ['customer_success_manager', 'customer_success_member', 'partnerships_manager', 'partnerships_member', 'commercial_manager', 'commercial_member', 'administrative_finance_manager', 'administrative_finance_member', 'supply_chain_manager', 'supply_chain_member'].forEach(roleId => {
+            stored.grants[roleId] = [...new Set([...(stored.grants[roleId] || []), 'quotation'])];
+          });
+        }
+        if ((stored.schemaVersion || 0) < 4) {
+          stored.grants.head_operations = [...new Set([...(stored.grants.head_operations || []), 'quotation'])];
+          stored.schemaVersion = 4;
+        }
+        ROLES.filter(role => role.locked).forEach(role => { stored.grants[role.id] = [...allModules]; });
         saveState(stored);
         return stored;
       }
@@ -145,6 +157,7 @@ window.RoleAccess = (() => {
   function routeModule(path = window.location.pathname) {
     const routes = [
       ['/pages/settings/access-control.html', 'access-control'],
+        ['/pages/orders/quotations.html', 'quotation'],
       ['/pages/dashboard.html', 'dashboard'],
       ['/pages/people/', 'people'], ['/pages/attention/', 'attention'],
       ['/pages/orders/', 'orders'], ['/pages/services/', 'services'], ['/pages/tracker/', 'services'],
@@ -160,7 +173,12 @@ window.RoleAccess = (() => {
   function applyNavigation(root = document) {
     const state = readState();
     root.querySelectorAll('[data-access-module]').forEach(link => {
-      link.hidden = !canAccess(link.dataset.accessModule, currentUserId(), state);
+      const hasModuleAccess = canAccess(link.dataset.accessModule, currentUserId(), state);
+      const alreadyReachableFromParent = link.dataset.accessParent && canAccess(link.dataset.accessParent, currentUserId(), state);
+      link.hidden = !hasModuleAccess || !!alreadyReachableFromParent;
+    });
+    root.querySelectorAll('[data-orders-view]').forEach(link => {
+      link.hidden = !canAccess(link.dataset.ordersView, currentUserId(), state);
     });
     root.querySelectorAll('.sidebar-section').forEach(section => {
       const links = [...section.querySelectorAll('.sidebar-menu-link')];
