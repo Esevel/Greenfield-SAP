@@ -217,6 +217,8 @@
   let quotes = loadQuotes();
   let toastTimer;
   let lastCurrency = 'SGD';
+  let lastCountry = '';
+  let lastClient = '';
   let nextProductId = 1;
   let editingQuoteNumber = '';
   let pendingRejectQuoteNumber = '';
@@ -254,11 +256,22 @@
     if (audit.length > 200) audit.splice(200);
     localStorage.setItem(FX_AUDIT_KEY, JSON.stringify(audit));
   }
-  // Returns the effective FX rate for a currency code, checking settings first
-  function getFxRateForCurrency(currency) {
+  // Returns the effective FX rate, checking client-specific then general settings before falling back
+  function getFxRateForCurrency(currency, clientName) {
     const cc = CURRENCY_COUNTRY[currency];
-    if (cc) { const s = loadFxSettings(); if (s.general[cc]?.fxRate) return number(s.general[cc].fxRate); }
+    if (cc) {
+      const s = loadFxSettings();
+      if (clientName && s.clients[clientName]?.[cc]?.fxRate != null) return number(s.clients[clientName][cc].fxRate);
+      if (s.general[cc]?.fxRate != null) return number(s.general[cc].fxRate);
+    }
     return FX_RATES[currency] || 1;
+  }
+  function getTaxRateForCountry(countryCode, clientName) {
+    if (!countryCode) return 0;
+    const s = loadFxSettings();
+    if (clientName && s.clients[clientName]?.[countryCode]?.taxRate != null) return number(s.clients[clientName][countryCode].taxRate);
+    if (s.general[countryCode]?.taxRate != null) return number(s.general[countryCode].taxRate);
+    return COUNTRY_DEFAULT_TAX[countryCode] ?? 0;
   }
 
   function evaluatePolicy(record, policy) {
@@ -325,8 +338,8 @@
     return `<input ${common} type="${type}" ${numeric} placeholder="${html(computedPlaceholder)}" ${field.value !== undefined ? `value="${field.value}"` : ''}>`;
   }
 
-  function blankProduct() {
-    return { productName: '', vendor: '', quantity: 1, buyingPrice: '', taxPercent: 0, deliveryFees: 0, targetMarkup: 0, mrpLocal: '', leadTime: '' };
+  function blankProduct(taxPercent) {
+    return { productName: '', vendor: '', quantity: 1, buyingPrice: '', taxPercent: taxPercent ?? 0, deliveryFees: 0, targetMarkup: 0, mrpLocal: '', leadTime: '' };
   }
 
   function productLineMarkup(lines = [blankProduct()]) {
@@ -370,14 +383,14 @@
     $('qtForm').addEventListener('click', event => {
       if (event.target.closest('#qtAddProduct')) {
         const current = readProductInputs();
-        current.push(blankProduct());
+        current.push(blankProduct(getTaxRateForCountry(value('country'), value('client'))));
         $('qtProductLines').innerHTML = productLineMarkup(current);
         updateCalculations();
       }
       const remove = event.target.closest('[data-remove-product]');
       if (remove) {
         const current = readProductInputs().filter((_, index) => index !== Number(remove.dataset.removeProduct));
-        $('qtProductLines').innerHTML = productLineMarkup(current.length ? current : [blankProduct()]);
+        $('qtProductLines').innerHTML = productLineMarkup(current.length ? current : [blankProduct(getTaxRateForCountry(value('country'), value('client')))]);  
         updateCalculations();
       }
     });
@@ -389,12 +402,24 @@
   function updateCalculations() {
     if (!$('qtForm')) return;
     const currency = value('currency') || 'SGD';
+    const country = value('country');
+    const client = value('client');
     const fxInput = $('qt-fxRate');
-    if (fxInput && (!fxInput.value || number(fxInput.value) === number(getFxRateForCurrency(lastCurrency)))) {
-      fxInput.value = String(getFxRateForCurrency(currency));
+    if (fxInput && (lastCurrency === '' || !fxInput.value || number(fxInput.value) === number(getFxRateForCurrency(lastCurrency, lastClient)))) {
+      fxInput.value = String(getFxRateForCurrency(currency, client));
+    }
+    // Auto-fill tax rate on product lines when country or client changes
+    if (country !== lastCountry || client !== lastClient) {
+      const oldTax = getTaxRateForCountry(lastCountry, lastClient);
+      const newTax = getTaxRateForCountry(country, client);
+      document.querySelectorAll('.qt-product-line [data-product-field="taxPercent"]').forEach(input => {
+        if (input.value === '' || number(input.value) === oldTax) input.value = newTax;
+      });
     }
     lastCurrency = currency;
-    const fxRate = number(value('fxRate')) || getFxRateForCurrency(value('currency')) || 1;
+    lastCountry = country;
+    lastClient = client;
+    const fxRate = number(value('fxRate')) || getFxRateForCurrency(value('currency'), client) || 1;
     const fxBuffer = number(value('fxBuffer')) / 100;
     const lines = readProductInputs().map(line => calculateProduct(line, fxRate, fxBuffer * 100));
     const totalQty = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -566,6 +591,7 @@
 
   function openForm() {
     editingQuoteNumber = '';
+    lastCountry = ''; lastClient = ''; lastCurrency = '';
     $('qtForm').reset();
     $('qtProductLines').innerHTML = productLineMarkup();
     $('qtEditorTitle').textContent = 'New quotation';
@@ -594,6 +620,7 @@
   function closeForm() {
     $('qtEditor').hidden = true;
     editingQuoteNumber = '';
+    lastCountry = ''; lastClient = ''; lastCurrency = '';
     $('qtForm').reset();
     $('qtProductLines').innerHTML = productLineMarkup();
     $('qtEditorTitle').textContent = 'New quotation';
