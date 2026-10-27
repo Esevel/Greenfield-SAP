@@ -1,7 +1,16 @@
 // Orders · Quotation submodule. Browser-local prototype storage; pricing calculations are estimates for review.
 (() => {
   const STORE_KEY = 'sap-order-quotations-v1';
+  const POLICY_KEY = 'sap-quotation-policy-v1';
+  const FX_SETTINGS_KEY = 'sap-quotation-fx-settings-v1';
+  const FX_AUDIT_KEY = 'sap-quotation-fx-audit-v1';
   const $ = id => document.getElementById(id);
+
+  // Country → currency mapping (local currency for each supported country)
+  const COUNTRY_CURRENCY = { SG: 'SGD', MY: 'MYR', AU: 'AUD', US: 'USD', GB: 'GBP' };
+  // Reverse map for auto-populating FX rate from currency selector
+  const CURRENCY_COUNTRY = Object.fromEntries(Object.entries(COUNTRY_CURRENCY).map(([cc, cur]) => [cur, cc]));
+  const COUNTRY_DEFAULT_TAX = { SG: 9, MY: 10, AU: 10, US: 8.25, GB: 20 };
   const html = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const money = value => number(value).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -16,7 +25,7 @@
     { key: 'client', label: 'Client Name', group: 'Request & client', type: 'select', options: clients, required: true },
     { key: 'country', label: 'Country', group: 'Request & client', type: 'select', options: countries, required: true },
     { key: 'storageLocation', label: 'Storage Location', group: 'Request & client', type: 'select', options: locations },
-    { key: 'quantity', label: 'Total Units (Qty)', group: 'Request & client', type: 'number', min: 1, step: 1, required: true, value: 1 },
+    { key: 'quantity', label: 'Total Units (Qty)', group: 'Request & client', type: 'number', min: 0, step: 1, computed: true, value: 0 },
     { key: 'vendor', label: 'Vendor', group: 'Product & vendor', type: 'select', options: vendors, required: true },
     { key: 'currency', label: 'Currency', group: 'Product & vendor', type: 'select', options: currencies, value: 'SGD', required: true },
     { key: 'productName', label: 'Product Name', group: 'Product & vendor', required: true },
@@ -52,7 +61,66 @@
     { key: 'eta', label: 'ETA', group: 'Quote & fulfilment', type: 'date' }
   ];
   const calculatedKeys = new Set(fields.filter(field => field.computed).map(field => field.key));
+  const PRODUCT_FIELD_KEYS = new Set(['vendor', 'productName', 'leadTime', 'buyingPrice', 'taxPercent', 'deliveryFees', 'unitPriceIncTax', 'targetMarkup', 'priceAfterMarkup', 'mrpLocal', 'unitPriceUsd', 'landedCostUnitUsd', 'marginUsd', 'actualMarkupUsd', 'mrpUsd', 'mrpVarianceLocal', 'mrpVarianceUsd']);
   const SAMPLE_SEED_KEY = 'sap-order-quotations-samples-v1';
+  const MULTI_LINE_SAMPLE_KEY = 'sap-order-quotations-multi-samples-v2';
+
+  function calculateProduct(line, fxRate, fxBuffer) {
+    const qty = Math.max(1, number(line.quantity));
+    const deliveryEach = number(line.deliveryFees) / qty;
+    const unitPriceIncTax = (number(line.buyingPrice) + deliveryEach) * (1 + number(line.taxPercent) / 100);
+    const priceAfterMarkup = unitPriceIncTax * (1 + number(line.targetMarkup) / 100);
+    const landedCostUnitUsd = unitPriceIncTax / fxRate;
+    const unitPriceUsd = (priceAfterMarkup / fxRate) * (1 + fxBuffer / 100);
+    const totalQuotedUsd = unitPriceUsd * qty;
+    const totalLandedUsd = landedCostUnitUsd * qty;
+    const marginUsd = totalQuotedUsd - totalLandedUsd;
+    const mrpUsd = number(line.mrpLocal) / fxRate;
+    return {
+      ...line, quantity: qty, unitPriceIncTax, priceAfterMarkup, landedCostUnitUsd,
+      unitPriceUsd, totalQuotedUsd, totalLandedUsd, marginUsd,
+      marginPercent: totalQuotedUsd ? marginUsd / totalQuotedUsd * 100 : 0,
+      actualMarkupUsd: landedCostUnitUsd ? (unitPriceUsd / landedCostUnitUsd - 1) * 100 : 0,
+      mrpUsd,
+      mrpVarianceLocal: number(line.mrpLocal) ? (priceAfterMarkup / number(line.mrpLocal) - 1) * 100 : 0,
+      mrpVarianceUsd: mrpUsd ? (unitPriceUsd / mrpUsd - 1) * 100 : 0
+    };
+  }
+
+  function normalizeQuote(record) {
+    if (Array.isArray(record.products) && record.products.length) {
+      const products = record.products.map(line => calculateProduct(line, number(record.fxRate) || 1, number(record.fxBuffer)));
+      const quantity = products.reduce((sum, line) => sum + line.quantity, 0);
+      const totalQuotedUsd = products.reduce((sum, line) => sum + line.totalQuotedUsd, 0);
+      const totalLandedUsd = products.reduce((sum, line) => sum + line.totalLandedUsd, 0);
+      const localPriceTotal = products.reduce((sum, line) => sum + line.unitPriceIncTax * line.quantity, 0);
+      const localMarkupTotal = products.reduce((sum, line) => sum + line.priceAfterMarkup * line.quantity, 0);
+      const localMrpTotal = products.reduce((sum, line) => sum + number(line.mrpLocal) * line.quantity, 0);
+      const vendorIds = [...new Set(products.map(line => line.vendor).filter(Boolean))];
+      const marginUsd = totalQuotedUsd - totalLandedUsd;
+      return {
+        ...record, products, quantity, productName: products.map(line => line.productName).filter(Boolean).join(' · '),
+        vendor: vendorIds.length > 1 ? 'multiple' : (vendorIds[0] || ''),
+        totalQuotedUsd, totalLandedUsd, marginUsd,
+        marginPercent: totalQuotedUsd ? marginUsd / totalQuotedUsd * 100 : 0,
+        unitPriceIncTax: quantity ? localPriceTotal / quantity : 0,
+        priceAfterMarkup: quantity ? localMarkupTotal / quantity : 0,
+        unitPriceUsd: quantity ? totalQuotedUsd / quantity : 0,
+        landedCostUnitUsd: quantity ? totalLandedUsd / quantity : 0,
+        mrpUsd: quantity ? localMrpTotal / (number(record.fxRate) || 1) / quantity : 0,
+        mrpVarianceLocal: localMrpTotal ? (localMarkupTotal / localMrpTotal - 1) * 100 : 0,
+        mrpVarianceUsd: localMrpTotal ? (totalQuotedUsd / (localMrpTotal / (number(record.fxRate) || 1)) - 1) * 100 : 0,
+        actualMarkupUsd: totalLandedUsd ? (totalQuotedUsd / totalLandedUsd - 1) * 100 : 0
+      };
+    }
+    const line = calculateProduct({
+      productName: record.productName || '', vendor: record.vendor || '', leadTime: record.leadTime || '',
+      quantity: number(record.quantity) || 1, buyingPrice: number(record.buyingPrice),
+      taxPercent: number(record.taxPercent), deliveryFees: number(record.deliveryFees),
+      targetMarkup: number(record.targetMarkup), mrpLocal: number(record.mrpLocal)
+    }, number(record.fxRate) || 1, number(record.fxBuffer));
+    return { ...record, products: [line] };
+  }
 
   function sampleQuote(data) {
     const qty = data.quantity;
@@ -97,16 +165,50 @@
     ];
   }
 
+  function ensureMultiProductSample(records) {
+    if (localStorage.getItem(MULTI_LINE_SAMPLE_KEY)) return records;
+    const example = records.find(record => record.quoteNumber === 'QT-2026-0048' && record.client === 'Acme Tech' && record.comments?.includes('Volume pricing confirmed with supplier'));
+    if (example && (example.products?.length || 0) < 2) {
+      example.products = [
+        ...(example.products || [normalizeQuote(example).products[0]]),
+        calculateProduct({ productName: 'USB-C Dock · 100W', vendor: 'vendorA', quantity: 12, buyingPrice: 285, taxPercent: 9, deliveryFees: 96, targetMarkup: 8, mrpLocal: 369, leadTime: '2–3 business days' }, number(example.fxRate) || 1, number(example.fxBuffer))
+      ];
+      Object.assign(example, normalizeQuote(example));
+    }
+
+    const digitalQuote = records.find(record => record.quoteNumber === 'QT-2026-0047' && record.client === 'Digital Solutions');
+    if (digitalQuote && (digitalQuote.products?.length || 0) < 2) {
+      digitalQuote.products = [
+        ...(digitalQuote.products || [normalizeQuote(digitalQuote).products[0]]),
+        calculateProduct({ productName: 'USB-C Dock · 100W', vendor: 'vendorB', quantity: 4, buyingPrice: 235, taxPercent: 10, deliveryFees: 28, targetMarkup: 12, mrpLocal: 329, leadTime: '3–5 business days' }, number(digitalQuote.fxRate) || 1, number(digitalQuote.fxBuffer))
+      ];
+      Object.assign(digitalQuote, normalizeQuote(digitalQuote));
+    }
+
+    const mediaQuote = records.find(record => record.quoteNumber === 'QT-2026-0044' && record.client === 'MediaWorks');
+    if (mediaQuote && (mediaQuote.products?.length || 0) < 2) {
+      mediaQuote.products = [
+        ...(mediaQuote.products || [normalizeQuote(mediaQuote).products[0]]),
+        calculateProduct({ productName: 'MacBook Air 13-inch · M3', vendor: 'ingram', quantity: 2, buyingPrice: 4100, taxPercent: 10, deliveryFees: 40, targetMarkup: 7, mrpLocal: 5299, leadTime: '4–6 business days' }, number(mediaQuote.fxRate) || 1, number(mediaQuote.fxBuffer))
+      ];
+      Object.assign(mediaQuote, normalizeQuote(mediaQuote));
+    }
+    localStorage.setItem(MULTI_LINE_SAMPLE_KEY, '1');
+    return records;
+  }
+
   function loadQuotes() {
     try {
       const saved = localStorage.getItem(STORE_KEY);
       const stored = JSON.parse(saved || '[]');
       if (Array.isArray(stored) && stored.length) {
         localStorage.setItem(SAMPLE_SEED_KEY, '1');
-        return stored;
+        const normalized = ensureMultiProductSample(stored.map(normalizeQuote));
+        if (JSON.stringify(normalized) !== JSON.stringify(stored)) localStorage.setItem(STORE_KEY, JSON.stringify(normalized));
+        return normalized;
       }
       if (localStorage.getItem(SAMPLE_SEED_KEY)) return Array.isArray(stored) ? stored : [];
-      const samples = sampleQuotes();
+      const samples = ensureMultiProductSample(sampleQuotes().map(normalizeQuote));
       localStorage.setItem(STORE_KEY, JSON.stringify(samples));
       localStorage.setItem(SAMPLE_SEED_KEY, '1');
       return samples;
@@ -115,6 +217,118 @@
   let quotes = loadQuotes();
   let toastTimer;
   let lastCurrency = 'SGD';
+  let lastCountry = '';
+  let lastClient = '';
+  let nextProductId = 1;
+  let editingQuoteNumber = '';
+  let pendingRejectQuoteNumber = '';
+
+  function loadPolicy() {
+    try { return JSON.parse(localStorage.getItem(POLICY_KEY) || '{}'); } catch { return {}; }
+  }
+  function savePolicy(policy) { localStorage.setItem(POLICY_KEY, JSON.stringify(policy)); }
+
+  function defaultFxSettings() {
+    const general = {};
+    Object.keys(WH_COUNTRIES).forEach(code => {
+      const currency = COUNTRY_CURRENCY[code] || code;
+      general[code] = { currency, fxRate: FX_RATES[currency] || 1, taxRate: COUNTRY_DEFAULT_TAX[code] ?? 0 };
+    });
+    return { general, fxBuffer: 0, clients: {} };
+  }
+  function loadFxSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(FX_SETTINGS_KEY) || 'null');
+      if (!saved) return defaultFxSettings();
+      const defaults = defaultFxSettings();
+      Object.keys(defaults.general).forEach(code => { if (!saved.general[code]) saved.general[code] = defaults.general[code]; });
+      if (!saved.clients) saved.clients = {};
+      return saved;
+    } catch { return defaultFxSettings(); }
+  }
+  function saveFxSettings(settings) { localStorage.setItem(FX_SETTINGS_KEY, JSON.stringify(settings)); }
+  function loadFxAudit() { try { return JSON.parse(localStorage.getItem(FX_AUDIT_KEY) || '[]'); } catch { return []; } }
+  function addAuditEntries(changedRows) {
+    if (!changedRows.length) return;
+    const audit = loadFxAudit();
+    const user = window.RBAC?.getCurrentUser?.()?.name || 'Unknown';
+    audit.unshift({ ts: new Date().toISOString(), user, entries: changedRows });
+    if (audit.length > 200) audit.splice(200);
+    localStorage.setItem(FX_AUDIT_KEY, JSON.stringify(audit));
+  }
+  // Returns the effective FX rate, checking client-specific then general settings before falling back
+  function getFxRateForCurrency(currency, clientName) {
+    const cc = CURRENCY_COUNTRY[currency];
+    if (cc) {
+      const s = loadFxSettings();
+      if (clientName && s.clients[clientName]?.[cc]?.fxRate != null) return number(s.clients[clientName][cc].fxRate);
+      if (s.general[cc]?.fxRate != null) return number(s.general[cc].fxRate);
+    }
+    return FX_RATES[currency] || 1;
+  }
+  function getTaxRateForCountry(countryCode, clientName) {
+    if (!countryCode) return 0;
+    const s = loadFxSettings();
+    if (clientName && s.clients[clientName]?.[countryCode]?.taxRate != null) return number(s.clients[clientName][countryCode].taxRate);
+    if (s.general[countryCode]?.taxRate != null) return number(s.general[countryCode].taxRate);
+    return COUNTRY_DEFAULT_TAX[countryCode] ?? 0;
+  }
+  // Returns the effective FX buffer %, checking client-specific then general setting
+  function getFxBufferForClient(clientName) {
+    const s = loadFxSettings();
+    if (clientName && s.clients[clientName]?.fxBuffer != null) return number(s.clients[clientName].fxBuffer);
+    return s.fxBuffer != null ? number(s.fxBuffer) : 0;
+  }
+
+  function evaluatePolicy(record, policy) {
+    const minMarkup = number(policy.minMarkupPercent);
+    const maxMrpPremium = number(policy.maxMrpPremiumPercent);
+    if (!minMarkup && maxMrpPremium === 0 && !policy.maxMrpPremiumPercent) return record;
+    let flagged = false;
+    if (minMarkup > 0 && number(record.actualMarkupUsd) < minMarkup) flagged = true;
+    if (policy.maxMrpPremiumPercent !== '' && policy.maxMrpPremiumPercent !== undefined && number(record.mrpUsd) > 0 && number(record.mrpVarianceUsd) > number(policy.maxMrpPremiumPercent)) flagged = true;
+    record.hodPolicyFlag = flagged ? 'Policy exception' : 'Within policy';
+    record.hodApprovalStatus = flagged ? 'Awaiting approval' : 'Not required';
+    return record;
+  }
+
+  // Renders editable FX/tax table rows. For client view, generalRates supplies placeholder values.
+  function renderFxTableBody(tbody, rates, generalRates) {
+    tbody.innerHTML = Object.entries(WH_COUNTRIES).map(([code, [flag, name]]) => {
+      const row = rates[code];
+      const gen = generalRates[code] || {};
+      const currency = COUNTRY_CURRENCY[code] || gen.currency || '';
+      const fxVal = row?.fxRate != null ? number(row.fxRate) : '';
+      const taxVal = row?.taxRate != null ? number(row.taxRate) : '';
+      const fxPh = gen.fxRate != null ? gen.fxRate : (FX_RATES[currency] || '');
+      const taxPh = gen.taxRate != null ? gen.taxRate : (COUNTRY_DEFAULT_TAX[code] ?? 0);
+      return `<tr data-country="${html(code)}">
+        <td><span class="qt-fx-flag">${flag}</span> ${html(name)}</td>
+        <td><span class="qt-fx-badge">${html(code)}</span></td>
+        <td><span class="qt-fx-currency">${html(currency)}</span></td>
+        <td><input class="qt-fx-input" type="number" min="0.000001" step="0.000001" name="fxRate" value="${fxVal}" placeholder="${html(String(fxPh))}"></td>
+        <td><input class="qt-fx-input" type="number" min="0" step="0.01" name="taxRate" value="${taxVal}" placeholder="${html(String(taxPh))}"></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderAuditTrail() {
+    const audit = loadFxAudit();
+    const container = $('qtAuditTrailContent');
+    if (!audit.length) { container.innerHTML = '<p class="qt-audit-empty">No changes recorded yet.</p>'; return; }
+    const rows = audit.flatMap(entry =>
+      entry.entries.map((e, i) => `<tr>
+        <td>${i === 0 ? html(new Date(entry.ts).toLocaleString('en', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) : ''}</td>
+        <td>${i === 0 ? html(entry.user) : ''}</td>
+        <td>${html(e.scope)}</td>
+        <td>${html(e.country)}</td>
+        <td>${html(e.field)}</td>
+        <td class="qt-audit-old">${html(String(e.oldValue))}</td>
+        <td class="qt-audit-new">${html(String(e.newValue))}</td>
+      </tr>`)
+    ).join('');
+    container.innerHTML = `<div class="qt-audit-table-wrap"><table class="qt-audit-table"><thead><tr><th>Date &amp; Time</th><th>User</th><th>Scope</th><th>Country</th><th>Field</th><th>Old</th><th>New</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
 
   function persist() { localStorage.setItem(STORE_KEY, JSON.stringify(quotes)); }
   function inputMarkup(field) {
@@ -130,11 +344,62 @@
     return `<input ${common} type="${type}" ${numeric} placeholder="${html(computedPlaceholder)}" ${field.value !== undefined ? `value="${field.value}"` : ''}>`;
   }
 
+  function blankProduct(taxPercent) {
+    return { productName: '', vendor: '', quantity: 1, buyingPrice: '', taxPercent: taxPercent ?? 0, deliveryFees: 0, targetMarkup: 0, mrpLocal: '', leadTime: '' };
+  }
+
+  function productLineMarkup(lines = [blankProduct()]) {
+    return lines.map((line, index) => `<article class="qt-product-line" data-product-line="${index}">
+      <div class="qt-product-line-head"><strong>Product ${index + 1}</strong>${lines.length > 1 ? `<button type="button" class="qt-product-remove" data-remove-product="${index}" aria-label="Remove product ${index + 1}">Remove</button>` : ''}</div>
+      <div class="qt-product-input-grid">
+        <label class="qt-field qt-product-name"><span>Product Name <b>*</b></span><input data-product-field="productName" value="${html(line.productName)}" required placeholder="Enter product or model"></label>
+        <label class="qt-field"><span>Vendor <b>*</b></span><select data-product-field="vendor" required><option value="">Choose…</option>${vendors.map(option => `<option value="${html(option.value)}" ${option.value === line.vendor ? 'selected' : ''}>${html(option.label)}</option>`).join('')}</select></label>
+        <label class="qt-field"><span>Quantity <b>*</b></span><input data-product-field="quantity" type="number" min="1" step="1" required value="${html(line.quantity ?? 1)}"></label>
+        <label class="qt-field"><span>Buying Price Exc Tax (Local) <b>*</b></span><input data-product-field="buyingPrice" type="number" min="0" step="0.01" required value="${html(line.buyingPrice)}"></label>
+        <label class="qt-field"><span>Tax %</span><input data-product-field="taxPercent" type="number" min="0" step="0.01" value="${html(line.taxPercent ?? 0)}"></label>
+        <label class="qt-field"><span>Delivery Fees (Local) · line total</span><input data-product-field="deliveryFees" type="number" min="0" step="0.01" value="${html(line.deliveryFees ?? 0)}"></label>
+        <label class="qt-field"><span>Target Proc Markup %</span><input data-product-field="targetMarkup" type="number" min="0" step="0.01" value="${html(line.targetMarkup ?? 0)}"></label>
+        <label class="qt-field"><span>MRP Price (Local)</span><input data-product-field="mrpLocal" type="number" min="0" step="0.01" value="${html(line.mrpLocal)}"></label>
+        <label class="qt-field"><span>Lead Time</span><input data-product-field="leadTime" value="${html(line.leadTime)}" placeholder="e.g. 3–5 business days"></label>
+      </div>
+      <div class="qt-product-math" data-product-math="${index}"><span>Enter product pricing to see the breakdown.</span></div>
+    </article>`).join('');
+  }
+
+  function readProductInputs() {
+    return [...document.querySelectorAll('.qt-product-line')].map(row => {
+      const line = {};
+      row.querySelectorAll('[data-product-field]').forEach(input => { line[input.dataset.productField] = input.value; });
+      ['quantity', 'buyingPrice', 'taxPercent', 'deliveryFees', 'targetMarkup', 'mrpLocal'].forEach(key => { line[key] = number(line[key]); });
+      return line;
+    });
+  }
+
   function renderForm() {
     const groups = [...new Set(fields.map(field => field.group))];
-    $('qtFields').innerHTML = groups.map(group => `<fieldset class="qt-field-group"><legend>${html(group)}</legend><div class="qt-fields-grid">${fields.filter(field => field.group === group).map(field => `<label class="qt-field${field.type === 'textarea' ? ' qt-field-wide' : ''}${field.computed ? ' qt-field-computed' : ''}" for="qt-${field.key}"><span>${html(field.label)}${field.required ? ' <b>*</b>' : ''}${field.computed ? '<small>Auto</small>' : ''}</span>${inputMarkup(field)}</label>`).join('')}</div></fieldset>`).join('');
+    const productEditor = '<section class="qt-products-editor"><div class="qt-products-heading"><div><h3>Products</h3><p>Each product has its own vendor, quantity, tax, delivery, markup and MRP inputs.</p></div><button class="btn btn-secondary btn-sm" type="button" id="qtAddProduct">＋ Add product</button></div><div id="qtProductLines"></div></section>';
+    $('qtFields').innerHTML = groups.map(group => {
+      const groupFields = fields.filter(field => field.group === group && !PRODUCT_FIELD_KEYS.has(field.key));
+      if (!groupFields.length) return '';
+      return `<fieldset class="qt-field-group"><legend>${html(group)}</legend><div class="qt-fields-grid">${groupFields.map(field => `<label class="qt-field${field.type === 'textarea' ? ' qt-field-wide' : ''}${field.computed ? ' qt-field-computed' : ''}" for="qt-${field.key}"><span>${html(field.label)}${field.required ? ' <b>*</b>' : ''}${field.computed ? '<small>Auto</small>' : ''}</span>${inputMarkup(field)}</label>`).join('')}</div>${group === 'Product & vendor' ? productEditor : ''}</fieldset>`;
+    }).join('') + '<section class="qt-live-breakdown" id="qtLiveBreakdown" aria-live="polite"></section>';
+    $('qtProductLines').innerHTML = productLineMarkup();
     $('qtForm').addEventListener('input', updateCalculations);
     $('qtForm').addEventListener('change', updateCalculations);
+    $('qtForm').addEventListener('click', event => {
+      if (event.target.closest('#qtAddProduct')) {
+        const current = readProductInputs();
+        current.push(blankProduct(getTaxRateForCountry(value('country'), value('client'))));
+        $('qtProductLines').innerHTML = productLineMarkup(current);
+        updateCalculations();
+      }
+      const remove = event.target.closest('[data-remove-product]');
+      if (remove) {
+        const current = readProductInputs().filter((_, index) => index !== Number(remove.dataset.removeProduct));
+        $('qtProductLines').innerHTML = productLineMarkup(current.length ? current : [blankProduct(getTaxRateForCountry(value('country'), value('client')))]);  
+        updateCalculations();
+      }
+    });
     updateCalculations();
   }
 
@@ -143,45 +408,97 @@
   function updateCalculations() {
     if (!$('qtForm')) return;
     const currency = value('currency') || 'SGD';
+    const country = value('country');
+    const client = value('client');
     const fxInput = $('qt-fxRate');
-    if (fxInput && (!fxInput.value || number(fxInput.value) === number(FX_RATES[lastCurrency]))) {
-      fxInput.value = String(FX_RATES[currency] || 1);
+    if (fxInput && (lastCurrency === '' || !fxInput.value || number(fxInput.value) === number(getFxRateForCurrency(lastCurrency, lastClient)))) {
+      fxInput.value = String(getFxRateForCurrency(currency, client));
+    }
+    // Auto-fill FX buffer when client changes (or on fresh open)
+    const fxBufferInput = $('qt-fxBuffer');
+    if (fxBufferInput && (lastClient === '' || number(fxBufferInput.value) === getFxBufferForClient(lastClient))) {
+      fxBufferInput.value = String(getFxBufferForClient(client));
+    }
+    // Auto-fill tax rate on product lines when country or client changes
+    if (country !== lastCountry || client !== lastClient) {
+      const oldTax = getTaxRateForCountry(lastCountry, lastClient);
+      const newTax = getTaxRateForCountry(country, client);
+      document.querySelectorAll('.qt-product-line [data-product-field="taxPercent"]').forEach(input => {
+        if (input.value === '' || number(input.value) === oldTax) input.value = newTax;
+      });
     }
     lastCurrency = currency;
-    const qty = Math.max(1, number(value('quantity')));
-    const buy = number(value('buyingPrice'));
-    const tax = number(value('taxPercent')) / 100;
-    const deliveryEach = number(value('deliveryFees')) / qty;
-    const fxRate = number(value('fxRate')) || number(FX_RATES[value('currency')]) || 1;
+    lastCountry = country;
+    lastClient = client;
+    const fxRate = number(value('fxRate')) || getFxRateForCurrency(value('currency'), client) || 1;
     const fxBuffer = number(value('fxBuffer')) / 100;
-    const priceLocal = (buy + deliveryEach) * (1 + tax);
-    const markupLocal = priceLocal * (1 + number(value('targetMarkup')) / 100);
-    const landedUsd = priceLocal / fxRate;
-    const unitUsd = (markupLocal / fxRate) * (1 + fxBuffer);
-    const quoteUsd = unitUsd * qty;
-    const landedTotal = landedUsd * qty;
-    const margin = quoteUsd - landedTotal;
-    const mrpLocal = number(value('mrpLocal'));
-    const mrpUsd = mrpLocal / fxRate;
-    setCalc('unitPriceIncTax', priceLocal);
-    setCalc('priceAfterMarkup', markupLocal);
-    setCalc('unitPriceUsd', unitUsd);
-    setCalc('landedCostUnitUsd', landedUsd);
-    setCalc('totalQuotedUsd', quoteUsd);
-    setCalc('marginUsd', margin);
-    setCalc('totalLandedUsd', landedTotal);
-    setCalc('marginPercent', quoteUsd ? margin / quoteUsd * 100 : 0);
-    setCalc('actualMarkupUsd', landedUsd ? (unitUsd / landedUsd - 1) * 100 : 0);
-    setCalc('mrpUsd', mrpUsd);
-    setCalc('mrpVarianceLocal', mrpLocal ? (markupLocal / mrpLocal - 1) * 100 : 0);
-    setCalc('mrpVarianceUsd', mrpUsd ? (unitUsd / mrpUsd - 1) * 100 : 0);
+    const lines = readProductInputs().map(line => calculateProduct(line, fxRate, fxBuffer * 100));
+    const totalQty = lines.reduce((sum, line) => sum + line.quantity, 0);
+    const totalQuotedUsd = lines.reduce((sum, line) => sum + line.totalQuotedUsd, 0);
+    const totalLandedUsd = lines.reduce((sum, line) => sum + line.totalLandedUsd, 0);
+    const marginUsd = totalQuotedUsd - totalLandedUsd;
+    const localPriceTotal = lines.reduce((sum, line) => sum + line.unitPriceIncTax * line.quantity, 0);
+    const localMarkupTotal = lines.reduce((sum, line) => sum + line.priceAfterMarkup * line.quantity, 0);
+    const localMrpTotal = lines.reduce((sum, line) => sum + number(line.mrpLocal) * line.quantity, 0);
+    setCalc('quantity', totalQty);
+    setCalc('unitPriceIncTax', totalQty ? localPriceTotal / totalQty : 0);
+    setCalc('priceAfterMarkup', totalQty ? localMarkupTotal / totalQty : 0);
+    setCalc('unitPriceUsd', totalQty ? totalQuotedUsd / totalQty : 0);
+    setCalc('landedCostUnitUsd', totalQty ? totalLandedUsd / totalQty : 0);
+    setCalc('totalQuotedUsd', totalQuotedUsd);
+    setCalc('marginUsd', marginUsd);
+    setCalc('totalLandedUsd', totalLandedUsd);
+    setCalc('marginPercent', totalQuotedUsd ? marginUsd / totalQuotedUsd * 100 : 0);
+    setCalc('actualMarkupUsd', totalLandedUsd ? (totalQuotedUsd / totalLandedUsd - 1) * 100 : 0);
+    setCalc('mrpUsd', localMrpTotal / fxRate / (totalQty || 1));
+    setCalc('mrpVarianceLocal', localMrpTotal ? (localMarkupTotal / localMrpTotal - 1) * 100 : 0);
+    setCalc('mrpVarianceUsd', localMrpTotal ? (totalQuotedUsd / (localMrpTotal / fxRate) - 1) * 100 : 0);
+    lines.forEach((line, index) => {
+      const output = document.querySelector(`[data-product-math="${index}"]`);
+      if (!output) return;
+      const currency = html(value('currency') || 'SGD');
+      output.innerHTML = `<span>Unit inc tax: <strong>${currency} ${money(line.unitPriceIncTax)}</strong></span><span>Delivery / unit: <strong>${currency} ${money(line.quantity ? line.deliveryFees / line.quantity : 0)}</strong></span><span>After markup: <strong>${currency} ${money(line.priceAfterMarkup)}</strong></span><span>Landed / unit: <strong>USD ${money(line.landedCostUnitUsd)}</strong></span><span>Quoted total: <strong>USD ${money(line.totalQuotedUsd)}</strong></span><span>Margin: <strong>USD ${money(line.marginUsd)} · ${money(line.marginPercent)}%</strong></span>`;
+    });
+    const breakdown = $('qtLiveBreakdown');
+    if (breakdown) {
+      breakdown.innerHTML = `<div class="qt-breakdown-title"><div><h3>Calculation breakdown</h3><p>Delivery fees are per line and distributed across that line’s units. Tax and procurement markup apply per product.</p></div><span class="qt-breakdown-total">USD ${money(totalQuotedUsd)}</span></div><div class="qt-breakdown-steps"><div><small>Product lines</small><strong>${lines.length}</strong></div><div><small>Total units</small><strong>${totalQty}</strong></div><div><small>Total landed cost</small><strong>USD ${money(totalLandedUsd)}</strong></div><div><small>Total margin</small><strong>USD ${money(marginUsd)} · ${money(totalQuotedUsd ? marginUsd / totalQuotedUsd * 100 : 0)}%</strong></div></div><ol><li>Local unit inc tax = (buying price + line delivery fees ÷ line quantity) × (1 + tax %)</li><li>Local price after markup = local unit inc tax × (1 + target procurement markup %)</li><li>USD unit price = local price after markup ÷ FX rate × (1 + FX buffer %)</li><li>Quote total = sum of (USD unit price × line quantity); landed cost = sum of (local unit inc tax ÷ FX rate × line quantity)</li><li>Margin = quote total − landed cost; margin % = margin ÷ quote total × 100</li></ol>`;
+    }
   }
 
   function readForm() {
     const record = {};
     fields.forEach(field => { record[field.key] = value(field.key).trim(); });
     calculatedKeys.forEach(key => { record[key] = number(record[key]); });
-    record.quantity = number(record.quantity);
+    const fxRate = number(record.fxRate) || 1;
+    const fxBuffer = number(record.fxBuffer);
+    record.products = readProductInputs().map(line => calculateProduct(line, fxRate, fxBuffer)).filter(line => line.productName.trim());
+    record.quantity = record.products.reduce((sum, line) => sum + line.quantity, 0);
+    record.productName = record.products.map(line => line.productName).join(' · ');
+    const vendorIds = [...new Set(record.products.map(line => line.vendor).filter(Boolean))];
+    record.vendor = vendorIds.length > 1 ? 'multiple' : (vendorIds[0] || '');
+    record.buyingPrice = record.quantity ? record.products.reduce((sum, line) => sum + line.buyingPrice * line.quantity, 0) / record.quantity : 0;
+    record.taxPercent = record.quantity ? record.products.reduce((sum, line) => sum + line.taxPercent * line.quantity, 0) / record.quantity : 0;
+    record.deliveryFees = record.products.reduce((sum, line) => sum + line.deliveryFees, 0);
+    record.targetMarkup = record.quantity ? record.products.reduce((sum, line) => sum + line.targetMarkup * line.quantity, 0) / record.quantity : 0;
+    record.mrpLocal = record.quantity ? record.products.reduce((sum, line) => sum + line.mrpLocal * line.quantity, 0) / record.quantity : 0;
+    const totalQuotedUsd = record.products.reduce((sum, line) => sum + line.totalQuotedUsd, 0);
+    const totalLandedUsd = record.products.reduce((sum, line) => sum + line.totalLandedUsd, 0);
+    const marginUsd = totalQuotedUsd - totalLandedUsd;
+    const localPriceTotal = record.products.reduce((sum, line) => sum + line.unitPriceIncTax * line.quantity, 0);
+    const localMarkupTotal = record.products.reduce((sum, line) => sum + line.priceAfterMarkup * line.quantity, 0);
+    const localMrpTotal = record.products.reduce((sum, line) => sum + line.mrpLocal * line.quantity, 0);
+    record.unitPriceIncTax = record.quantity ? localPriceTotal / record.quantity : 0;
+    record.priceAfterMarkup = record.quantity ? localMarkupTotal / record.quantity : 0;
+    record.unitPriceUsd = record.quantity ? totalQuotedUsd / record.quantity : 0;
+    record.landedCostUnitUsd = record.quantity ? totalLandedUsd / record.quantity : 0;
+    record.totalQuotedUsd = totalQuotedUsd;
+    record.totalLandedUsd = totalLandedUsd;
+    record.marginUsd = marginUsd;
+    record.marginPercent = totalQuotedUsd ? marginUsd / totalQuotedUsd * 100 : 0;
+    record.actualMarkupUsd = totalLandedUsd ? (totalQuotedUsd / totalLandedUsd - 1) * 100 : 0;
+    record.mrpUsd = record.quantity ? localMrpTotal / fxRate / record.quantity : 0;
+    record.mrpVarianceLocal = localMrpTotal ? (localMarkupTotal / localMrpTotal - 1) * 100 : 0;
+    record.mrpVarianceUsd = localMrpTotal ? (totalQuotedUsd / (localMrpTotal / fxRate) - 1) * 100 : 0;
     record.createdAt = new Date().toISOString();
     if (!record.quoteNumber) {
       const seq = String(quotes.length + 1).padStart(4, '0');
@@ -194,16 +511,64 @@
   function fieldValue(field, record) {
     const value = record[field.key];
     if (value === '' || value === null || value === undefined) return '—';
-    if (calculatedKeys.has(field.key) || ['buyingPrice', 'deliveryFees', 'unitPriceIncTax', 'priceAfterMarkup', 'mrpLocal'].includes(field.key)) return money(value);
     if (field.key === 'country') return WH_COUNTRIES[value]?.[1] || value;
     if (field.key === 'vendor') return SUPPLY_SUPPLIERS[value]?.name || value;
+    if (['buyingPrice', 'deliveryFees', 'unitPriceIncTax', 'priceAfterMarkup', 'mrpLocal'].includes(field.key)) return `${record.currency || ''} ${money(value)}`.trim();
+    if (field.key === 'fxRate') return `${money(value)} ${record.currency || ''} per USD`;
+    if (field.key === 'fxBuffer' || field.key.includes('Percent') || field.key.toLowerCase().includes('markup') || field.key.toLowerCase().includes('variance')) return `${money(value)}%`;
+    if (['unitPriceUsd', 'landedCostUnitUsd', 'totalQuotedUsd', 'marginUsd', 'totalLandedUsd', 'mrpUsd'].includes(field.key)) return `USD ${money(value)}`;
+    if (calculatedKeys.has(field.key)) return money(value);
     return value;
+  }
+
+  function productBreakdown(products, record) {
+    return `<section class="qt-detail-group qt-products-detail"><h3>Product lines & calculation breakdown</h3>${products.map((line, index) => `<article class="qt-saved-product"><div class="qt-saved-product-head"><strong>${index + 1}. ${html(line.productName || 'Product')}</strong><span>${html(line.quantity)} units · ${html(SUPPLY_SUPPLIERS[line.vendor]?.name || line.vendor || 'No vendor')}</span></div><div class="qt-saved-product-grid">
+      <div><small>Buying price excl. tax</small><strong>${html(record.currency)} ${money(line.buyingPrice)}</strong></div>
+      <div><small>Tax</small><strong>${money(line.taxPercent)}%</strong></div>
+      <div><small>Delivery · line total</small><strong>${html(record.currency)} ${money(line.deliveryFees)}</strong></div>
+      <div><small>Unit inc. tax</small><strong>${html(record.currency)} ${money(line.unitPriceIncTax)}</strong></div>
+      <div><small>Target proc. markup</small><strong>${money(line.targetMarkup)}%</strong></div>
+      <div><small>Price after markup</small><strong>${html(record.currency)} ${money(line.priceAfterMarkup)} / unit</strong></div>
+      <div><small>FX rate · buffer</small><strong>${money(record.fxRate)} · ${money(record.fxBuffer)}%</strong></div>
+      <div><small>Unit price after FX</small><strong>USD ${money(line.unitPriceUsd)}</strong></div>
+      <div><small>Landed cost / unit</small><strong>USD ${money(line.landedCostUnitUsd)}</strong></div>
+      <div><small>Line quote total</small><strong>USD ${money(line.totalQuotedUsd)}</strong></div>
+      <div><small>Line landed total</small><strong>USD ${money(line.totalLandedUsd)}</strong></div>
+      <div><small>Line margin · margin %</small><strong>USD ${money(line.marginUsd)} · ${money(line.marginPercent)}%</strong></div>
+      <div><small>Actual markup (USD)</small><strong>${money(line.actualMarkupUsd)}%</strong></div>
+      <div><small>MRP · local / USD</small><strong>${html(record.currency)} ${money(line.mrpLocal)} · USD ${money(line.mrpUsd)}</strong></div>
+      <div><small>Above / below MRP · local / USD</small><strong>${money(line.mrpVarianceLocal)}% · ${money(line.mrpVarianceUsd)}%</strong></div>
+      <div><small>Lead time</small><strong>${html(line.leadTime || '—')}</strong></div>
+    </div><p class="qt-saved-formula">Unit inc. tax = (buy price + delivery ÷ quantity) × (1 + tax). After markup = unit inc. tax × (1 + target markup). USD unit = after-markup price ÷ FX rate × (1 + FX buffer).</p></article>`).join('')}<div class="qt-grand-total"><span>Quote total · landed cost · margin</span><strong>USD ${money(record.totalQuotedUsd)} · USD ${money(record.totalLandedUsd)} · USD ${money(record.marginUsd)} (${money(record.marginPercent)}%)</strong></div></section>`;
   }
 
   function quoteCard(record) {
     const status = record.quoteStatus || 'Draft';
+    const products = (record.products?.length ? record.products : [normalizeQuote(record).products[0]]);
     const detailGroups = [...new Set(fields.map(field => field.group))];
-    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCT</small><strong>${html(record.productName || 'Product not specified')}</strong></div><div><small>VENDOR</small><strong>${html(SUPPLY_SUPPLIERS[record.vendor]?.name || record.vendor || '—')}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View all quotation fields <span>⌄</span></summary>${detailGroups.map(group => `<section class="qt-detail-group"><h3>${html(group)}</h3><dl>${fields.filter(field => field.group === group).map(field => `<div><dt>${html(field.label)}</dt><dd>${html(fieldValue(field, record))}</dd></div>`).join('')}</dl></section>`).join('')}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${record.orderNumber ? ` · Order ${html(record.orderNumber)}` : ''}</span><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></article>`;
+    const productNames = products.map(line => line.productName).filter(Boolean).join(' · ') || record.productName || 'Product not specified';
+    const productVendors = [...new Set(products.map(line => line.vendor).filter(Boolean))];
+    const vendorNames = productVendors.map(id => SUPPLY_SUPPLIERS[id]?.name || id).join(' · ') || '—';
+    const details = detailGroups.map(group => `<section class="qt-detail-group"><h3>${html(group)}</h3><dl>${fields.filter(field => field.group === group && !PRODUCT_FIELD_KEYS.has(field.key)).map(field => `<div><dt>${html(field.label)}</dt><dd>${html(fieldValue(field, record))}</dd></div>`).join('')}</dl></section>`).join('');
+
+    const hodStatus = record.hodApprovalStatus || '';
+    const needsApproval = hodStatus === 'Awaiting approval';
+    const currentUser = window.RBAC?.getCurrentUser?.();
+    const isHOD = currentUser?.isHead || false;
+
+    const hodBadge = needsApproval
+      ? `<span class="qt-hod-badge qt-hod-pending">Pending HOD Approval</span>`
+      : hodStatus === 'Approved'
+        ? `<span class="qt-hod-badge qt-hod-approved">HOD Approved</span>`
+        : hodStatus === 'Rejected'
+          ? `<span class="qt-hod-badge qt-hod-rejected" title="${html(record.rejectionReason || '')}">HOD Rejected${record.rejectionReason ? ' · ' + html(record.rejectionReason.substring(0, 60)) + (record.rejectionReason.length > 60 ? '…' : '') : ''}</span>`
+          : '';
+
+    const hodActions = isHOD && needsApproval
+      ? `<button type="button" class="qt-approve" data-approve-quote="${html(record.quoteNumber)}">Approve</button><button type="button" class="qt-reject" data-reject-quote="${html(record.quoteNumber)}">Reject</button>`
+      : '';
+
+    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>${hodBadge}</div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCTS · ${products.length}</small><strong title="${html(productNames)}">${html(productNames)}</strong></div><div><small>VENDORS</small><strong title="${html(vendorNames)}">${html(vendorNames)}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View calculation breakdown & quotation fields <span>⌄</span></summary>${productBreakdown(products, record)}${details}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${record.orderNumber ? ` · Order ${html(record.orderNumber)}` : ''}</span><div class="qt-card-actions">${hodActions}<button type="button" class="qt-edit" data-edit-quote="${html(record.quoteNumber)}">Edit</button><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></div></article>`;
   }
 
   function renderList() {
@@ -212,11 +577,15 @@
     const client = $('qtClientFilter').value;
     const vendor = $('qtVendorFilter').value;
     const product = $('qtProductFilter').value;
+    const approvalFilter = $('qtApprovalFilter').value;
     const filtered = quotes.filter(record => {
       if (status && record.quoteStatus !== status) return false;
       if (client && record.client !== client) return false;
-      if (vendor && record.vendor !== vendor) return false;
-      if (product && record.productName !== product) return false;
+      if (vendor && record.vendor !== vendor && !record.products?.some(line => line.vendor === vendor)) return false;
+      if (product && record.productName !== product && !record.products?.some(line => line.productName === product)) return false;
+      if (approvalFilter === 'awaiting' && record.hodApprovalStatus !== 'Awaiting approval') return false;
+      if (approvalFilter === 'approved' && record.hodApprovalStatus !== 'Approved') return false;
+      if (approvalFilter === 'rejected' && record.hodApprovalStatus !== 'Rejected') return false;
       return !query || fields.some(field => String(record[field.key] ?? '').toLowerCase().includes(query));
     }).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     $('qtCount').textContent = `${filtered.length} quotation${filtered.length === 1 ? '' : 's'}${filtered.length !== quotes.length ? ` · ${quotes.length} total` : ''}`;
@@ -232,21 +601,78 @@
   }
 
   function openForm() {
+    editingQuoteNumber = '';
+    lastCountry = ''; lastClient = ''; lastCurrency = '';
+    $('qtForm').reset();
+    $('qtProductLines').innerHTML = productLineMarkup();
+    $('qtEditorTitle').textContent = 'New quotation';
+    $('qtSubmit').textContent = 'Save quotation';
     $('qtEditor').hidden = false;
+    updateCalculations();
     $('qtEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('qt-opsPic').focus({ preventScroll: true });
   }
-  function closeForm() { $('qtEditor').hidden = true; $('qtForm').reset(); updateCalculations(); }
+  function editQuote(quoteNumber) {
+    const record = quotes.find(quote => quote.quoteNumber === quoteNumber);
+    if (!record) return;
+    editingQuoteNumber = quoteNumber;
+    fields.filter(field => !PRODUCT_FIELD_KEYS.has(field.key)).forEach(field => {
+      const input = $(`qt-${field.key}`);
+      if (input) input.value = record[field.key] ?? '';
+    });
+    $('qtProductLines').innerHTML = productLineMarkup(record.products?.length ? record.products : [normalizeQuote(record).products[0]]);
+    $('qtEditorTitle').textContent = `Edit quotation · ${quoteNumber}`;
+    $('qtSubmit').textContent = 'Save changes';
+    $('qtEditor').hidden = false;
+    updateCalculations();
+    $('qtEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('qt-opsPic').focus({ preventScroll: true });
+  }
+  function closeForm() {
+    $('qtEditor').hidden = true;
+    editingQuoteNumber = '';
+    lastCountry = ''; lastClient = ''; lastCurrency = '';
+    $('qtForm').reset();
+    $('qtProductLines').innerHTML = productLineMarkup();
+    $('qtEditorTitle').textContent = 'New quotation';
+    $('qtSubmit').textContent = 'Save quotation';
+    updateCalculations();
+  }
 
   $('qtCreate').addEventListener('click', openForm);
   $('qtList').addEventListener('click', event => {
     if (event.target.closest('[data-empty-create]')) { openForm(); return; }
+    const edit = event.target.closest('[data-edit-quote]');
+    if (edit) { editQuote(edit.dataset.editQuote); return; }
     const remove = event.target.closest('[data-delete-quote]');
-    if (!remove) return;
-    const record = quotes.find(quote => quote.quoteNumber === remove.dataset.deleteQuote);
-    if (!record || !window.confirm(`Delete quotation ${record.quoteNumber}?`)) return;
-    quotes = quotes.filter(quote => quote !== record);
-    persist(); renderList(); showToast('Quotation deleted');
+    if (remove) {
+      const record = quotes.find(quote => quote.quoteNumber === remove.dataset.deleteQuote);
+      if (!record || !window.confirm(`Delete quotation ${record.quoteNumber}?`)) return;
+      quotes = quotes.filter(quote => quote !== record);
+      if (editingQuoteNumber === record.quoteNumber) closeForm();
+      persist(); refreshFilterOptions(); renderList(); showToast('Quotation deleted');
+      return;
+    }
+    const approve = event.target.closest('[data-approve-quote]');
+    if (approve) {
+      const record = quotes.find(quote => quote.quoteNumber === approve.dataset.approveQuote);
+      if (!record) return;
+      record.hodApprovalStatus = 'Approved';
+      record.hodPolicyFlag = 'Within policy';
+      record.approvalDate = new Date().toISOString().slice(0, 10);
+      persist(); renderList(); showToast(`Quotation ${record.quoteNumber} approved`);
+      return;
+    }
+    const reject = event.target.closest('[data-reject-quote]');
+    if (reject) {
+      pendingRejectQuoteNumber = reject.dataset.rejectQuote;
+      const record = quotes.find(quote => quote.quoteNumber === pendingRejectQuoteNumber);
+      $('qtRejectDesc').textContent = `Rejecting quotation ${record?.quoteNumber || ''}. Please provide a mandatory reason.`;
+      $('qtRejectReason').value = record?.rejectionReason || '';
+      $('qtRejectOverlay').hidden = false;
+      $('qtRejectReason').focus();
+      return;
+    }
   });
   $('qtClose').addEventListener('click', closeForm);
   $('qtCancel').addEventListener('click', closeForm);
@@ -260,13 +686,14 @@
   };
   const refreshFilterOptions = () => {
     fillFilter('qtClientFilter', quotes.map(quote => quote.client));
-    fillFilter('qtVendorFilter', quotes.map(quote => quote.vendor), id => SUPPLY_SUPPLIERS[id]?.name || id);
-    fillFilter('qtProductFilter', quotes.map(quote => quote.productName));
+    fillFilter('qtVendorFilter', quotes.flatMap(quote => quote.products?.map(line => line.vendor) || [quote.vendor]), id => SUPPLY_SUPPLIERS[id]?.name || id);
+    fillFilter('qtProductFilter', quotes.flatMap(quote => quote.products?.map(line => line.productName) || [quote.productName]));
   };
   ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter'].forEach(id => $(id).addEventListener('change', renderList));
+  $('qtApprovalFilter').addEventListener('change', renderList);
   $('qtClearFilters').addEventListener('click', () => {
     $('qtSearch').value = '';
-    ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter', 'qtStatusFilter'].forEach(id => { $(id).value = ''; });
+    ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter', 'qtStatusFilter', 'qtApprovalFilter'].forEach(id => { $(id).value = ''; });
     renderList();
   });
   const statuses = fields.find(field => field.key === 'quoteStatus').options;
@@ -277,13 +704,175 @@
     event.preventDefault();
     updateCalculations();
     if (!event.currentTarget.reportValidity()) return;
-    const record = readForm();
-    quotes.unshift(record);
+    const wasEditing = !!editingQuoteNumber;
+    const record = evaluatePolicy(readForm(), loadPolicy());
+    if (editingQuoteNumber) {
+      const index = quotes.findIndex(quote => quote.quoteNumber === editingQuoteNumber);
+      if (index >= 0) {
+        record.quoteNumber = editingQuoteNumber;
+        record.createdAt = quotes[index].createdAt;
+        quotes[index] = record;
+      }
+    } else {
+      quotes.unshift(record);
+    }
     persist();
     refreshFilterOptions();
     renderList();
     closeForm();
-    showToast(`Quotation ${record.quoteNumber} saved`);
+    showToast(`Quotation ${record.quoteNumber} ${wasEditing ? 'updated' : 'saved'}`);
+  });
+
+  // Settings modal – tabbed (Policy / FX Rates / Audit Trail)
+  function switchSettingsTab(tabName) {
+    document.querySelectorAll('.qt-stab').forEach(t => { t.classList.toggle('active', t.dataset.stab === tabName); t.setAttribute('aria-selected', t.dataset.stab === tabName); });
+    ['Policy', 'Fx', 'Audit'].forEach(n => { $(`qtSpanel${n}`).hidden = n.toLowerCase() !== tabName; });
+    if (tabName === 'audit') renderAuditTrail();
+  }
+  function openSettings(initialTab) {
+    const policy = loadPolicy();
+    $('qtPolicyMinMarkup').value = policy.minMarkupPercent ?? '';
+    $('qtPolicyMaxMrpPremium').value = policy.maxMrpPremiumPercent ?? '';
+    const settings = loadFxSettings();
+    $('qtFxGeneralBuffer').value = settings.fxBuffer != null ? settings.fxBuffer : '';
+    renderFxTableBody($('qtFxGeneralTable').querySelector('tbody'), settings.general, settings.general);
+    $('qtFxClientSelect').value = '';
+    $('qtFxClientBuffer').value = '';
+    $('qtFxClientTableWrap').hidden = true;
+    document.querySelectorAll('.qt-fxtab').forEach(t => { t.classList.toggle('active', t.dataset.fxtab === 'general'); t.setAttribute('aria-selected', t.dataset.fxtab === 'general'); });
+    $('qtFxGeneral').hidden = false; $('qtFxClient').hidden = true;
+    switchSettingsTab(initialTab || 'policy');
+    $('qtSettingsOverlay').hidden = false;
+  }
+  function closeSettings() { $('qtSettingsOverlay').hidden = true; }
+  $('qtSettings').addEventListener('click', () => openSettings('policy'));
+  $('qtSettingsClose').addEventListener('click', closeSettings);
+  $('qtSettingsCancel').addEventListener('click', closeSettings);
+  $('qtSettingsOverlay').addEventListener('click', event => { if (event.target === $('qtSettingsOverlay')) closeSettings(); });
+
+  // Settings tab switching
+  document.querySelectorAll('.qt-stab').forEach(tab => {
+    tab.addEventListener('click', () => switchSettingsTab(tab.dataset.stab));
+  });
+
+  // Policy form submit
+  $('qtSettingsForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const policy = {
+      minMarkupPercent: $('qtPolicyMinMarkup').value !== '' ? number($('qtPolicyMinMarkup').value) : '',
+      maxMrpPremiumPercent: $('qtPolicyMaxMrpPremium').value !== '' ? number($('qtPolicyMaxMrpPremium').value) : ''
+    };
+    savePolicy(policy);
+    closeSettings();
+    showToast('Policy settings saved');
+  });
+
+  // FX sub-tab switching
+  document.querySelectorAll('.qt-fxtab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.qt-fxtab').forEach(t => { t.classList.toggle('active', t.dataset.fxtab === tab.dataset.fxtab); t.setAttribute('aria-selected', t.dataset.fxtab === tab.dataset.fxtab); });
+      $('qtFxGeneral').hidden = tab.dataset.fxtab !== 'general';
+      $('qtFxClient').hidden = tab.dataset.fxtab !== 'client';
+    });
+  });
+
+  // Populate client dropdown
+  WH_CLIENTS.forEach(client => {
+    const opt = document.createElement('option');
+    opt.value = client.name; opt.textContent = client.name;
+    $('qtFxClientSelect').appendChild(opt);
+  });
+  $('qtFxClientSelect').addEventListener('change', () => {
+    const clientName = $('qtFxClientSelect').value;
+    if (!clientName) { $('qtFxClientBuffer').value = ''; $('qtFxClientTableWrap').hidden = true; return; }
+    const settings = loadFxSettings();
+    const clientData = settings.clients[clientName] || {};
+    $('qtFxClientBuffer').value = clientData.fxBuffer != null ? clientData.fxBuffer : '';
+    renderFxTableBody($('qtFxClientTable').querySelector('tbody'), clientData, settings.general);
+    $('qtFxClientTableWrap').hidden = false;
+  });
+
+  // Save general FX rates
+  $('qtFxGeneralSave').addEventListener('click', () => {
+    const settings = loadFxSettings();
+    const auditEntries = [];
+    // FX buffer
+    const newBuf = $('qtFxGeneralBuffer').value !== '' ? number($('qtFxGeneralBuffer').value) : 0;
+    if (String(settings.fxBuffer ?? 0) !== String(newBuf)) auditEntries.push({ scope: 'General', country: '(all countries)', field: 'FX Buffer %', oldValue: settings.fxBuffer ?? 0, newValue: newBuf });
+    settings.fxBuffer = newBuf;
+    $('qtFxGeneralTable').querySelectorAll('tbody tr').forEach(row => {
+      const code = row.dataset.country;
+      const [, name] = WH_COUNTRIES[code];
+      const fxInput = row.querySelector('[name="fxRate"]');
+      const taxInput = row.querySelector('[name="taxRate"]');
+      const newFx = fxInput.value !== '' ? number(fxInput.value) : (settings.general[code]?.fxRate ?? '');
+      const newTax = taxInput.value !== '' ? number(taxInput.value) : (settings.general[code]?.taxRate ?? '');
+      const old = settings.general[code] || {};
+      if (String(old.fxRate ?? '') !== String(newFx)) auditEntries.push({ scope: 'General', country: `${name} (${code})`, field: 'FX Rate', oldValue: old.fxRate ?? '—', newValue: newFx });
+      if (String(old.taxRate ?? '') !== String(newTax)) auditEntries.push({ scope: 'General', country: `${name} (${code})`, field: 'Tax Rate %', oldValue: old.taxRate ?? '—', newValue: newTax });
+      settings.general[code] = { currency: COUNTRY_CURRENCY[code] || old.currency || '', fxRate: newFx, taxRate: newTax };
+    });
+    saveFxSettings(settings);
+    addAuditEntries(auditEntries);
+    showToast(auditEntries.length ? 'General rates saved' : 'No changes to save');
+  });
+  $('qtFxGeneralCancel').addEventListener('click', closeSettings);
+
+  // Save client-specific FX rates
+  $('qtFxClientSave').addEventListener('click', () => {
+    const clientName = $('qtFxClientSelect').value;
+    if (!clientName) return;
+    const settings = loadFxSettings();
+    if (!settings.clients[clientName]) settings.clients[clientName] = {};
+    const auditEntries = [];
+    // FX buffer for this client
+    const newBuf = $('qtFxClientBuffer').value !== '' ? number($('qtFxClientBuffer').value) : null;
+    const oldBuf = settings.clients[clientName].fxBuffer ?? null;
+    if (String(oldBuf ?? '') !== String(newBuf ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: '(all countries)', field: 'FX Buffer %', oldValue: oldBuf ?? '(general)', newValue: newBuf ?? '(general)' });
+    if (newBuf != null) settings.clients[clientName].fxBuffer = newBuf;
+    else delete settings.clients[clientName].fxBuffer;
+    $('qtFxClientTable').querySelectorAll('tbody tr').forEach(row => {
+      const code = row.dataset.country;
+      const [, name] = WH_COUNTRIES[code];
+      const fxInput = row.querySelector('[name="fxRate"]');
+      const taxInput = row.querySelector('[name="taxRate"]');
+      const newFx = fxInput.value !== '' ? number(fxInput.value) : null;
+      const newTax = taxInput.value !== '' ? number(taxInput.value) : null;
+      const old = settings.clients[clientName][code];
+      const oldFx = old?.fxRate ?? null; const oldTax = old?.taxRate ?? null;
+      if (String(oldFx ?? '') !== String(newFx ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: `${name} (${code})`, field: 'FX Rate', oldValue: oldFx ?? '(general)', newValue: newFx ?? '(general)' });
+      if (String(oldTax ?? '') !== String(newTax ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: `${name} (${code})`, field: 'Tax Rate %', oldValue: oldTax ?? '(general)', newValue: newTax ?? '(general)' });
+      if (newFx != null || newTax != null) {
+        settings.clients[clientName][code] = { currency: COUNTRY_CURRENCY[code] || '', fxRate: newFx, taxRate: newTax };
+      } else {
+        delete settings.clients[clientName][code];
+      }
+    });
+    saveFxSettings(settings);
+    addAuditEntries(auditEntries);
+    showToast(auditEntries.length ? `Client rates for ${clientName} saved` : 'No changes to save');
+  });
+  $('qtFxClientCancel').addEventListener('click', closeSettings);
+
+  // Rejection reason modal
+  function closeReject() { $('qtRejectOverlay').hidden = true; pendingRejectQuoteNumber = ''; $('qtRejectForm').reset(); }
+  $('qtRejectClose').addEventListener('click', closeReject);
+  $('qtRejectCancel').addEventListener('click', closeReject);
+  $('qtRejectOverlay').addEventListener('click', event => { if (event.target === $('qtRejectOverlay')) closeReject(); });
+  $('qtRejectForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!pendingRejectQuoteNumber) return;
+    const reason = $('qtRejectReason').value.trim();
+    if (!reason) { $('qtRejectReason').setCustomValidity('Rejection reason is required.'); $('qtRejectForm').reportValidity(); return; }
+    $('qtRejectReason').setCustomValidity('');
+    const record = quotes.find(quote => quote.quoteNumber === pendingRejectQuoteNumber);
+    if (record) {
+      record.hodApprovalStatus = 'Rejected';
+      record.hodPolicyFlag = 'Policy exception';
+      record.rejectionReason = reason;
+      persist(); renderList(); showToast(`Quotation ${record.quoteNumber} rejected`);
+    }
+    closeReject();
   });
 
   renderForm();

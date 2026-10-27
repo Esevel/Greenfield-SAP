@@ -20,29 +20,152 @@
       <div class="page-content">
         <nav class="breadcrumbs-custom"><a href="/pages/orders/board.html" class="breadcrumb-link" data-orders-view="orders">Orders</a><span class="breadcrumb-separator" data-orders-view="orders">›</span><span class="breadcrumb-current">Quotation</span></nav>
         <div class="page-header order-module-header">
-          <div class="flex-between"><h1 class="page-title">Orders</h1><button class="btn btn-primary" type="button" id="qtCreate">＋ Create quotation</button></div>
+          <div class="flex-between"><h1 class="page-title">Orders</h1><div class="qt-header-actions"><button class="btn btn-secondary" type="button" id="qtSettings">⚙ Settings</button><button class="btn btn-primary" type="button" id="qtCreate">＋ Create quotation</button></div></div>
           <p class="page-description">Build and track client quotations, pricing, margins and approvals.</p>
         </div>
         <nav class="tab-strip order-tabs" aria-label="Orders views">
           <a href="/pages/orders/board.html" class="tab-link" data-orders-view="orders">Board</a><a href="/pages/orders/list.html" class="tab-link" data-orders-view="orders">List</a><a href="/pages/orders/insights.html" class="tab-link" data-orders-view="orders">Insights</a><a href="/pages/orders/templates.html" class="tab-link" data-orders-view="orders">Templates</a><a href="/pages/orders/quotations.html" class="tab-link active" data-orders-view="quotation" aria-current="page">Quotation</a>
         </nav>
         <section class="qt-editor" id="qtEditor" hidden>
-          <div class="qt-editor-heading"><div><p class="qt-eyebrow">NEW QUOTATION</p><h2>Quotation details</h2><p>Enter request and vendor pricing. USD costs, totals and margin calculate automatically.</p></div><button class="qt-close" type="button" id="qtClose" aria-label="Close quotation form">×</button></div>
+          <div class="qt-editor-heading"><div><p class="qt-eyebrow">QUOTATION</p><h2 id="qtEditorTitle">New quotation</h2><p>Enter request and vendor pricing. USD costs, totals and margin calculate automatically.</p></div><button class="qt-close" type="button" id="qtClose" aria-label="Close quotation form">×</button></div>
           <form id="qtForm" novalidate>
             <div id="qtFields"></div>
-            <div class="qt-form-actions"><span class="qt-required-note">Required fields are marked *</span><div><button class="btn btn-secondary" type="button" id="qtCancel">Cancel</button><button class="btn btn-primary" type="submit">Save quotation</button></div></div>
+            <div class="qt-form-actions"><span class="qt-required-note">Required fields are marked *</span><div><button class="btn btn-secondary" type="button" id="qtCancel">Cancel</button><button class="btn btn-primary" type="submit" id="qtSubmit">Save quotation</button></div></div>
           </form>
         </section>
         <section class="qt-list-panel">
-          <div class="qt-list-heading"><div><h2>Quotations</h2><p id="qtCount">No quotations yet</p></div><div class="qt-list-tools"><input id="qtSearch" type="search" placeholder="Search quotations" aria-label="Search quotations"><select id="qtClientFilter" aria-label="Filter by client"><option value="">All clients</option></select><select id="qtVendorFilter" aria-label="Filter by vendor"><option value="">All vendors</option></select><select id="qtProductFilter" aria-label="Filter by product"><option value="">All products</option></select><select id="qtStatusFilter" aria-label="Filter by quote status"><option value="">All statuses</option></select><button class="btn btn-secondary btn-sm" type="button" id="qtClearFilters">Clear filters</button></div></div>
+          <div class="qt-list-heading"><div><h2>Quotations</h2><p id="qtCount">No quotations yet</p></div><div class="qt-list-tools"><input id="qtSearch" type="search" placeholder="Search quotations" aria-label="Search quotations"><select id="qtClientFilter" aria-label="Filter by client"><option value="">All clients</option></select><select id="qtVendorFilter" aria-label="Filter by vendor"><option value="">All vendors</option></select><select id="qtProductFilter" aria-label="Filter by product"><option value="">All products</option></select><select id="qtStatusFilter" aria-label="Filter by quote status"><option value="">All statuses</option></select><select id="qtApprovalFilter" aria-label="Filter by HOD approval"><option value="">All approvals</option><option value="awaiting">Requires approval</option><option value="approved">HOD approved</option><option value="rejected">HOD rejected</option></select><button class="btn btn-secondary btn-sm" type="button" id="qtClearFilters">Clear filters</button></div></div>
           <div class="qt-list" id="qtList"></div>
         </section>
         <div class="qt-toast" id="qtToast" role="status" aria-live="polite" hidden></div>
       </div>
     </main>
+
+    <!-- Settings modal -->
+    <div class="qt-modal-overlay" id="qtSettingsOverlay" hidden aria-modal="true" role="dialog" aria-labelledby="qtSettingsTitle">
+      <div class="qt-modal qt-modal-wide">
+        <div class="qt-modal-head">
+          <div><h2 id="qtSettingsTitle">Quotation Settings</h2><p>Manage approval policy, FX rates, and tax rates for quotation pricing.</p></div>
+          <button class="qt-close" type="button" id="qtSettingsClose" aria-label="Close settings">×</button>
+        </div>
+        <div class="qt-stabs" role="tablist">
+          <button class="qt-stab active" role="tab" data-stab="policy" aria-selected="true">Policy Thresholds</button>
+          <button class="qt-stab" role="tab" data-stab="fx" aria-selected="false">FX &amp; Tax Rates</button>
+          <button class="qt-stab" role="tab" data-stab="audit" aria-selected="false">Audit Trail</button>
+        </div>
+
+        <!-- Policy panel -->
+        <div class="qt-spanel" id="qtSpanelPolicy">
+          <form id="qtSettingsForm">
+            <fieldset class="qt-modal-section">
+              <legend>HOD Pre-Approval Policy Threshold</legend>
+              <p class="qt-modal-section-desc">Quotes that fall outside these thresholds are automatically flagged and routed to the Head of Operations for approval before they can be sent.</p>
+              <div class="qt-modal-fields">
+                <label class="qt-modal-field" for="qtPolicyMinMarkup">
+                  <span>Minimum Required Procurement Markup %</span>
+                  <small>A quote below this markup is flagged for Head of Operations review. Within policy is auto-approved.</small>
+                  <input id="qtPolicyMinMarkup" name="minMarkupPercent" type="number" min="0" step="0.01" placeholder="e.g. 5" value="">
+                </label>
+                <label class="qt-modal-field" for="qtPolicyMaxMrpPremium">
+                  <span>Maximum Allowed Premium Over MRP %</span>
+                  <small>If the marked-up price exceeds MRP by more than this percentage, the quote is flagged.</small>
+                  <input id="qtPolicyMaxMrpPremium" name="maxMrpPremiumPercent" type="number" min="0" step="0.01" placeholder="e.g. 10" value="">
+                </label>
+              </div>
+            </fieldset>
+            <div class="qt-modal-actions">
+              <button type="button" class="btn btn-secondary" id="qtSettingsCancel">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save policy</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- FX & Tax Rates panel -->
+        <div class="qt-spanel" id="qtSpanelFx" hidden>
+          <div class="qt-fxtabs" role="tablist">
+            <button class="qt-fxtab active" role="tab" data-fxtab="general" aria-selected="true">General rates</button>
+            <button class="qt-fxtab" role="tab" data-fxtab="client" aria-selected="false">Client-specific rates</button>
+          </div>
+          <!-- General -->
+          <div class="qt-fxpanel" id="qtFxGeneral">
+            <p class="qt-modal-section-desc">Default FX and tax rates applied to all quotations. Client-specific rates take precedence when set.</p>
+            <div class="qt-fx-buffer-row">
+              <label class="qt-fx-buffer-label" for="qtFxGeneralBuffer">FX Buffer Markup %</label>
+              <input id="qtFxGeneralBuffer" type="number" min="0" step="0.01" placeholder="e.g. 2" class="qt-fx-input" style="width:130px">
+              <span class="qt-fx-buffer-hint">Applied to all countries. Client-specific value overrides this.</span>
+            </div>
+            <div class="qt-fx-table-wrap">
+              <table class="qt-fx-table" id="qtFxGeneralTable">
+                <thead><tr><th>Country</th><th>Code</th><th>Currency</th><th>FX Rate (Local → USD)</th><th>Tax Rate %</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="qt-modal-actions">
+              <button type="button" class="btn btn-secondary" id="qtFxGeneralCancel">Cancel</button>
+              <button type="button" class="btn btn-primary" id="qtFxGeneralSave">Save general rates</button>
+            </div>
+          </div>
+          <!-- Client-specific -->
+          <div class="qt-fxpanel" id="qtFxClient" hidden>
+            <p class="qt-modal-section-desc">Override FX and tax rates for a specific client. Leave a field blank to inherit the general rate.</p>
+            <div class="qt-fx-client-row">
+              <label class="qt-fx-client-label" for="qtFxClientSelect">Client</label>
+              <select id="qtFxClientSelect"><option value="">Select a client…</option></select>
+            </div>
+            <div id="qtFxClientTableWrap" hidden>
+              <div class="qt-fx-buffer-row">
+                <label class="qt-fx-buffer-label" for="qtFxClientBuffer">FX Buffer Markup %</label>
+                <input id="qtFxClientBuffer" type="number" min="0" step="0.01" placeholder="(use general)" class="qt-fx-input" style="width:130px">
+                <span class="qt-fx-buffer-hint">Overrides the general FX buffer for this client across all countries. Leave blank to use the general value.</span>
+              </div>
+              <div class="qt-fx-table-wrap">
+                <table class="qt-fx-table" id="qtFxClientTable">
+                  <thead><tr><th>Country</th><th>Code</th><th>Currency</th><th>FX Rate (Local → USD)</th><th>Tax Rate %</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="qt-modal-actions">
+                <button type="button" class="btn btn-secondary" id="qtFxClientCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="qtFxClientSave">Save client rates</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Trail panel -->
+        <div class="qt-spanel" id="qtSpanelAudit" hidden>
+          <p class="qt-modal-section-desc">All changes to FX and tax rate settings are recorded here in chronological order.</p>
+          <div id="qtAuditTrailContent"><p class="qt-audit-empty">No changes recorded yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOD Rejection reason modal -->
+    <div class="qt-modal-overlay" id="qtRejectOverlay" hidden aria-modal="true" role="dialog" aria-labelledby="qtRejectTitle">
+      <div class="qt-modal qt-modal-sm">
+        <div class="qt-modal-head">
+          <div><h2 id="qtRejectTitle">Reject Quotation</h2><p id="qtRejectDesc">Please provide a mandatory reason for rejection.</p></div>
+          <button class="qt-close" type="button" id="qtRejectClose" aria-label="Close">×</button>
+        </div>
+        <form id="qtRejectForm">
+          <div class="qt-modal-fields">
+            <label class="qt-modal-field" for="qtRejectReason">
+              <span>Rejection Reason <b>*</b></span>
+              <textarea id="qtRejectReason" name="rejectReason" rows="4" required placeholder="Enter the reason for rejecting this quotation…"></textarea>
+            </label>
+          </div>
+          <div class="qt-modal-actions">
+            <button type="button" class="btn btn-secondary" id="qtRejectCancel">Cancel</button>
+            <button type="submit" class="btn btn-danger">Confirm rejection</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/billing-data.js"></script>
