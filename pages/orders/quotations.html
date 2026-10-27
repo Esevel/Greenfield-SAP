@@ -43,33 +43,90 @@
 
     <!-- Settings modal -->
     <div class="qt-modal-overlay" id="qtSettingsOverlay" hidden aria-modal="true" role="dialog" aria-labelledby="qtSettingsTitle">
-      <div class="qt-modal">
+      <div class="qt-modal qt-modal-wide">
         <div class="qt-modal-head">
-          <div><h2 id="qtSettingsTitle">Quotation Settings</h2><p>Configure approval thresholds that apply to all new quotations.</p></div>
+          <div><h2 id="qtSettingsTitle">Quotation Settings</h2><p>Manage approval policy, FX rates, and tax rates for quotation pricing.</p></div>
           <button class="qt-close" type="button" id="qtSettingsClose" aria-label="Close settings">×</button>
         </div>
-        <form id="qtSettingsForm">
-          <fieldset class="qt-modal-section">
-            <legend>HOD Pre-Approval Policy Threshold</legend>
-            <p class="qt-modal-section-desc">Quotes that fall outside these thresholds are automatically flagged and routed to the Head of Operations for approval before they can be sent.</p>
-            <div class="qt-modal-fields">
-              <label class="qt-modal-field" for="qtPolicyMinMarkup">
-                <span>Minimum Required Procurement Markup %</span>
-                <small>A quote below this markup is flagged for Head of Operations review. Within policy is auto-approved.</small>
-                <input id="qtPolicyMinMarkup" name="minMarkupPercent" type="number" min="0" step="0.01" placeholder="e.g. 5" value="">
-              </label>
-              <label class="qt-modal-field" for="qtPolicyMaxMrpPremium">
-                <span>Maximum Allowed Premium Over MRP %</span>
-                <small>If the marked-up price exceeds MRP by more than this percentage, the quote is flagged.</small>
-                <input id="qtPolicyMaxMrpPremium" name="maxMrpPremiumPercent" type="number" min="0" step="0.01" placeholder="e.g. 10" value="">
-              </label>
+        <div class="qt-stabs" role="tablist">
+          <button class="qt-stab active" role="tab" data-stab="policy" aria-selected="true">Policy Thresholds</button>
+          <button class="qt-stab" role="tab" data-stab="fx" aria-selected="false">FX &amp; Tax Rates</button>
+          <button class="qt-stab" role="tab" data-stab="audit" aria-selected="false">Audit Trail</button>
+        </div>
+
+        <!-- Policy panel -->
+        <div class="qt-spanel" id="qtSpanelPolicy">
+          <form id="qtSettingsForm">
+            <fieldset class="qt-modal-section">
+              <legend>HOD Pre-Approval Policy Threshold</legend>
+              <p class="qt-modal-section-desc">Quotes that fall outside these thresholds are automatically flagged and routed to the Head of Operations for approval before they can be sent.</p>
+              <div class="qt-modal-fields">
+                <label class="qt-modal-field" for="qtPolicyMinMarkup">
+                  <span>Minimum Required Procurement Markup %</span>
+                  <small>A quote below this markup is flagged for Head of Operations review. Within policy is auto-approved.</small>
+                  <input id="qtPolicyMinMarkup" name="minMarkupPercent" type="number" min="0" step="0.01" placeholder="e.g. 5" value="">
+                </label>
+                <label class="qt-modal-field" for="qtPolicyMaxMrpPremium">
+                  <span>Maximum Allowed Premium Over MRP %</span>
+                  <small>If the marked-up price exceeds MRP by more than this percentage, the quote is flagged.</small>
+                  <input id="qtPolicyMaxMrpPremium" name="maxMrpPremiumPercent" type="number" min="0" step="0.01" placeholder="e.g. 10" value="">
+                </label>
+              </div>
+            </fieldset>
+            <div class="qt-modal-actions">
+              <button type="button" class="btn btn-secondary" id="qtSettingsCancel">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save policy</button>
             </div>
-          </fieldset>
-          <div class="qt-modal-actions">
-            <button type="button" class="btn btn-secondary" id="qtSettingsCancel">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save settings</button>
+          </form>
+        </div>
+
+        <!-- FX & Tax Rates panel -->
+        <div class="qt-spanel" id="qtSpanelFx" hidden>
+          <div class="qt-fxtabs" role="tablist">
+            <button class="qt-fxtab active" role="tab" data-fxtab="general" aria-selected="true">General rates</button>
+            <button class="qt-fxtab" role="tab" data-fxtab="client" aria-selected="false">Client-specific rates</button>
           </div>
-        </form>
+          <!-- General -->
+          <div class="qt-fxpanel" id="qtFxGeneral">
+            <p class="qt-modal-section-desc">Default FX and tax rates applied to all quotations. Client-specific rates take precedence when set.</p>
+            <div class="qt-fx-table-wrap">
+              <table class="qt-fx-table" id="qtFxGeneralTable">
+                <thead><tr><th>Country</th><th>Code</th><th>Currency</th><th>FX Rate (Local → USD)</th><th>Tax Rate %</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="qt-modal-actions">
+              <button type="button" class="btn btn-secondary" id="qtFxGeneralCancel">Cancel</button>
+              <button type="button" class="btn btn-primary" id="qtFxGeneralSave">Save general rates</button>
+            </div>
+          </div>
+          <!-- Client-specific -->
+          <div class="qt-fxpanel" id="qtFxClient" hidden>
+            <p class="qt-modal-section-desc">Override FX and tax rates for a specific client. Leave a field blank to inherit the general rate.</p>
+            <div class="qt-fx-client-row">
+              <label class="qt-fx-client-label" for="qtFxClientSelect">Client</label>
+              <select id="qtFxClientSelect"><option value="">Select a client…</option></select>
+            </div>
+            <div id="qtFxClientTableWrap" hidden>
+              <div class="qt-fx-table-wrap">
+                <table class="qt-fx-table" id="qtFxClientTable">
+                  <thead><tr><th>Country</th><th>Code</th><th>Currency</th><th>FX Rate (Local → USD)</th><th>Tax Rate %</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="qt-modal-actions">
+                <button type="button" class="btn btn-secondary" id="qtFxClientCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="qtFxClientSave">Save client rates</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Trail panel -->
+        <div class="qt-spanel" id="qtSpanelAudit" hidden>
+          <p class="qt-modal-section-desc">All changes to FX and tax rate settings are recorded here in chronological order.</p>
+          <div id="qtAuditTrailContent"><p class="qt-audit-empty">No changes recorded yet.</p></div>
+        </div>
       </div>
     </div>
 

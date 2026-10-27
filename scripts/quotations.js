@@ -2,7 +2,15 @@
 (() => {
   const STORE_KEY = 'sap-order-quotations-v1';
   const POLICY_KEY = 'sap-quotation-policy-v1';
+  const FX_SETTINGS_KEY = 'sap-quotation-fx-settings-v1';
+  const FX_AUDIT_KEY = 'sap-quotation-fx-audit-v1';
   const $ = id => document.getElementById(id);
+
+  // Country → currency mapping (local currency for each supported country)
+  const COUNTRY_CURRENCY = { SG: 'SGD', MY: 'MYR', AU: 'AUD', US: 'USD', GB: 'GBP' };
+  // Reverse map for auto-populating FX rate from currency selector
+  const CURRENCY_COUNTRY = Object.fromEntries(Object.entries(COUNTRY_CURRENCY).map(([cc, cur]) => [cur, cc]));
+  const COUNTRY_DEFAULT_TAX = { SG: 9, MY: 10, AU: 10, US: 8.25, GB: 20 };
   const html = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const money = value => number(value).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -218,6 +226,41 @@
   }
   function savePolicy(policy) { localStorage.setItem(POLICY_KEY, JSON.stringify(policy)); }
 
+  function defaultFxSettings() {
+    const general = {};
+    Object.keys(WH_COUNTRIES).forEach(code => {
+      const currency = COUNTRY_CURRENCY[code] || code;
+      general[code] = { currency, fxRate: FX_RATES[currency] || 1, taxRate: COUNTRY_DEFAULT_TAX[code] ?? 0 };
+    });
+    return { general, clients: {} };
+  }
+  function loadFxSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(FX_SETTINGS_KEY) || 'null');
+      if (!saved) return defaultFxSettings();
+      const defaults = defaultFxSettings();
+      Object.keys(defaults.general).forEach(code => { if (!saved.general[code]) saved.general[code] = defaults.general[code]; });
+      if (!saved.clients) saved.clients = {};
+      return saved;
+    } catch { return defaultFxSettings(); }
+  }
+  function saveFxSettings(settings) { localStorage.setItem(FX_SETTINGS_KEY, JSON.stringify(settings)); }
+  function loadFxAudit() { try { return JSON.parse(localStorage.getItem(FX_AUDIT_KEY) || '[]'); } catch { return []; } }
+  function addAuditEntries(changedRows) {
+    if (!changedRows.length) return;
+    const audit = loadFxAudit();
+    const user = window.RBAC?.getCurrentUser?.()?.name || 'Unknown';
+    audit.unshift({ ts: new Date().toISOString(), user, entries: changedRows });
+    if (audit.length > 200) audit.splice(200);
+    localStorage.setItem(FX_AUDIT_KEY, JSON.stringify(audit));
+  }
+  // Returns the effective FX rate for a currency code, checking settings first
+  function getFxRateForCurrency(currency) {
+    const cc = CURRENCY_COUNTRY[currency];
+    if (cc) { const s = loadFxSettings(); if (s.general[cc]?.fxRate) return number(s.general[cc].fxRate); }
+    return FX_RATES[currency] || 1;
+  }
+
   function evaluatePolicy(record, policy) {
     const minMarkup = number(policy.minMarkupPercent);
     const maxMrpPremium = number(policy.maxMrpPremiumPercent);
@@ -228,6 +271,44 @@
     record.hodPolicyFlag = flagged ? 'Policy exception' : 'Within policy';
     record.hodApprovalStatus = flagged ? 'Awaiting approval' : 'Not required';
     return record;
+  }
+
+  // Renders editable FX/tax table rows. For client view, generalRates supplies placeholder values.
+  function renderFxTableBody(tbody, rates, generalRates) {
+    tbody.innerHTML = Object.entries(WH_COUNTRIES).map(([code, [flag, name]]) => {
+      const row = rates[code];
+      const gen = generalRates[code] || {};
+      const currency = COUNTRY_CURRENCY[code] || gen.currency || '';
+      const fxVal = row?.fxRate != null ? number(row.fxRate) : '';
+      const taxVal = row?.taxRate != null ? number(row.taxRate) : '';
+      const fxPh = gen.fxRate != null ? gen.fxRate : (FX_RATES[currency] || '');
+      const taxPh = gen.taxRate != null ? gen.taxRate : (COUNTRY_DEFAULT_TAX[code] ?? 0);
+      return `<tr data-country="${html(code)}">
+        <td><span class="qt-fx-flag">${flag}</span> ${html(name)}</td>
+        <td><span class="qt-fx-badge">${html(code)}</span></td>
+        <td><span class="qt-fx-currency">${html(currency)}</span></td>
+        <td><input class="qt-fx-input" type="number" min="0.000001" step="0.000001" name="fxRate" value="${fxVal}" placeholder="${html(String(fxPh))}"></td>
+        <td><input class="qt-fx-input" type="number" min="0" step="0.01" name="taxRate" value="${taxVal}" placeholder="${html(String(taxPh))}"></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderAuditTrail() {
+    const audit = loadFxAudit();
+    const container = $('qtAuditTrailContent');
+    if (!audit.length) { container.innerHTML = '<p class="qt-audit-empty">No changes recorded yet.</p>'; return; }
+    const rows = audit.flatMap(entry =>
+      entry.entries.map((e, i) => `<tr>
+        <td>${i === 0 ? html(new Date(entry.ts).toLocaleString('en', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) : ''}</td>
+        <td>${i === 0 ? html(entry.user) : ''}</td>
+        <td>${html(e.scope)}</td>
+        <td>${html(e.country)}</td>
+        <td>${html(e.field)}</td>
+        <td class="qt-audit-old">${html(String(e.oldValue))}</td>
+        <td class="qt-audit-new">${html(String(e.newValue))}</td>
+      </tr>`)
+    ).join('');
+    container.innerHTML = `<div class="qt-audit-table-wrap"><table class="qt-audit-table"><thead><tr><th>Date &amp; Time</th><th>User</th><th>Scope</th><th>Country</th><th>Field</th><th>Old</th><th>New</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
   function persist() { localStorage.setItem(STORE_KEY, JSON.stringify(quotes)); }
@@ -309,11 +390,11 @@
     if (!$('qtForm')) return;
     const currency = value('currency') || 'SGD';
     const fxInput = $('qt-fxRate');
-    if (fxInput && (!fxInput.value || number(fxInput.value) === number(FX_RATES[lastCurrency]))) {
-      fxInput.value = String(FX_RATES[currency] || 1);
+    if (fxInput && (!fxInput.value || number(fxInput.value) === number(getFxRateForCurrency(lastCurrency)))) {
+      fxInput.value = String(getFxRateForCurrency(currency));
     }
     lastCurrency = currency;
-    const fxRate = number(value('fxRate')) || number(FX_RATES[value('currency')]) || 1;
+    const fxRate = number(value('fxRate')) || getFxRateForCurrency(value('currency')) || 1;
     const fxBuffer = number(value('fxBuffer')) / 100;
     const lines = readProductInputs().map(line => calculateProduct(line, fxRate, fxBuffer * 100));
     const totalQty = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -604,19 +685,37 @@
     showToast(`Quotation ${record.quoteNumber} ${wasEditing ? 'updated' : 'saved'}`);
   });
 
-  // Settings modal
-  function openSettings() {
+  // Settings modal – tabbed (Policy / FX Rates / Audit Trail)
+  function switchSettingsTab(tabName) {
+    document.querySelectorAll('.qt-stab').forEach(t => { t.classList.toggle('active', t.dataset.stab === tabName); t.setAttribute('aria-selected', t.dataset.stab === tabName); });
+    ['Policy', 'Fx', 'Audit'].forEach(n => { $(`qtSpanel${n}`).hidden = n.toLowerCase() !== tabName; });
+    if (tabName === 'audit') renderAuditTrail();
+  }
+  function openSettings(initialTab) {
     const policy = loadPolicy();
     $('qtPolicyMinMarkup').value = policy.minMarkupPercent ?? '';
     $('qtPolicyMaxMrpPremium').value = policy.maxMrpPremiumPercent ?? '';
+    const settings = loadFxSettings();
+    renderFxTableBody($('qtFxGeneralTable').querySelector('tbody'), settings.general, settings.general);
+    $('qtFxClientSelect').value = '';
+    $('qtFxClientTableWrap').hidden = true;
+    document.querySelectorAll('.qt-fxtab').forEach(t => { t.classList.toggle('active', t.dataset.fxtab === 'general'); t.setAttribute('aria-selected', t.dataset.fxtab === 'general'); });
+    $('qtFxGeneral').hidden = false; $('qtFxClient').hidden = true;
+    switchSettingsTab(initialTab || 'policy');
     $('qtSettingsOverlay').hidden = false;
-    $('qtPolicyMinMarkup').focus();
   }
   function closeSettings() { $('qtSettingsOverlay').hidden = true; }
-  $('qtSettings').addEventListener('click', openSettings);
+  $('qtSettings').addEventListener('click', () => openSettings('policy'));
   $('qtSettingsClose').addEventListener('click', closeSettings);
   $('qtSettingsCancel').addEventListener('click', closeSettings);
   $('qtSettingsOverlay').addEventListener('click', event => { if (event.target === $('qtSettingsOverlay')) closeSettings(); });
+
+  // Settings tab switching
+  document.querySelectorAll('.qt-stab').forEach(tab => {
+    tab.addEventListener('click', () => switchSettingsTab(tab.dataset.stab));
+  });
+
+  // Policy form submit
   $('qtSettingsForm').addEventListener('submit', event => {
     event.preventDefault();
     const policy = {
@@ -627,6 +726,81 @@
     closeSettings();
     showToast('Policy settings saved');
   });
+
+  // FX sub-tab switching
+  document.querySelectorAll('.qt-fxtab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.qt-fxtab').forEach(t => { t.classList.toggle('active', t.dataset.fxtab === tab.dataset.fxtab); t.setAttribute('aria-selected', t.dataset.fxtab === tab.dataset.fxtab); });
+      $('qtFxGeneral').hidden = tab.dataset.fxtab !== 'general';
+      $('qtFxClient').hidden = tab.dataset.fxtab !== 'client';
+    });
+  });
+
+  // Populate client dropdown
+  WH_CLIENTS.forEach(client => {
+    const opt = document.createElement('option');
+    opt.value = client.name; opt.textContent = client.name;
+    $('qtFxClientSelect').appendChild(opt);
+  });
+  $('qtFxClientSelect').addEventListener('change', () => {
+    const clientName = $('qtFxClientSelect').value;
+    if (!clientName) { $('qtFxClientTableWrap').hidden = true; return; }
+    const settings = loadFxSettings();
+    renderFxTableBody($('qtFxClientTable').querySelector('tbody'), settings.clients[clientName] || {}, settings.general);
+    $('qtFxClientTableWrap').hidden = false;
+  });
+
+  // Save general FX rates
+  $('qtFxGeneralSave').addEventListener('click', () => {
+    const settings = loadFxSettings();
+    const auditEntries = [];
+    $('qtFxGeneralTable').querySelectorAll('tbody tr').forEach(row => {
+      const code = row.dataset.country;
+      const [, name] = WH_COUNTRIES[code];
+      const fxInput = row.querySelector('[name="fxRate"]');
+      const taxInput = row.querySelector('[name="taxRate"]');
+      const newFx = fxInput.value !== '' ? number(fxInput.value) : (settings.general[code]?.fxRate ?? '');
+      const newTax = taxInput.value !== '' ? number(taxInput.value) : (settings.general[code]?.taxRate ?? '');
+      const old = settings.general[code] || {};
+      if (String(old.fxRate ?? '') !== String(newFx)) auditEntries.push({ scope: 'General', country: `${name} (${code})`, field: 'FX Rate', oldValue: old.fxRate ?? '—', newValue: newFx });
+      if (String(old.taxRate ?? '') !== String(newTax)) auditEntries.push({ scope: 'General', country: `${name} (${code})`, field: 'Tax Rate %', oldValue: old.taxRate ?? '—', newValue: newTax });
+      settings.general[code] = { currency: COUNTRY_CURRENCY[code] || old.currency || '', fxRate: newFx, taxRate: newTax };
+    });
+    saveFxSettings(settings);
+    addAuditEntries(auditEntries);
+    showToast(auditEntries.length ? 'General FX rates saved' : 'No changes to save');
+  });
+  $('qtFxGeneralCancel').addEventListener('click', closeSettings);
+
+  // Save client-specific FX rates
+  $('qtFxClientSave').addEventListener('click', () => {
+    const clientName = $('qtFxClientSelect').value;
+    if (!clientName) return;
+    const settings = loadFxSettings();
+    if (!settings.clients[clientName]) settings.clients[clientName] = {};
+    const auditEntries = [];
+    $('qtFxClientTable').querySelectorAll('tbody tr').forEach(row => {
+      const code = row.dataset.country;
+      const [, name] = WH_COUNTRIES[code];
+      const fxInput = row.querySelector('[name="fxRate"]');
+      const taxInput = row.querySelector('[name="taxRate"]');
+      const newFx = fxInput.value !== '' ? number(fxInput.value) : null;
+      const newTax = taxInput.value !== '' ? number(taxInput.value) : null;
+      const old = settings.clients[clientName][code];
+      const oldFx = old?.fxRate ?? null; const oldTax = old?.taxRate ?? null;
+      if (String(oldFx ?? '') !== String(newFx ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: `${name} (${code})`, field: 'FX Rate', oldValue: oldFx ?? '(general)', newValue: newFx ?? '(general)' });
+      if (String(oldTax ?? '') !== String(newTax ?? '')) auditEntries.push({ scope: `Client: ${clientName}`, country: `${name} (${code})`, field: 'Tax Rate %', oldValue: oldTax ?? '(general)', newValue: newTax ?? '(general)' });
+      if (newFx != null || newTax != null) {
+        settings.clients[clientName][code] = { currency: COUNTRY_CURRENCY[code] || '', fxRate: newFx, taxRate: newTax };
+      } else {
+        delete settings.clients[clientName][code];
+      }
+    });
+    saveFxSettings(settings);
+    addAuditEntries(auditEntries);
+    showToast(auditEntries.length ? `Client rates for ${clientName} saved` : 'No changes to save');
+  });
+  $('qtFxClientCancel').addEventListener('click', closeSettings);
 
   // Rejection reason modal
   function closeReject() { $('qtRejectOverlay').hidden = true; pendingRejectQuoteNumber = ''; $('qtRejectForm').reset(); }

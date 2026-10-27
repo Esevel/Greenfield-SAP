@@ -136,3 +136,53 @@
 .qt-modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }
 .btn-danger { border: 1px solid #c04c54; color: #fff; background: #c04c54; }
 .btn-danger:hover { background: #a83d45; }
+
+/* Wide settings modal */
+.qt-modal-wide { max-width: 860px; }
+
+/* Settings top-level tabs */
+.qt-stabs { display: flex; gap: 2px; margin: 0 0 20px; padding: 4px; border-radius: 10px; background: #f2f3f7; }
+.qt-stab { flex: 1; padding: 8px 12px; border: 0; border-radius: 8px; color: #5a6172; background: transparent; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; transition: background .15s, color .15s; }
+.qt-stab:hover:not(.active) { background: #e8eaf0; color: #3b4252; }
+.qt-stab.active { color: #4b3ca0; background: #fff; box-shadow: 0 1px 4px #20304d14; }
+
+/* Settings panels */
+.qt-spanel { animation: qt-fadein .15s ease; }
+@keyframes qt-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* FX sub-tabs */
+.qt-fxtabs { display: flex; gap: 2px; margin-bottom: 14px; border-bottom: 1px solid #e8eaf0; }
+.qt-fxtab { padding: 7px 14px; border: 0; border-bottom: 2px solid transparent; color: #6a7282; background: transparent; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; margin-bottom: -1px; }
+.qt-fxtab:hover:not(.active) { color: #3b4252; border-bottom-color: #c5c9d6; }
+.qt-fxtab.active { color: #4b3ca0; border-bottom-color: #6654c0; }
+
+/* Client selector row */
+.qt-fx-client-row { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+.qt-fx-client-label { color: #555d6c; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.qt-fx-client-row select { min-height: 38px; padding: 0 11px; border: 1px solid #dfe3eb; border-radius: 8px; color: #303746; background: #fff; font: inherit; font-size: 14px; outline: none; min-width: 200px; }
+.qt-fx-client-row select:focus { border-color: #8370d2; box-shadow: 0 0 0 3px #7966d51a; }
+
+/* FX table */
+.qt-fx-table-wrap { overflow-x: auto; border: 1px solid #e5e8ef; border-radius: 10px; }
+.qt-fx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.qt-fx-table thead th { padding: 10px 13px; border-bottom: 1px solid #e5e8ef; background: #f8f9fb; color: #6a7282; font-size: 11px; font-weight: 750; letter-spacing: .05em; text-align: left; white-space: nowrap; }
+.qt-fx-table tbody tr { border-bottom: 1px solid #f0f2f5; }
+.qt-fx-table tbody tr:last-child { border-bottom: 0; }
+.qt-fx-table tbody td { padding: 9px 13px; color: #3a4252; vertical-align: middle; }
+.qt-fx-flag { font-size: 18px; vertical-align: middle; margin-right: 5px; }
+.qt-fx-badge { display: inline-block; padding: 2px 7px; border-radius: 8px; color: #5a51a0; background: #f0edff; font-size: 11px; font-weight: 750; }
+.qt-fx-currency { color: #5a6172; font-weight: 650; }
+.qt-fx-input { width: 110px; padding: 6px 8px; border: 1px solid #dfe3eb; border-radius: 7px; color: #303746; background: #fff; font: inherit; font-size: 13px; outline: none; }
+.qt-fx-input:focus { border-color: #8370d2; box-shadow: 0 0 0 3px #7966d51a; }
+.qt-fx-input::placeholder { color: #b0b6c3; }
+
+/* Audit trail */
+.qt-audit-empty { color: #8a909c; font-size: 13px; font-style: italic; }
+.qt-audit-table-wrap { overflow-x: auto; border: 1px solid #e5e8ef; border-radius: 10px; max-height: 420px; overflow-y: auto; }
+.qt-audit-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.qt-audit-table thead th { position: sticky; top: 0; z-index: 1; padding: 9px 12px; border-bottom: 1px solid #e5e8ef; background: #f8f9fb; color: #6a7282; font-size: 11px; font-weight: 750; letter-spacing: .05em; text-align: left; white-space: nowrap; }
+.qt-audit-table tbody tr { border-bottom: 1px solid #f0f2f5; }
+.qt-audit-table tbody tr:last-child { border-bottom: 0; }
+.qt-audit-table tbody td { padding: 8px 12px; color: #3a4252; vertical-align: top; }
+.qt-audit-old { color: #a0484e; text-decoration: line-through; }
+.qt-audit-new { color: #1f7a50; font-weight: 650; }
