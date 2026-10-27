@@ -20,7 +20,7 @@
       <div class="page-content">
         <nav class="breadcrumbs-custom"><a href="/pages/orders/board.html" class="breadcrumb-link" data-orders-view="orders">Orders</a><span class="breadcrumb-separator" data-orders-view="orders">›</span><span class="breadcrumb-current">Quotation</span></nav>
         <div class="page-header order-module-header">
-          <div class="flex-between"><h1 class="page-title">Orders</h1><button class="btn btn-primary" type="button" id="qtCreate">＋ Create quotation</button></div>
+          <div class="flex-between"><h1 class="page-title">Orders</h1><div class="qt-header-actions"><button class="btn btn-secondary" type="button" id="qtSettings">⚙ Settings</button><button class="btn btn-primary" type="button" id="qtCreate">＋ Create quotation</button></div></div>
           <p class="page-description">Build and track client quotations, pricing, margins and approvals.</p>
         </div>
         <nav class="tab-strip order-tabs" aria-label="Orders views">
@@ -34,15 +34,71 @@
           </form>
         </section>
         <section class="qt-list-panel">
-          <div class="qt-list-heading"><div><h2>Quotations</h2><p id="qtCount">No quotations yet</p></div><div class="qt-list-tools"><input id="qtSearch" type="search" placeholder="Search quotations" aria-label="Search quotations"><select id="qtClientFilter" aria-label="Filter by client"><option value="">All clients</option></select><select id="qtVendorFilter" aria-label="Filter by vendor"><option value="">All vendors</option></select><select id="qtProductFilter" aria-label="Filter by product"><option value="">All products</option></select><select id="qtStatusFilter" aria-label="Filter by quote status"><option value="">All statuses</option></select><button class="btn btn-secondary btn-sm" type="button" id="qtClearFilters">Clear filters</button></div></div>
+          <div class="qt-list-heading"><div><h2>Quotations</h2><p id="qtCount">No quotations yet</p></div><div class="qt-list-tools"><input id="qtSearch" type="search" placeholder="Search quotations" aria-label="Search quotations"><select id="qtClientFilter" aria-label="Filter by client"><option value="">All clients</option></select><select id="qtVendorFilter" aria-label="Filter by vendor"><option value="">All vendors</option></select><select id="qtProductFilter" aria-label="Filter by product"><option value="">All products</option></select><select id="qtStatusFilter" aria-label="Filter by quote status"><option value="">All statuses</option></select><select id="qtApprovalFilter" aria-label="Filter by HOD approval"><option value="">All approvals</option><option value="awaiting">Requires approval</option><option value="approved">HOD approved</option><option value="rejected">HOD rejected</option></select><button class="btn btn-secondary btn-sm" type="button" id="qtClearFilters">Clear filters</button></div></div>
           <div class="qt-list" id="qtList"></div>
         </section>
         <div class="qt-toast" id="qtToast" role="status" aria-live="polite" hidden></div>
       </div>
     </main>
+
+    <!-- Settings modal -->
+    <div class="qt-modal-overlay" id="qtSettingsOverlay" hidden aria-modal="true" role="dialog" aria-labelledby="qtSettingsTitle">
+      <div class="qt-modal">
+        <div class="qt-modal-head">
+          <div><h2 id="qtSettingsTitle">Quotation Settings</h2><p>Configure approval thresholds that apply to all new quotations.</p></div>
+          <button class="qt-close" type="button" id="qtSettingsClose" aria-label="Close settings">×</button>
+        </div>
+        <form id="qtSettingsForm">
+          <fieldset class="qt-modal-section">
+            <legend>HOD Pre-Approval Policy Threshold</legend>
+            <p class="qt-modal-section-desc">Quotes that fall outside these thresholds are automatically flagged and routed to the Head of Operations for approval before they can be sent.</p>
+            <div class="qt-modal-fields">
+              <label class="qt-modal-field" for="qtPolicyMinMarkup">
+                <span>Minimum Required Procurement Markup %</span>
+                <small>A quote below this markup is flagged for Head of Operations review. Within policy is auto-approved.</small>
+                <input id="qtPolicyMinMarkup" name="minMarkupPercent" type="number" min="0" step="0.01" placeholder="e.g. 5" value="">
+              </label>
+              <label class="qt-modal-field" for="qtPolicyMaxMrpPremium">
+                <span>Maximum Allowed Premium Over MRP %</span>
+                <small>If the marked-up price exceeds MRP by more than this percentage, the quote is flagged.</small>
+                <input id="qtPolicyMaxMrpPremium" name="maxMrpPremiumPercent" type="number" min="0" step="0.01" placeholder="e.g. 10" value="">
+              </label>
+            </div>
+          </fieldset>
+          <div class="qt-modal-actions">
+            <button type="button" class="btn btn-secondary" id="qtSettingsCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- HOD Rejection reason modal -->
+    <div class="qt-modal-overlay" id="qtRejectOverlay" hidden aria-modal="true" role="dialog" aria-labelledby="qtRejectTitle">
+      <div class="qt-modal qt-modal-sm">
+        <div class="qt-modal-head">
+          <div><h2 id="qtRejectTitle">Reject Quotation</h2><p id="qtRejectDesc">Please provide a mandatory reason for rejection.</p></div>
+          <button class="qt-close" type="button" id="qtRejectClose" aria-label="Close">×</button>
+        </div>
+        <form id="qtRejectForm">
+          <div class="qt-modal-fields">
+            <label class="qt-modal-field" for="qtRejectReason">
+              <span>Rejection Reason <b>*</b></span>
+              <textarea id="qtRejectReason" name="rejectReason" rows="4" required placeholder="Enter the reason for rejecting this quotation…"></textarea>
+            </label>
+          </div>
+          <div class="qt-modal-actions">
+            <button type="button" class="btn btn-secondary" id="qtRejectCancel">Cancel</button>
+            <button type="submit" class="btn btn-danger">Confirm rejection</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/billing-data.js"></script>

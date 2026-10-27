@@ -1,6 +1,7 @@
 // Orders · Quotation submodule. Browser-local prototype storage; pricing calculations are estimates for review.
 (() => {
   const STORE_KEY = 'sap-order-quotations-v1';
+  const POLICY_KEY = 'sap-quotation-policy-v1';
   const $ = id => document.getElementById(id);
   const html = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
@@ -210,6 +211,24 @@
   let lastCurrency = 'SGD';
   let nextProductId = 1;
   let editingQuoteNumber = '';
+  let pendingRejectQuoteNumber = '';
+
+  function loadPolicy() {
+    try { return JSON.parse(localStorage.getItem(POLICY_KEY) || '{}'); } catch { return {}; }
+  }
+  function savePolicy(policy) { localStorage.setItem(POLICY_KEY, JSON.stringify(policy)); }
+
+  function evaluatePolicy(record, policy) {
+    const minMarkup = number(policy.minMarkupPercent);
+    const maxMrpPremium = number(policy.maxMrpPremiumPercent);
+    if (!minMarkup && maxMrpPremium === 0 && !policy.maxMrpPremiumPercent) return record;
+    let flagged = false;
+    if (minMarkup > 0 && number(record.actualMarkupUsd) < minMarkup) flagged = true;
+    if (policy.maxMrpPremiumPercent !== '' && policy.maxMrpPremiumPercent !== undefined && number(record.mrpUsd) > 0 && number(record.mrpVarianceUsd) > number(policy.maxMrpPremiumPercent)) flagged = true;
+    record.hodPolicyFlag = flagged ? 'Policy exception' : 'Within policy';
+    record.hodApprovalStatus = flagged ? 'Awaiting approval' : 'Not required';
+    return record;
+  }
 
   function persist() { localStorage.setItem(STORE_KEY, JSON.stringify(quotes)); }
   function inputMarkup(field) {
@@ -414,7 +433,25 @@
     const productVendors = [...new Set(products.map(line => line.vendor).filter(Boolean))];
     const vendorNames = productVendors.map(id => SUPPLY_SUPPLIERS[id]?.name || id).join(' · ') || '—';
     const details = detailGroups.map(group => `<section class="qt-detail-group"><h3>${html(group)}</h3><dl>${fields.filter(field => field.group === group && !PRODUCT_FIELD_KEYS.has(field.key)).map(field => `<div><dt>${html(field.label)}</dt><dd>${html(fieldValue(field, record))}</dd></div>`).join('')}</dl></section>`).join('');
-    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCTS · ${products.length}</small><strong title="${html(productNames)}">${html(productNames)}</strong></div><div><small>VENDORS</small><strong title="${html(vendorNames)}">${html(vendorNames)}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View calculation breakdown & quotation fields <span>⌄</span></summary>${productBreakdown(products, record)}${details}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${record.orderNumber ? ` · Order ${html(record.orderNumber)}` : ''}</span><div class="qt-card-actions"><button type="button" class="qt-edit" data-edit-quote="${html(record.quoteNumber)}">Edit</button><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></div></article>`;
+
+    const hodStatus = record.hodApprovalStatus || '';
+    const needsApproval = hodStatus === 'Awaiting approval';
+    const currentUser = window.RBAC?.getCurrentUser?.();
+    const isHOD = currentUser?.isHead || false;
+
+    const hodBadge = needsApproval
+      ? `<span class="qt-hod-badge qt-hod-pending">Pending HOD Approval</span>`
+      : hodStatus === 'Approved'
+        ? `<span class="qt-hod-badge qt-hod-approved">HOD Approved</span>`
+        : hodStatus === 'Rejected'
+          ? `<span class="qt-hod-badge qt-hod-rejected" title="${html(record.rejectionReason || '')}">HOD Rejected${record.rejectionReason ? ' · ' + html(record.rejectionReason.substring(0, 60)) + (record.rejectionReason.length > 60 ? '…' : '') : ''}</span>`
+          : '';
+
+    const hodActions = isHOD && needsApproval
+      ? `<button type="button" class="qt-approve" data-approve-quote="${html(record.quoteNumber)}">Approve</button><button type="button" class="qt-reject" data-reject-quote="${html(record.quoteNumber)}">Reject</button>`
+      : '';
+
+    return `<article class="qt-card"><div class="qt-card-top"><div><span class="qt-number">${html(record.quoteNumber || 'Unnumbered quote')}</span><span class="qt-date">${new Date(record.createdAt || Date.now()).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>${hodBadge}</div><span class="qt-status" data-status="${html(status.toLowerCase())}">${html(status)}</span></div><div class="qt-card-main"><div><small>CLIENT</small><strong>${html(record.client || 'Client not selected')}</strong></div><div><small>PRODUCTS · ${products.length}</small><strong title="${html(productNames)}">${html(productNames)}</strong></div><div><small>VENDORS</small><strong title="${html(vendorNames)}">${html(vendorNames)}</strong></div><div><small>QUANTITY</small><strong>${html(record.quantity || 0)} units</strong></div><div><small>TOTAL QUOTED</small><strong>USD ${money(record.totalQuotedUsd)}</strong></div><div><small>MARGIN</small><strong>${money(record.marginPercent)}%</strong></div></div><details class="qt-details"><summary>View calculation breakdown & quotation fields <span>⌄</span></summary>${productBreakdown(products, record)}${details}</details><div class="qt-card-footer"><span>${html(record.finalStatus || 'Draft')}${record.orderNumber ? ` · Order ${html(record.orderNumber)}` : ''}</span><div class="qt-card-actions">${hodActions}<button type="button" class="qt-edit" data-edit-quote="${html(record.quoteNumber)}">Edit</button><button type="button" class="qt-delete" data-delete-quote="${html(record.quoteNumber)}">Delete</button></div></div></article>`;
   }
 
   function renderList() {
@@ -423,11 +460,15 @@
     const client = $('qtClientFilter').value;
     const vendor = $('qtVendorFilter').value;
     const product = $('qtProductFilter').value;
+    const approvalFilter = $('qtApprovalFilter').value;
     const filtered = quotes.filter(record => {
       if (status && record.quoteStatus !== status) return false;
       if (client && record.client !== client) return false;
       if (vendor && record.vendor !== vendor && !record.products?.some(line => line.vendor === vendor)) return false;
       if (product && record.productName !== product && !record.products?.some(line => line.productName === product)) return false;
+      if (approvalFilter === 'awaiting' && record.hodApprovalStatus !== 'Awaiting approval') return false;
+      if (approvalFilter === 'approved' && record.hodApprovalStatus !== 'Approved') return false;
+      if (approvalFilter === 'rejected' && record.hodApprovalStatus !== 'Rejected') return false;
       return !query || fields.some(field => String(record[field.key] ?? '').toLowerCase().includes(query));
     }).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     $('qtCount').textContent = `${filtered.length} quotation${filtered.length === 1 ? '' : 's'}${filtered.length !== quotes.length ? ` · ${quotes.length} total` : ''}`;
@@ -485,12 +526,34 @@
     const edit = event.target.closest('[data-edit-quote]');
     if (edit) { editQuote(edit.dataset.editQuote); return; }
     const remove = event.target.closest('[data-delete-quote]');
-    if (!remove) return;
-    const record = quotes.find(quote => quote.quoteNumber === remove.dataset.deleteQuote);
-    if (!record || !window.confirm(`Delete quotation ${record.quoteNumber}?`)) return;
-    quotes = quotes.filter(quote => quote !== record);
-    if (editingQuoteNumber === record.quoteNumber) closeForm();
-    persist(); refreshFilterOptions(); renderList(); showToast('Quotation deleted');
+    if (remove) {
+      const record = quotes.find(quote => quote.quoteNumber === remove.dataset.deleteQuote);
+      if (!record || !window.confirm(`Delete quotation ${record.quoteNumber}?`)) return;
+      quotes = quotes.filter(quote => quote !== record);
+      if (editingQuoteNumber === record.quoteNumber) closeForm();
+      persist(); refreshFilterOptions(); renderList(); showToast('Quotation deleted');
+      return;
+    }
+    const approve = event.target.closest('[data-approve-quote]');
+    if (approve) {
+      const record = quotes.find(quote => quote.quoteNumber === approve.dataset.approveQuote);
+      if (!record) return;
+      record.hodApprovalStatus = 'Approved';
+      record.hodPolicyFlag = 'Within policy';
+      record.approvalDate = new Date().toISOString().slice(0, 10);
+      persist(); renderList(); showToast(`Quotation ${record.quoteNumber} approved`);
+      return;
+    }
+    const reject = event.target.closest('[data-reject-quote]');
+    if (reject) {
+      pendingRejectQuoteNumber = reject.dataset.rejectQuote;
+      const record = quotes.find(quote => quote.quoteNumber === pendingRejectQuoteNumber);
+      $('qtRejectDesc').textContent = `Rejecting quotation ${record?.quoteNumber || ''}. Please provide a mandatory reason.`;
+      $('qtRejectReason').value = record?.rejectionReason || '';
+      $('qtRejectOverlay').hidden = false;
+      $('qtRejectReason').focus();
+      return;
+    }
   });
   $('qtClose').addEventListener('click', closeForm);
   $('qtCancel').addEventListener('click', closeForm);
@@ -508,9 +571,10 @@
     fillFilter('qtProductFilter', quotes.flatMap(quote => quote.products?.map(line => line.productName) || [quote.productName]));
   };
   ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter'].forEach(id => $(id).addEventListener('change', renderList));
+  $('qtApprovalFilter').addEventListener('change', renderList);
   $('qtClearFilters').addEventListener('click', () => {
     $('qtSearch').value = '';
-    ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter', 'qtStatusFilter'].forEach(id => { $(id).value = ''; });
+    ['qtClientFilter', 'qtVendorFilter', 'qtProductFilter', 'qtStatusFilter', 'qtApprovalFilter'].forEach(id => { $(id).value = ''; });
     renderList();
   });
   const statuses = fields.find(field => field.key === 'quoteStatus').options;
@@ -522,7 +586,7 @@
     updateCalculations();
     if (!event.currentTarget.reportValidity()) return;
     const wasEditing = !!editingQuoteNumber;
-    const record = readForm();
+    const record = evaluatePolicy(readForm(), loadPolicy());
     if (editingQuoteNumber) {
       const index = quotes.findIndex(quote => quote.quoteNumber === editingQuoteNumber);
       if (index >= 0) {
@@ -538,6 +602,51 @@
     renderList();
     closeForm();
     showToast(`Quotation ${record.quoteNumber} ${wasEditing ? 'updated' : 'saved'}`);
+  });
+
+  // Settings modal
+  function openSettings() {
+    const policy = loadPolicy();
+    $('qtPolicyMinMarkup').value = policy.minMarkupPercent ?? '';
+    $('qtPolicyMaxMrpPremium').value = policy.maxMrpPremiumPercent ?? '';
+    $('qtSettingsOverlay').hidden = false;
+    $('qtPolicyMinMarkup').focus();
+  }
+  function closeSettings() { $('qtSettingsOverlay').hidden = true; }
+  $('qtSettings').addEventListener('click', openSettings);
+  $('qtSettingsClose').addEventListener('click', closeSettings);
+  $('qtSettingsCancel').addEventListener('click', closeSettings);
+  $('qtSettingsOverlay').addEventListener('click', event => { if (event.target === $('qtSettingsOverlay')) closeSettings(); });
+  $('qtSettingsForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const policy = {
+      minMarkupPercent: $('qtPolicyMinMarkup').value !== '' ? number($('qtPolicyMinMarkup').value) : '',
+      maxMrpPremiumPercent: $('qtPolicyMaxMrpPremium').value !== '' ? number($('qtPolicyMaxMrpPremium').value) : ''
+    };
+    savePolicy(policy);
+    closeSettings();
+    showToast('Policy settings saved');
+  });
+
+  // Rejection reason modal
+  function closeReject() { $('qtRejectOverlay').hidden = true; pendingRejectQuoteNumber = ''; $('qtRejectForm').reset(); }
+  $('qtRejectClose').addEventListener('click', closeReject);
+  $('qtRejectCancel').addEventListener('click', closeReject);
+  $('qtRejectOverlay').addEventListener('click', event => { if (event.target === $('qtRejectOverlay')) closeReject(); });
+  $('qtRejectForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!pendingRejectQuoteNumber) return;
+    const reason = $('qtRejectReason').value.trim();
+    if (!reason) { $('qtRejectReason').setCustomValidity('Rejection reason is required.'); $('qtRejectForm').reportValidity(); return; }
+    $('qtRejectReason').setCustomValidity('');
+    const record = quotes.find(quote => quote.quoteNumber === pendingRejectQuoteNumber);
+    if (record) {
+      record.hodApprovalStatus = 'Rejected';
+      record.hodPolicyFlag = 'Policy exception';
+      record.rejectionReason = reason;
+      persist(); renderList(); showToast(`Quotation ${record.quoteNumber} rejected`);
+    }
+    closeReject();
   });
 
   renderForm();
