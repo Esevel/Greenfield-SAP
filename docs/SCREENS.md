@@ -118,6 +118,7 @@ Commercial pages share `scripts/billing-data.js` (contracts, currency helpers, c
 | `integrations-list` | `/pages/integrations/list.html` | Integrations: health tiles, HRIS/IdP and ITSM/ITAM connections, employee drift | ✅ Complete |
 | `integrations-detail` | `/pages/integrations/detail.html` | Integration detail (TechGlobal · Workday): sync health, error queue, field mapping (Workday source → Esevel field dropdown, Required tag, Mapped / Unmapped / Needs review, Discard / Save mapping with required + duplicate checks), Preview card of one sample record | ✅ Complete |
 | `settings-billing` | `/pages/settings/billing.html?tab=` | (Settings) Billing defaults: Standard fees (events × countries in local currency, "Charged when" milestone per event, per-country versioned edit panel with effective date, reason, impact and history), Tax and duties (country / US state, type, rate, effective, duties note; versioned; importer of record lives on billing entities), FX (sources, clients using each, rates per 1 USD). Clients store only exceptions | ✅ Complete |
+| `role-access` | `/pages/settings/access-control.html` | Role permissions by module; manage users, assign multiple roles, search and preview access. Includes Head of Operations, CEO Super Admin, and member/manager roles for each function | ✅ Complete |
 
 Model tab pages share `/templates/model-header.html` (breadcrumbs, title, actions, tab links). Set `data-active-tab` on `#model-header-container` to highlight the current tab.
 
@@ -126,7 +127,6 @@ Model tab pages share `/templates/model-header.html` (breadcrumbs, title, action
 | Screen ID | Path | Description | Status |
 |-----------|------|-------------|--------|
 | `settings` | `/pages/settings/index.html` | Configuration (sidebar link is a placeholder) | 🔲 Planned |
-| `staff-users` | `/pages/staff/list.html` | Esevel staff logins and roles | 🔲 Planned |
 | `cap-alerts` | — | Cap alerts and checkout warnings (BIL-23) | 🔲 Planned |
 
 ## Navigation Map

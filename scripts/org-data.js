@@ -26,6 +26,8 @@ window.ORG_DATA = (() => {
 
   const PEOPLE = {
     matthew: { name: 'Matthew Lee', title: 'Head of Operations' },
+    yuying: { name: 'Yuying', title: 'CEO' },
+    samnan: { name: 'Samnan', title: 'Tech Lead · Engineering' },
     nalene: { name: 'Nalene Lyhor', title: 'Customer Success Manager' },
     thiva: { name: 'Thiva', title: 'Account Manager' },
     kirthinni: { name: 'Kirthinni' },
@@ -104,6 +106,16 @@ window.ORG_DATA = (() => {
         teamLead: null,
         teams: [
           { id: 'finance_ops', name: 'Finance', capabilities: ['billing', 'finance_reporting'], members: [] }
+        ]
+      },
+      {
+        id: 'engineering',
+        name: 'Engineering',
+        lead: 'samnan',
+        leadLabel: 'Tech Lead',
+        teamLead: null,
+        teams: [
+          { id: 'engineering_team', name: 'Engineering', capabilities: ['assets', 'integrations', 'mdm'], members: ['samnan'] }
         ]
       }
     ]
