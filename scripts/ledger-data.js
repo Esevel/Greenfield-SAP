@@ -78,7 +78,7 @@ function makeCharge(e) {
     pendingReversal: { reason: 'Client says device arrived damaged; replacement shipped free of charge', requestedBy: 'CS · Aisha', at: '2026-10-15 11:02' } });
 })();
 
-const LEDGER_EVENT_LABEL = { ...Object.fromEntries(FEE_EVENTS.map(e => [e.key, e.label])), managed: 'Billable users' };
+const LEDGER_EVENT_LABEL = { ...Object.fromEntries(FEE_EVENTS.map(e => [e.key, e.label])), managed: 'Billable users', device: 'Device sale' };
 const LEDGER_KIND = { charge: 'Charge', reversal: 'Reversal', rebill: 'Re-bill' };
 
 const ledgerById = id => LEDGER.find(e => e.id === id);

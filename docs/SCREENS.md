@@ -36,13 +36,19 @@ This document tracks all prototype screens in the Admin Portal.
 | `stock-receiving` | `/pages/stock/receiving.html` | Stock · Receiving: scan / type serial, queue To inspect / Expected / Received (+ hub filter); intake panel with condition, grade A–D, notes, photos (min 2); receiving completes the work order step, posts the retrieval charge for that device (paying entity, FX) and starts storage billing | ✅ Complete |
 | `stock-fees` | `/pages/stock/fees.html` | Stock · Storage fees: cross-client report per client × hub (devices billed, avg days, 90+ days, rate / day = hub country's local fee converted to the paying entity's currency with the local fee and FX rate shown, fee / month, accrued, suggested); client / hub / aged filters, CSV export, rows open the client page | ✅ Complete |
 
+Orders pages share `scripts/orders-data.js` (config, price book, templates, seeds) → `orders-engine.js` (stage timing in business hours of the order country from `calendar-data.js` and SLA configuration, status, pricing, actions, audit, session persistence, billing on Delivered) → `orders-ui.js` (header actions, filters, export, digest, templates, dialogs) → `order-detail.js`. Styles in `styles/orders.css`.
+
 All Stock pages render from `scripts/hub-data.js` + `scripts/billing-data.js` (storage rates from contracts) + `scripts/stock-data.js`; the threshold/restock panel is `scripts/stock-threshold-panel.js` (markup in `templates/threshold-panel.html`, inlined in client + restock pages).
 
 #### Tracker
 | Screen ID | Path | Description | Status |
 |-----------|------|-------------|--------|
-| `tracker-all` | `/pages/tracker/all.html` | Tracker · All by risk (default tab): SLA tiles, cross-service table generated from SLA milestones (current milestone, "N of M lines received" on per-line milestones, time left vs custom/default target, at risk from 75%), sorted by risk; replaces the SLA command centre | ✅ Complete |
-| `tracker-orders` | `/pages/tracker/orders.html` | Tracker · Orders: placeholder, "Managed by Ops Tracker for now." | ✅ Complete |
+| `tracker-all` | `/pages/tracker/all.html` | Tracker · All by risk (default tab): SLA tiles, cross-service table generated from SLA milestones (current milestone, "N of M lines received" on per-line milestones, time left vs custom/default target, at risk from 75%), sorted by risk; replaces the SLA command centre. Orders that are breached, at risk, pending approval, on hold or paused are listed here too and open the order page | ✅ Complete |
+| `tracker-orders` | `/pages/tracker/orders.html` | Tracker › Orders · Board (Board \| List \| Insights): tiles (open, overdue, at risk, pending approval · on hold, delivered 7 days; click to filter), search + status / priority / client / vendor / country filters, a column per order stage plus Pending approval · Payment hold and SLA paused lanes (Delivered / Cancelled with those filters), cards with time in stage vs business-hour target, quick-done, Resume, Approve; select cards → bulk mark done (shipping needs an AWB first); card opens a drawer with stages, AWB entry and actions. Header: Digest, Export, Templates, New order. `?open=` opens a drawer | ✅ Complete |
+| `tracker-orders-list` | `/pages/tracker/orders-list.html?id=` | Orders · List: same filters; list sorted overdue → pending → hold → by SLA used; orders open as tabs kept for the session (click = preview tab, double-click = keep open, up to 8, Close all) with the full order detail beside the list | ✅ Complete |
+| `tracker-orders-insights` | `/pages/tracker/orders-insights.html` | Orders · Insights: 7 / 30 / 90 days and client filter; KPIs with change vs previous period (orders, delivered, overdue now, SLA compliance, revenue SGD, margin, average delivery), status mix donut, weekly SLA compliance with 4-week average and 90% target, stage bottlenecks vs target, monthly revenue (6 months, month to date), week on week, vendor performance, top 10 clients (expand for orders) | ✅ Complete |
+| `tracker-order` | `/pages/tracker/order.html?id=` | Order: banners (cancelled, pending approval with Approve / Reject, payment hold with Release, SLA paused with Resume, blocker), progress bar, stage timeline (Mark done, Done at…, Skip with reason, Undo, Edit time as override; AWB entries with courier, tracking, link; per-stage notes with tag and @mentions), pricing card with Local / SGD / USD toggle (products, extra fees, shipping, tax, margin badges per line), details, owner, business-hours panel (stage bar, elapsed vs end-to-end, paused time, country calendar), audit log; Pause SLA, Payment hold, Cancel, Save as template, Edit order (Order details · Recipient · Pricing). Delivered posts a device sale + deployment fee per device to the Billing ledger | ✅ Complete |
+| `tracker-order-new` | `/pages/tracker/order-new.html?template=&client=` | New order: client, country, billing entity (sets currency), type, priority, owner; recipient from People or free text, route (via hub / client site / employee), address; vendor with lead time, PO; items priced from the client's contract (retail or contract % on cost, floored at cost), extra fees, shipping; summary with tax, margin, procurement cap before / after (over cap requires client approval) and SLA-based delivery estimate; Load / Save template; creates the order at Submitted to vendor | ✅ Complete |
 | `tracker-onboarding` | `/pages/tracker/onboarding.html` | Tracker · Onboarding board: columns are the Onboarding SLA milestones (hub-only steps skipped for direct routes, route tag on cards) (Initiated → Procured → Imaged / Provisioned → Dispatched → Delivered → Setup confirmed); employee, start date, flag, package tag, SLA health, blocked and start-date-soon flags; cards open the detail page | ✅ Complete |
 | `tracker-onboarding-detail` | `/pages/tracker/onboarding-detail.html?id=ONB-1186` | Onboarding request: milestone stepper, blocked / start-soon alerts, details, package devices with per-line hub arrival and ETA, kit dispatch (ship complete or split, Ship what's ready override), SLA milestones card, owner, handover notes | ✅ Complete |
 | `tracker-offboarding` | `/pages/tracker/offboarding.html` | Tracker · Offboarding board (7 stages, SLA, blocked, ITSM chips) | ✅ Complete |
@@ -64,7 +70,7 @@ All Stock pages render from `scripts/hub-data.js` + `scripts/billing-data.js` (s
 | Screen ID | Path | Description | Status |
 |-----------|------|-------------|--------|
 | `vendors-list` | `/pages/vendors/list.html` | Vendors list (incl. hardware suppliers) with type, access method, integration status; suppliers open the supplier page | ✅ Complete |
-| `vendors-supplier` | `/pages/vendors/supplier.html?v=vendorA` | Hardware supplier: editable lead time per country (syncs to Vendor delivery in SLA configuration), 30-day actual | ✅ Complete |
+| `vendors-supplier` | `/pages/vendors/supplier.html?v=vendorA` | Hardware supplier: editable lead time per country (feeds checkout estimates and order expected dates), 30-day actual, open orders with this vendor per country | ✅ Complete |
 | `vendors-detail` | `/pages/vendors/detail.html` | Vendor (Courier X) · Overview tab with editable last-mile delivery times | ✅ Complete |
 | `vendors-access` | `/pages/vendors/access.html` | Vendor (Courier X) · Access tab: access method, portal users, invite panel, integration | ✅ Complete |
 | `service-reports` | `/pages/reports/service-reports.html` | Service reports: monthly client reports with status, SLA compliance, generate drafts for September | ✅ Complete |
@@ -89,7 +95,7 @@ Commercial pages share `scripts/billing-data.js` (contracts, currency helpers, c
 |-----------|------|-------------|--------|
 | `warehouses-list` | `/pages/warehouses/list.html` | (Settings) Warehouses list with clients assigned per hub, row menu and Edit/Add warehouse side panel incl. hub dispatch buffer and "Stock held here" (client × model, links to client stock page, storage per month). Tabs Warehouses \| Hub assignments | ✅ Complete |
 | `warehouses-assignments` | `/pages/warehouses/assignments.html` | (Settings) Warehouses · Hub assignments: client × country hub matrix (moved from Clients) | ✅ Complete |
-| `sla-config-standard` | `/pages/sla-config/standard.html` | SLA configuration · Standard SLAs: one country at a time, a card per SLA type with milestones as a timeline (dashed = skipped when shipped direct, dotted = only with collection, Vendor delivery from vendor + grace), single end-to-end, clients on standard / exceptions count, Edit panel with copy-to-countries | ✅ Complete |
+| `sla-config-standard` | `/pages/sla-config/standard.html` | SLA configuration · Standard SLAs: one country at a time, a card per SLA type with milestones as a timeline (order types Regular / Rush / Bulk / Pre-order use the order stages in business hours: Submitted to vendor → Confirmed by vendor → Payment confirmed → Shipping info → Received at hub → QC & dispatch → Out for delivery → Delivered; hub steps only via a hub) (dashed = skipped when shipped direct, dotted = only with collection, Vendor delivery from vendor + grace), single end-to-end, clients on standard / exceptions count, Edit panel with copy-to-countries | ✅ Complete |
 | `sla-config-exceptions` | `/pages/sla-config/exceptions.html` | SLA configuration · Client exceptions: one row per client × type × country showing only what differs (strikethrough standard), vendor-conflict banner, filters, Add / Edit / Remove panel that saves a new contract version | ✅ Complete |
 | `holiday-calendars` | `/pages/holidays/calendars.html` | Operating calendar: country list, month calendar/list, operating schedule, order cut-off, delay notices, Add closure dialog (country / region / hub) | ✅ Complete |
 | `integrations-list` | `/pages/integrations/list.html` | Integrations: health tiles, HRIS/IdP and ITSM/ITAM connections, employee drift | ✅ Complete |
@@ -102,7 +108,6 @@ Model tab pages share `/templates/model-header.html` (breadcrumbs, title, action
 
 | Screen ID | Path | Description | Status |
 |-----------|------|-------------|--------|
-| `orders-list` | `/pages/orders/list.html` | Order management (Tracker · Orders is a placeholder; managed in Ops Tracker for now) | 🔲 Planned |
 | `settings` | `/pages/settings/index.html` | Configuration (sidebar link is a placeholder) | 🔲 Planned |
 | `staff-users` | `/pages/staff/list.html` | Esevel staff logins and roles | 🔲 Planned |
 | `cap-alerts` | — | Cap alerts and checkout warnings (BIL-23) | 🔲 Planned |
@@ -123,7 +128,7 @@ Home (/)
 │       └── Client catalogues · Inventory · Activity
 ├── Assets (/pages/assets/list.html) → Detail
 ├── Stock: Clients · Warehouses → Client · Restock queue · Receiving · Storage fees
-├── Tracker: All by risk · Orders · Onboarding · Offboarding · Repairs (Board | List | Quotes) · Redeployments · Storage · Disposal · Support
+├── Tracker: All by risk · Orders (Board | List | Insights → Order, New order) · Onboarding · Offboarding · Repairs (Board | List | Quotes) · Redeployments · Storage · Disposal · Support
 │   ├── Sync inbox (/pages/tracker/sync-inbox.html)
 │   └── Work orders / detail pages (work-order.html?wo= with Billing card), Raise request
 ├── Vendors → Supplier · Courier (Overview | Access)

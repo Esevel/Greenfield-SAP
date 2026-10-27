@@ -55,7 +55,7 @@ function initSlaDefaultPanel(onSaved) {
           ? `<span class="sla-fixed">${m.fixed}</span>`
           : m.synced
             ? `<span class="def-ms-input"><span class="def-quote-lock" title="Set on each vendor's page, not editable here">🔒 Vendor lead time</span> + <input type="number" class="form-input sla-input" id="defMs${i}" min="0" max="${SLA_UNITS[m.unit].max}" step="1" value="${SLA_DEFAULTS[type.key][cc][i]}" aria-label="Grace allowance in business days"> <span class="sla-unit">days grace</span></span>`
-            : `<span class="def-ms-input"><input type="number" class="form-input sla-input" id="defMs${i}" min="1" max="${SLA_UNITS[m.unit].max}" step="1" value="${SLA_DEFAULTS[type.key][cc][i]}"> <span class="sla-unit">${SLA_UNITS[m.unit].label}</span></span>`}
+            : `<span class="def-ms-input"><input type="number" class="form-input sla-input" id="defMs${i}" min="1" max="${SLA_UNITS[m.unit].max}" step="1" value="${SLA_DEFAULTS[type.key][cc][i]}"> <span class="sla-unit">${type.bizHours ? 'business hours' : SLA_UNITS[m.unit].label}</span></span>`}
       </div>
       ${m.synced ? `<div class="def-synced-note">Each order uses the lead time of the vendor that takes it (${(vs => (vs.length ? vs.map(x => `${escapeHtml(x.name)} ${supplyRangeLabel(x.range)}`).join(', ') : 'no suppliers'))(supplyVendorsIn(cc))}). Lead times are set on each <a href="/pages/vendors/list.html" class="link-sm">vendor's page</a>.</div>` : ''}`).join('');
     $('defAlso').innerHTML = Object.keys(WH_COUNTRIES).filter(x => x !== cc).map(x => `

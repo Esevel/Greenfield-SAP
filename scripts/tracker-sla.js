@@ -17,15 +17,6 @@ const TRACKER_TYPE_ICON = {
 const TRACKER_ITEMS = [
   { id: 'OFF-2055', client: 'digital', type: 'offboarding', cc: 'GB', start: '2026-10-10T17:22', done: ['2026-10-12T09:00'],
     stage: 'Scheduled', owner: ['Q', 'Qonit'], blocker: 'Awaiting courier', note: ['Qonit', 'DHL missed second pickup window, escalated to account manager'], href: '/pages/tracker/offboarding-detail.html' },
-  { id: 'ORD-30398', client: 'acme', type: 'regular', cc: 'SG', start: '2026-10-11T09:00', done: ['2026-10-11T10:30', '2026-10-12T11:00'], vendor: 'ingram',
-    stage: 'Customs clearance', owner: ['AI', 'Aisha'], blocker: 'Missing import permit', note: ['Aisha', 'Broker needs commercial invoice re-issued with HS codes'] },
-  { id: 'ORD-30421', client: 'mediaworks', type: 'regular', cc: 'SG', start: '2026-10-09T10:00', done: ['2026-10-09T12:00', '2026-10-10T09:00'], vendor: 'ingram', route: 'site',
-    stage: 'Vendor shipping to MediaWorks office', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Ingram confirmed the ThinkPad arrives today, inside their 6-day lead time'],
-    lines: [
-      { item: 'Lenovo ThinkPad X1 Carbon', recipient: 'Kai Wong', received: null, eta: '2026-10-16' },
-      { item: 'Logitech MX Master 3S', recipient: 'Kai Wong', received: '2026-10-13T11:00' },
-      { item: 'Dell UltraSharp U2723QE', recipient: 'Kai Wong', received: '2026-10-14T15:00' }
-    ] },
   { id: 'SUP-5521', client: 'acme', type: 'support', cc: 'SG', start: '2026-10-15T21:10', done: ['2026-10-15T21:52'],
     stage: 'In Progress / With Tech', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Profile reissued via Jamf. If it still drops, escalate to Acme network team'], href: '/pages/tracker/support-detail.html' },
   { id: 'REP-0871', client: 'techglobal', type: 'repair', cc: 'SG', start: '2026-10-09T14:00', done: ['2026-10-09T16:00', '2026-10-11T19:00'],
@@ -95,6 +86,8 @@ const TRACKER_ITEMS = [
 ];
 
 TRACKER_ITEMS.filter(i => i.onb).forEach(i => { i.href = `/pages/tracker/onboarding-detail.html?id=${i.id}`; });
+// Open purchase orders join the cross-service view when the Orders module is loaded (orders-data.js + orders-engine.js)
+if (typeof orderTrackerItems === 'function') TRACKER_ITEMS.push(...orderTrackerItems());
 
 const TRACKER_MILESTONE_STORAGE = 'tracker-milestone-state-v1';
 const TRACKER_AUDIT_STORAGE = 'tracker-audit-v1';
@@ -128,7 +121,9 @@ function fmtHours(h) {
 const fmtTarget = (v, unit) => `${v}${SLA_UNITS[unit].short}`;
 const fmtDate = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
+// Purchase orders live in the Orders module (orders-engine.js); their health comes from there when it's loaded
 function trackerSla(item) {
+  if (item.order && typeof orderSla === 'function') return orderSla(item.order);
   const type = slaType(item.type);
   const ov = SLA_OVERRIDES[slaKey(item.client, item.type, item.cc)];
   const targets = slaEffective(ov, SLA_DEFAULTS[item.type][item.cc]);
@@ -213,9 +208,10 @@ function trackerSorted() {
 function runwayHtml(s) {
   if (!s.cur) return '<div class="runway"><div class="runway-label">All milestones complete</div></div>';
   const cls = s.health === 'breached' ? 'overdue' : s.health === 'risk' ? 'risk' : '';
-  const label = s.remaining < 0 ? `${fmtHours(s.remaining)} overdue` : `${fmtHours(s.remaining)} left`;
+  const f = s.fmt || fmtHours;
+  const label = s.remaining < 0 ? `${f(s.remaining)} overdue` : `${f(s.remaining)} left`;
   return `<div class="runway"><div class="runway-label ${cls}">${label}</div><div class="runway-bar"><div class="runway-fill ${cls}" style="width: ${Math.min(100, Math.round(s.ratio * 100))}%;"></div></div>
-    <div class="runway-sub">of ${fmtTarget(s.cur.target, s.cur.m.unit)} ${s.cur.custom ? 'custom' : s.cur.quote ? 'vendor lead time' : 'default'}</div></div>`;
+    <div class="runway-sub">of ${fmtTarget(s.cur.target, s.cur.m.unit)}${s.fmt ? ' business' : ''} ${s.cur.custom ? 'custom' : s.cur.quote ? 'vendor lead time' : 'default'}${s.paused ? ' · paused' : ''}</div></div>`;
 }
 
 function trackerRowsHtml() {

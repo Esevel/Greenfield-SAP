@@ -13,15 +13,24 @@ const SLA_ROUTES = {
 };
 const HUB_ONLY = { hubOnly: true };
 
+// Purchase orders (Regular, Rush, Bulk, Pre-order): fulfilment stages measured in business hours of the order country.
+// Received at hub and QC & dispatch only apply when the vendor ships to an Esevel hub.
+const ORDER_MILESTONES = () => [
+  ms('submitted', 'Submitted to vendor', 'h'),
+  ms('confirmed', 'Confirmed by vendor', 'h'),
+  ms('payment', 'Payment confirmed', 'h'),
+  ms('awb', 'Shipping info (AWB)', 'h'),
+  ms('received', 'Received at hub', 'h', HUB_ONLY),
+  ms('qc', 'QC & dispatch', 'h', HUB_ONLY),
+  ms('out', 'Out for delivery', 'h'),
+  ms('delivered', 'Delivered', 'h')
+];
+
 const SLA_TYPES = [
-  { key: 'regular', group: 'order', name: 'Regular', note: 'Buy new · order approval to delivery',
-    milestones: [ms('approval', 'Approval', 'h'), ms('po', 'Vendor PO', 'd'), ms('received', 'Vendor delivery', 'd', { synced: true, perLine: true }), ms('qc', 'QC & config', 'd', HUB_ONLY), ms('dispatch', 'Dispatch', 'd', HUB_ONLY), ms('delivered', 'Delivered', 'd', HUB_ONLY)] },
-  { key: 'rush', group: 'order', name: 'Rush', note: 'Buy new with priority handling',
-    milestones: [ms('approval', 'Approval', 'h'), ms('po', 'Vendor PO', 'd'), ms('received', 'Vendor delivery', 'd', { synced: true, perLine: true }), ms('qc', 'QC & config', 'd', HUB_ONLY), ms('dispatch', 'Dispatch', 'd', HUB_ONLY), ms('delivered', 'Delivered', 'd', HUB_ONLY)] },
-  { key: 'bulk', group: 'order', name: 'Bulk', note: 'Buy new · 20+ units in one order',
-    milestones: [ms('approval', 'Approval', 'h'), ms('po', 'Vendor PO', 'd'), ms('received', 'Vendor delivery', 'd', { synced: true, perLine: true }), ms('qc', 'QC & config', 'd', HUB_ONLY), ms('dispatch', 'Dispatch', 'd', HUB_ONLY), ms('delivered', 'Delivered', 'd', HUB_ONLY)] },
-  { key: 'preorder', group: 'order', name: 'Pre-order', note: 'Clock starts at the vendor’s confirmed stock date',
-    milestones: [ms('vendor', 'Vendor stock date', null, { fixed: 'Vendor date' }), ms('received', 'Vendor delivery', 'd', { perLine: true }), ms('qc', 'QC & config', 'd', HUB_ONLY), ms('dispatch', 'Dispatch', 'd', HUB_ONLY), ms('delivered', 'Delivered', 'd', HUB_ONLY)] },
+  { key: 'regular', group: 'order', name: 'Regular', note: 'Buy new · created to delivered, in business hours', bizHours: true, milestones: ORDER_MILESTONES() },
+  { key: 'rush', group: 'order', name: 'Rush', note: 'Buy new with priority handling', bizHours: true, milestones: ORDER_MILESTONES() },
+  { key: 'bulk', group: 'order', name: 'Bulk', note: 'Buy new · 20+ units in one order', bizHours: true, milestones: ORDER_MILESTONES() },
+  { key: 'preorder', group: 'order', name: 'Pre-order', note: 'Clock starts at the vendor’s confirmed stock date', bizHours: true, milestones: ORDER_MILESTONES() },
   { key: 'stock', group: 'order', name: 'Deploy from stock', note: 'From the client’s assigned hub',
     milestones: [ms('reserve', 'Reserve', 'h'), ms('prep', 'Prep & reimage', 'd'), ms('dispatch', 'Dispatch', 'd'), ms('delivered', 'Delivered', 'd')] },
   { key: 'onboarding', group: 'service', name: 'Onboarding', note: 'New-hire kit to a working setup',
@@ -41,10 +50,10 @@ const SLA_TYPES = [
 ];
 
 const SLA_BASE = {
-  regular: [4, 1, 5, 1, 1, 2],
-  rush: [2, 1, 2, 1, 1, 1],
-  bulk: [8, 2, 8, 2, 2, 3],
-  preorder: [null, 2, 1, 1, 2],
+  regular: [9, 9, 9, 18, 36, 9, 18, 9],
+  rush: [4, 4, 4, 9, 18, 9, 9, 9],
+  bulk: [18, 18, 9, 27, 54, 18, 27, 9],
+  preorder: [9, 9, 9, 18, 36, 9, 18, 9],
   stock: [4, 1, 1, 2],
   onboarding: [2, 3, 1, 1, 2, 1],
   offboarding: [2, 3, 3, 2, 5],
@@ -64,13 +73,24 @@ const SLA_COUNTRY_ADJ = {
   GB: { po: 1, received: 2, delivered: 1, collected: 1, collection: 1 }
 };
 
+// Extra business hours per country on order stages (longer transit and customs)
+const SLA_ORDER_ADJ_H = {
+  SG: {},
+  MY: { out: 9 },
+  AU: { awb: 9, out: 9 },
+  US: { awb: 9, out: 9 },
+  GB: { submitted: 9, awb: 18, out: 9 }
+};
+
 const SLA_DEFAULTS = {};
 SLA_TYPES.forEach(t => {
   SLA_DEFAULTS[t.key] = {};
   Object.keys(WH_COUNTRIES).forEach(cc => {
     SLA_DEFAULTS[t.key][cc] = SLA_BASE[t.key].map((v, i) => {
       const m = t.milestones[i];
-      return v === null || m.unit !== 'd' ? v : v + (SLA_COUNTRY_ADJ[cc][m.key] || 0);
+      if (v === null) return v;
+      if (t.bizHours) return v + (SLA_ORDER_ADJ_H[cc][m.key] || 0);
+      return m.unit !== 'd' ? v : v + (SLA_COUNTRY_ADJ[cc][m.key] || 0);
     });
   });
 });
@@ -79,11 +99,11 @@ const SLA_DEFAULT_META = Object.fromEntries(SLA_TYPES.map(t => [t.key, { version
 
 // Sparse per-milestone overrides: null means the milestone follows the country default
 const SLA_OVERRIDES = {
-  'acme|regular|SG': [2, null, 4, null, null, 1],
+  'acme|regular|SG': [4, null, null, null, 27, null, 9, null],
   'acme|stock|SG': [2, null, null, 1],
-  'techglobal|rush|US': [1, null, null, null, null, null],
-  'techglobal|regular|US': [null, null, 4, null, null, 1],
-  'northwind|regular|SG': [null, null, null, null, null, 1],
+  'techglobal|rush|US': [2, null, null, null, null, null, null, null],
+  'techglobal|regular|US': [null, null, 4, null, null, null, 18, null],
+  'northwind|regular|SG': [null, null, null, null, null, null, 9, null],
   'northwind|repair|SG': [2, 1, 3, 1],
   'northwind|repair|US': [2, 1, 4, null],
   'northwind|support|SG': [1, 4],
@@ -110,12 +130,9 @@ const SLA_CLIENT_VERSIONS = {
 
 const slaType = key => SLA_TYPES.find(t => t.key === key);
 
-// Synced milestones follow each order's vendor quote. The default value stored there is the grace allowance on top
-// (editable); a client override replaces the quote with a fixed contract target.
+// Index of a milestone that follows the vendor's quoted lead time. Order stages are now fixed business-hour
+// targets, so no current type has one; kept so pages that show vendor conflicts keep working.
 const slaSyncedIdx = typeKey => slaType(typeKey).milestones.findIndex(m => m.synced);
-['regular', 'rush', 'bulk'].forEach(k => Object.keys(WH_COUNTRIES).forEach(cc => {
-  SLA_DEFAULTS[k][cc][slaSyncedIdx(k)] = k === 'rush' ? 0 : 1;
-}));
 const slaKey = (clientId, typeKey, cc) => `${clientId}|${typeKey}|${cc}`;
 const slaClientsIn = cc => WH_CLIENTS.filter(c => HUB_ASSIGNMENTS[c.id] && cc in HUB_ASSIGNMENTS[c.id]);
 const slaNulls = typeKey => slaType(typeKey).milestones.map(() => null);

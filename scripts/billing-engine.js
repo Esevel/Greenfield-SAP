@@ -19,7 +19,7 @@ const BILLABLE_ORDERS = {
   'REP-0412': { client: 'northwind', cc: 'US', recipient: 'James Whitfield', assets: ['C02TT4410K · MacBook Pro 14" M3'] },
   'DSP-0209': { client: 'techglobal', cc: 'US', recipient: '—', assets: ['7XK29P3 · Dell Latitude 7420'] }
 };
-const WO_EVENT = { ONB: 'deployment', OFF: 'retrieval', RDP: 'redeployment', REP: 'repair', DSP: 'disposal' };
+const WO_EVENT = { ONB: 'deployment', ORD: 'deployment', OFF: 'retrieval', RDP: 'redeployment', REP: 'repair', DSP: 'disposal' };
 
 // The fee event a step triggers, or null when the step isn't billable
 function stepEvent(wo, step) {
@@ -65,6 +65,7 @@ function chargeBasisText(e) {
   const b = e.basis;
   if (!b) return '';
   if (b.managed) return `${fmtAmount(e.cur, e.unit)} per user (entity rate)`;
+  if (b.device) return `Order revenue (products, shipping and fees, before tax) in ${e.cur}`;
   const fee = b.discount
     ? `${fmtAmount(b.feeCur, b.fee)} after ${b.discount.split(': ')[1]} on ${fmtAmount(b.feeCur, b.base)} ${b.custom ? 'contract exception' : 'standard fee'} (${WH_COUNTRIES[e.cc][1]})`
     : `${fmtAmount(b.feeCur, b.fee)} ${b.custom ? 'contract exception' : 'standard fee'} (${WH_COUNTRIES[e.cc][1]})`;

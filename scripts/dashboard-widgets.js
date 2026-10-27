@@ -39,7 +39,7 @@ window.DashboardWidgets = (() => {
       { id: 'DSP-0207', client: 'FinanceExperts', milestone: 'Data wipe', late: '9d 13h', blocker: 'Wipe failed on 1 of 4 drives', link: '/pages/tracker/disposal.html' },
       { id: 'OFF-2055', client: 'Digital Solutions', milestone: 'Collected', late: '6d 20h', blocker: 'Awaiting courier', link: '/pages/tracker/offboarding-detail.html' },
       { id: 'RED-0311', client: 'MediaWorks', milestone: 'Repackage', late: '6d 8h', blocker: '', link: '/pages/tracker/redeployments.html' },
-      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Vendor delivery', late: '5d 18h', blocker: 'Missing import permit', link: '/pages/tracker/orders.html' },
+      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Received at hub', late: '5d 7h', blocker: 'Missing import permit', link: '/pages/tracker/order.html?id=ORD-30398' },
       { id: 'ONB-1188', client: 'FinanceExperts', milestone: 'Procured', late: '5d 18h', blocker: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' }
     ]
   };
@@ -72,12 +72,12 @@ window.DashboardWidgets = (() => {
   const PRIORITY_ORDERS = [
     { id: 'ONB-1186', client: 'Acme Tech', cc: 'SG', why: 'Starts today', stage: 'Imaged / Provisioned', owner: 'Qonit', waiting: 'Esevel ops', due: '5d 10h overdue', state: 'bad', link: '/pages/tracker/onboarding-detail.html?id=ONB-1186' },
     { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', why: 'Start date at risk', stage: 'Procured · 1 of 2 lines', owner: 'Jia Ling', waiting: 'Vendor (backorder)', due: '5d 18h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
-    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Vendor delivery', owner: 'Aisha', waiting: 'Customs broker', due: '5d 18h overdue', state: 'bad', link: '/pages/tracker/orders.html' },
+    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Received at hub', owner: 'Aisha', waiting: 'Customs broker', due: '5d 7h overdue', state: 'bad', link: '/pages/tracker/order.html?id=ORD-30398' },
     { id: 'SUP-5538', client: 'TechGlobal Inc', cc: 'US', why: 'Urgent ticket', stage: 'First response', owner: 'Esevel Ops', waiting: 'Esevel ops', due: '18m left', state: 'warn', link: '/pages/tracker/support.html' },
     { id: 'ONB-1194', client: 'TechGlobal Inc', cc: 'US', why: 'Starts 3 Nov', stage: 'Initiated', owner: 'Qonit', waiting: 'Client HR', due: '4d 19h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
     { id: 'REP-0871', client: 'TechGlobal Inc', cc: 'SG', why: 'Exec device', stage: 'Repair / loaner sent', owner: 'Jia Ling', waiting: 'Vendor (Dell part)', due: '5d 10h overdue', state: 'bad', link: '/pages/tracker/work-order.html?wo=REP-0871' },
     { id: 'ONB-1190', client: 'TechGlobal Inc', cc: 'SG', why: 'Starts Mon', stage: 'Dispatched', owner: 'Qonit', waiting: 'Courier pickup', due: '4d 20h overdue', state: 'bad', link: '/pages/tracker/onboarding.html' },
-    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Hub', due: '4d 21h overdue', state: 'bad', link: '/pages/tracker/orders.html' }
+    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Hub', due: '4d 21h overdue', state: 'bad', link: '/pages/tracker/all.html' }
   ];
 
   // Billing (Ledger, Invoices), Stock · Storage fees, Clients · Procurement caps, repair quotes and client catalogues
@@ -404,9 +404,9 @@ window.DashboardWidgets = (() => {
     { p: 1, requires: 'purchase_orders', label: 'Vendor orders this quarter', value: '132', delta: ['up', null, '7% vs same days of Q3'],
       note: 'Regular, rush and bulk', spark: SPARK.vendorOrders, link: '/pages/tracker/orders.html' },
     { p: 2, requires: 'purchase_orders', label: 'POs to place', value: '4', tone: 'warn',
-      note: '5 more awaiting client approval', link: '/pages/tracker/orders.html' },
+      note: '5 more awaiting client approval', link: '/pages/tracker/orders.html?status=attention' },
     { p: 3, requires: 'purchase_orders', label: 'Late at vendor delivery', value: '3', tone: 'bad',
-      note: 'ORD-30398 · ORD-30421 · ONB-1188', link: '/pages/tracker/orders.html' },
+      note: 'ORD-30398 · ORD-30421 · ONB-1188', link: '/pages/tracker/order.html?id=ORD-30398' },
     { p: 4, requires: 'purchase_orders', label: 'Partial deliveries', value: '2', tone: 'warn',
       note: 'ONB-1182 · ONB-1193 · 1 line late on each', link: '/pages/tracker/onboarding.html' },
     { p: 5, requires: 'purchase_orders', label: 'Restock proposals', value: '3 to send', note: '1 awaiting client approval', link: '/pages/stock/restock.html' },
@@ -494,7 +494,7 @@ window.DashboardWidgets = (() => {
     // Control Tower coordination (Vinh)
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'DHL Express updates not reaching the tracker', description: 'Webhook failing · UK collections and deliveries need manual status · OFF-2055 missed a second pickup', link: '/pages/vendors/list.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: '2 delivery proofs with no work order', description: 'FedEx 7712 4459 1187 (Grace Liu) · email scan from J. Whitfield with no tracking number', link: '/pages/tracker/sync-inbox.html' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'ORD-30398 stuck at customs', description: 'Acme Tech · broker, vendor and Procurement need a re-issued commercial invoice', link: '/pages/tracker/orders.html' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'ORD-30398 stuck at customs', description: 'Acme Tech · broker, vendor and Procurement need a re-issued commercial invoice', link: '/pages/tracker/order.html?id=ORD-30398' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: '2 return receipts to confirm', description: 'OFF-2061 at Singapore Hub · OFF-2055 at Digital Solutions London', link: '/pages/tracker/sync-inbox.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'DSP-0207: wipe failed on 1 of 4 drives', description: 'FinanceExperts · 9d 13h overdue · confirm shred with the disposal partner', link: '/pages/tracker/disposal.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'REP-0871 waiting on a back-ordered part', description: 'TechGlobal · Dell ETA Friday · loaner already with the user', link: '/pages/tracker/work-order.html?wo=REP-0871' },
@@ -504,7 +504,7 @@ window.DashboardWidgets = (() => {
     { section: 'operations', requires: 'stock', category: 'UPCOMING', title: '68 devices stored 90+ days', description: 'Review with clients: redeploy or dispose', link: '/pages/stock/fees.html' },
 
     // Procurement
-    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · vendor delivery 5d 18h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/tracker/orders.html' },
+    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at hub 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/tracker/order.html?id=ORD-30398' },
     { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ONB-1188: vendor backorder on the 14" model', description: 'FinanceExperts · confirm the 16" substitute with the client', link: '/pages/tracker/onboarding.html' },
     { section: 'procurement', requires: 'purchase_orders', category: 'NEEDS_ATTENTION', title: '2 joiners need devices ordered this week', description: 'No stock in the client hub · Priya Nair (Acme Tech, 26 Oct) · Daniel Okafor (TechGlobal, 28 Oct)', link: '/pages/people/joiners.html' },
     { section: 'procurement', requires: 'purchase_orders', when: user => !user.can('stock'), category: 'NEEDS_ATTENTION', title: '3 restock proposals to quote', description: 'Thresholds below minimum · 1 more awaiting client approval', link: '/pages/stock/restock.html' },
@@ -1506,8 +1506,8 @@ window.DashboardWidgets = (() => {
     { label: 'Arriving at hub', n: 3 }
   ];
   const WAITING_ON_VENDORS = [
-    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', state: 'bad', status: '5d 18h overdue', note: 'Customs hold: missing import permit', link: '/pages/tracker/orders.html' },
-    { id: 'ORD-30421', client: 'MediaWorks', cc: 'SG', state: 'bad', status: '4d 20h overdue', note: 'Ingram Micro confirms the last line arrives today', link: '/pages/tracker/orders.html' },
+    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', state: 'bad', status: '5d 7h overdue', note: 'Customs hold: missing import permit', link: '/pages/tracker/order.html?id=ORD-30398' },
+    { id: 'ORD-30421', client: 'MediaWorks', cc: 'SG', state: 'bad', status: '4d 5h overdue', note: 'Ingram Micro confirms the last line arrives today', link: '/pages/tracker/order.html?id=ORD-30421' },
     { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', state: 'bad', status: '5d 18h overdue', note: 'Backorder on the 14" model · 16" offered', link: '/pages/tracker/onboarding.html' },
     { id: 'ONB-1182', client: 'MediaWorks', cc: 'SG', state: 'warn', status: '2 of 3 lines in', note: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' },
     { id: 'ONB-1193', client: 'BrightPath Education', cc: 'MY', state: 'warn', status: '1 of 2 lines in', note: '1 line ETA after due date', link: '/pages/tracker/onboarding.html' }

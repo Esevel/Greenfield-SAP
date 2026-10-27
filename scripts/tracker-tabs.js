@@ -14,6 +14,8 @@
     ['disposal', 'Disposal', '/pages/tracker/disposal.html', 4],
     ['support', 'Support', '/pages/tracker/support.html', 14]
   ];
+  // Orders count is live when the Orders module is on the page
+  if (typeof openOrders === 'function') tabs.find(t => t[0] === 'orders')[3] = openOrders().length;
   el.className = 'tab-strip tracker-tabs';
   el.innerHTML = tabs.map(([key, label, href, n]) => `<a href="${href}" class="tab-link ${el.dataset.active === key ? 'active' : ''}">${label} <span class="tab-count">${n}</span></a>`).join('');
 })();

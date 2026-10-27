@@ -146,10 +146,14 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/calendar-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/orders-data.js"></script>
+  <script src="/scripts/orders-engine.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
   <script>
     document.getElementById('trackerRows').innerHTML = trackerRowsHtml();
-    // Rows open their request page; Orders, Onboarding and Redeployments have no detail page yet
+    // Rows open their request page; Redeployments have no detail page yet
     document.querySelectorAll('.sla-table tbody tr').forEach(row => {
       if (!row.dataset.href) {
         row.classList.add('no-detail');

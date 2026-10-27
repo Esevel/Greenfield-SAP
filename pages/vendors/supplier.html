@@ -48,11 +48,11 @@
               </div>
               <div class="card-body doc-body">
                 <table class="table doc-table">
-                  <thead><tr><th>Country</th><th>Lead time to hub (business days)</th><th>Actual 30-day avg</th><th>Clients with a shorter fixed target</th></tr></thead>
+                  <thead><tr><th>Country</th><th>Lead time to hub (business days)</th><th>Actual 30-day avg</th><th>Open orders</th></tr></thead>
                   <tbody id="supRows"></tbody>
                 </table>
                 <div class="readonly-note" style="padding: var(--space-sm) var(--space-md);">
-                  One lead time per country covers Regular, Rush and Bulk orders, whether the vendor ships to a hub, a client site or the employee. When this vendor takes an order, it sets the SLA target for <strong>Vendor delivery</strong> (plus the grace set in SLA configuration). If the vendor later revises an ETA, the target doesn't move, so a late arrival counts as a breach.
+                  One lead time per country covers Regular, Rush and Bulk orders, whether the vendor ships to a hub, a client site or the employee. It feeds checkout delivery estimates and the expected delivery date on each order. Order SLAs are fixed business-hour targets per stage, set in <a href="/pages/sla-config/standard.html" class="link-sm">SLA configuration</a>.
                 </div>
               </div>
             </section>
@@ -79,6 +79,10 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/calendar-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/orders-data.js"></script>
+  <script src="/scripts/orders-engine.js"></script>
   <script>
     (function () {
       const $ = id => document.getElementById(id);
@@ -91,16 +95,8 @@
       $('supManager').textContent = `Account team · orders@${key.toLowerCase()}.example`;
       $('supCountries').innerHTML = Object.keys(sup.leadTimes).map(cc => `<span class="flag" title="${WH_COUNTRIES[cc][1]}">${WH_COUNTRIES[cc][0]}</span>`).join('');
 
-      // Clients with a fixed Received-at-hub target shorter than this vendor's lead time
-      function conflicts(cc, max) {
-        return ['regular', 'rush', 'bulk'].flatMap(t => {
-          const i = slaSyncedIdx(t);
-          return slaClientsIn(cc).map(c => {
-            const ov = SLA_OVERRIDES[slaKey(c.id, t, cc)];
-            return ov && ov[i] !== null && ov[i] !== undefined && ov[i] < max ? `${c.name} · ${slaType(t).name} ${ov[i]}d` : null;
-          }).filter(Boolean);
-        });
-      }
+      // Open purchase orders with this vendor in a country (Orders module)
+      const openOrders = cc => (typeof ORDERS === 'undefined' ? [] : ORDERS.filter(o => o.vendor === key && o.cc === cc && orderState(o) !== 'complete' && orderState(o) !== 'cancelled'));
 
       const valid = ([a, b]) => Number.isInteger(a) && Number.isInteger(b) && a >= 1 && b >= a && b <= 60;
       const dirty = () => Object.keys(draft).some(cc => draft[cc][0] !== sup.leadTimes[cc][0] || draft[cc][1] !== sup.leadTimes[cc][1]);
@@ -110,12 +106,12 @@
           const r = draft[cc];
           const actual = sup.actual[cc];
           const slow = actual > r[1];
-          const c = valid(r) ? conflicts(cc, r[1]) : [];
+          const c = openOrders(cc);
           return `<tr>
             <td><span class="flag">${WH_COUNTRIES[cc][0]}</span> ${WH_COUNTRIES[cc][1]}</td>
             <td><span class="${valid(r) ? '' : 'lm-invalid'}"><input type="number" class="form-input lm-input" data-cc="${cc}" data-i="0" value="${r[0]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} minimum"> – <input type="number" class="form-input lm-input" data-cc="${cc}" data-i="1" value="${r[1]}" min="1" aria-label="${WH_COUNTRIES[cc][1]} maximum"></span></td>
             <td class="${slow ? 'rate-slow' : ''}">${actual.toFixed(1)}d${slow ? ' ⚠ slower than lead time' : ''}</td>
-            <td>${c.length ? `<span class="sla-conflict">⚠ ${c.map(escapeHtml).join(', ')}</span>` : '<span class="text-muted">—</span>'}</td>
+            <td>${c.length ? c.map(o => `<a href="/pages/tracker/order.html?id=${o.id}" class="link-sm">${o.id}</a>`).join(', ') : '<span class="text-muted">—</span>'}</td>
           </tr>`;
         }).join('');
         $('supSave').disabled = !dirty() || Object.values(draft).some(r => !valid(r));

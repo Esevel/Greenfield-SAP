@@ -72,14 +72,20 @@ function initSlaStandard() {
   render();
 }
 
-// Single plain-text total: every step counted, vendor and collection steps described in words
+// Single plain-text total: every step counted, vendor and collection steps described in words.
+// Business-hour types (orders) show hours plus the business-day equivalent and the direct-route total.
 function slaTotalText(type, values) {
-  let d = 0, h = 0;
+  let d = 0, h = 0, hub = 0;
   type.milestones.forEach((m, i) => {
     const v = Number(values[i]);
     if (m.fixed || m.conditional || !Number.isFinite(v)) return;
-    if (m.unit === 'h') h += v; else d += v;
+    if (type.bizHours && m.hubOnly) hub += v;
+    else if (m.unit === 'h') h += v; else d += v;
   });
+  if (type.bizHours) {
+    const days = x => `${Math.round(x / 9 * 10) / 10} business days`;
+    return `${h + hub}h via hub (≈ ${days(h + hub)}) · ${h}h direct`;
+  }
   const parts = [d ? `${d}d` : '', h ? `${h}h` : ''].filter(Boolean).join(' ') || '0';
   const prefix = type.milestones.some(m => m.fixed) ? 'vendor date + ' : type.milestones.some(m => m.synced) ? 'vendor lead time + ' : '';
   return prefix + parts;

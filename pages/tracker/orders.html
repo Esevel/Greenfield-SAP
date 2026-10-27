@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="/styles/main.css">
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/orders.css">
 </head>
 <body>
   <div class="app-container">
@@ -17,21 +21,72 @@
       <div id="header-container"></div>
       
       <div class="page-content">
+        <nav class="breadcrumbs-custom">
+          <a href="/pages/tracker/all.html" class="breadcrumb-link">Work order tracker</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">Orders</span>
+        </nav>
         <div class="page-header tracker-header">
           <h1 class="page-title">Work order tracker</h1>
-          <span class="tracker-header-actions"><!-- <a href="/pages/tracker/sync-inbox.html" class="btn btn-secondary">Sync inbox <span class="tab-count tab-count-alert">4</span></a> --><a href="/pages/tracker/raise-request.html" class="btn btn-primary">Raise request</a></span>
+          <span class="tracker-header-actions" id="orderActions"></span>
         </div>
         
         <nav id="trackerTabs" data-active="orders"></nav>
         
-        <p class="text-muted">Managed by Ops Tracker for now.</p>
+        <div class="inventory-summary stock-summary order-tiles" id="obTiles"></div>
+        
+        <div class="tracker-controls">
+          <div class="asset-toolbar" id="obFilters"></div>
+          <div id="obView"></div>
+        </div>
+        
+        <div class="board order-board" id="obBoard"></div>
+        <div class="board-footnote">Columns are the order stages. Time in stage counts business hours in the order country (Operating calendar), minus paused time. At risk from 75% of the stage target; targets come from SLA configuration (client exception, else country standard). Received at hub and QC &amp; dispatch only apply to orders routed via a hub.</div>
       </div>
     </main>
   </div>
   
+  <div class="bulk-action-bar" id="obBulk">
+    <div class="bulk-action-content">
+      <span class="bulk-selection-count" id="obBulkCount"></span>
+      <div class="bulk-actions">
+        <button type="button" class="btn btn-secondary btn-sm" id="obBulkDone">Mark current stage done now</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="obBulkClear">Clear selection</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="side-panel side-panel-wide" id="obDrawer" role="dialog" aria-modal="true" aria-labelledby="obDrawerTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="obDrawerTitle"></h3>
+        <div class="device-panel-meta" id="obDrawerMeta"></div>
+      </div>
+      <button class="side-panel-close" id="obDrawerClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body" id="obDrawerBody"></div>
+    <div class="side-panel-footer" id="obDrawerFoot"></div>
+  </div>
+  <div class="side-panel-overlay" id="obOverlay"></div>
+  
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/org-data.js"></script>
+  <script src="/scripts/roles.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/calendar-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/contract-terms.js"></script>
+  <script src="/scripts/ledger-data.js"></script>
+  <script src="/scripts/invoice-data.js"></script>
+  <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/orders-data.js"></script>
+  <script src="/scripts/orders-engine.js"></script>
+  <script src="/scripts/orders-ui.js"></script>
   <script src="/scripts/tracker-tabs.js"></script>
+  <script src="/scripts/orders-board.js"></script>
   <script src="/scripts/main.js"></script>
 </body>
 </html>

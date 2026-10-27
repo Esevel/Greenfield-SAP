@@ -2,69 +2,7 @@
 
 const HOLIDAY_TODAY = new Date(2026, 9, 16);
 
-const HC_COUNTRIES = [
-  { code: 'SG', flag: '🇸🇬', name: 'Singapore', tz: 'SGT (UTC+8)', days: [1, 2, 3, 4, 5], hours: '09:00–18:00', regions: ['Central', 'East', 'West (Tuas)'],
-    cutoff: '14:00', delays: [],
-    entries: [
-      ['2026-01-01', '2026-01-01', 'public', "New Year's Day"],
-      ['2026-02-17', '2026-02-18', 'public', 'Chinese New Year'],
-      ['2026-03-21', '2026-03-21', 'public', 'Hari Raya Puasa'],
-      ['2026-04-03', '2026-04-03', 'public', 'Good Friday'],
-      ['2026-05-01', '2026-05-01', 'public', 'Labour Day'],
-      ['2026-05-27', '2026-05-27', 'public', 'Hari Raya Haji'],
-      ['2026-05-31', '2026-06-01', 'public', 'Vesak Day (observed Mon)'],
-      ['2026-08-09', '2026-08-10', 'public', 'National Day (observed Mon)'],
-      ['2026-10-23', '2026-10-23', 'adhoc', 'Singapore Hub stocktake', 'Procurement · Country'],
-      ['2026-11-08', '2026-11-09', 'public', 'Deepavali (observed Mon)'],
-      ['2026-12-24', '2026-12-24', 'adhoc', 'Year-end courier cut-off', 'Both · Country'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day']
-    ] },
-  { code: 'MY', flag: '🇲🇾', name: 'Malaysia', tz: 'MYT (UTC+8)', days: [1, 2, 3, 4, 5], hours: '09:00–18:00', regions: ['Kuala Lumpur', 'Selangor', 'Penang', 'Johor'],
-    cutoff: '13:00', delays: [[1, 'Courier X depot move', '22 Oct']],
-    entries: [
-      ['2026-08-31', '2026-08-31', 'public', 'Merdeka Day'],
-      ['2026-09-16', '2026-09-16', 'public', 'Malaysia Day'],
-      ['2026-10-21', '2026-10-22', 'adhoc', 'Courier X depot move', 'Procurement · Region: Kuala Lumpur'],
-      ['2026-11-08', '2026-11-08', 'public', 'Deepavali'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day']
-    ] },
-  { code: 'ID', flag: '🇮🇩', name: 'Indonesia', tz: 'WIB (UTC+7)', days: [1, 2, 3, 4, 5], hours: '08:00–17:00', regions: ['Jakarta', 'Surabaya', 'Bali'],
-    cutoff: '12:00', delays: [[3, 'Indonesia customs', '30 Oct']],
-    entries: [
-      ['2026-08-17', '2026-08-17', 'public', 'Independence Day'],
-      ['2026-10-19', '2026-10-30', 'adhoc', 'Customs slowdown', 'Procurement · Country'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day']
-    ] },
-  { code: 'AU', flag: '🇦🇺', name: 'Australia', tz: 'AEDT (UTC+11)', days: [1, 2, 3, 4, 5], hours: '08:30–17:30', regions: ['NSW', 'VIC', 'QLD', 'WA'],
-    cutoff: '15:00', delays: [],
-    entries: [
-      ['2026-10-05', '2026-10-05', 'public', 'Labour Day (NSW)'],
-      ['2026-11-03', '2026-11-03', 'public', 'Melbourne Cup (VIC)'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day'],
-      ['2026-12-28', '2026-12-28', 'public', 'Boxing Day (observed)']
-    ] },
-  { code: 'US', flag: '🇺🇸', name: 'United States', tz: 'ET (UTC−4)', days: [1, 2, 3, 4, 5], hours: '09:00–18:00', regions: ['Northeast', 'Southeast', 'Midwest', 'West'],
-    cutoff: '15:00', delays: [[2, 'Hurricane routing, Southeast', '20 Oct']],
-    entries: [
-      ['2026-10-12', '2026-10-12', 'public', 'Columbus Day'],
-      ['2026-10-18', '2026-10-20', 'adhoc', 'Hurricane routing, Southeast', 'Both · Region: Southeast'],
-      ['2026-11-11', '2026-11-11', 'public', 'Veterans Day'],
-      ['2026-11-26', '2026-11-26', 'public', 'Thanksgiving'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day']
-    ] },
-  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom', tz: 'BST (UTC+1)', days: [1, 2, 3, 4, 5], hours: '09:00–17:30', regions: ['England', 'Scotland', 'Wales', 'Northern Ireland'],
-    cutoff: '14:00', delays: [],
-    entries: [
-      ['2026-08-31', '2026-08-31', 'public', 'Summer Bank Holiday'],
-      ['2026-12-25', '2026-12-25', 'public', 'Christmas Day'],
-      ['2026-12-28', '2026-12-28', 'public', 'Boxing Day (observed)']
-    ] },
-  { code: 'AE', flag: '🇦🇪', name: 'United Arab Emirates', tz: 'GST (UTC+4)', days: [1, 2, 3, 4, 5], hours: '09:00–18:00', regions: ['Dubai', 'Abu Dhabi'],
-    cutoff: '13:00', delays: [],
-    entries: [
-      ['2026-12-02', '2026-12-03', 'public', 'National Day']
-    ] }
-];
+// HC_COUNTRIES lives in calendar-data.js so business-hour SLAs can read it
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

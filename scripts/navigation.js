@@ -54,6 +54,10 @@ function initActiveNavigation() {
       link.classList.add('active');
     }
   });
+  
+  // A more specific match (e.g. Orders under the tracker) wins over its section link
+  const specific = [...navLinks].filter(l => l.classList.contains('active') && l.getAttribute('data-match'));
+  if (specific.length) navLinks.forEach(l => { if (!specific.includes(l) && l.getAttribute('data-page')) l.classList.remove('active'); });
 }
 
 // Generate breadcrumbs from current path
