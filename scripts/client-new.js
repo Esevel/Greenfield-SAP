@@ -1,17 +1,19 @@
 // New client: a step-by-step form that creates the client, its hub per country and a first contract (v1).
-// v1 is saved as a draft (edit further on the client page) or sent straight to the client admin for acceptance.
-// Free / Support / Secure / Complete add a seat subscription (seats committed for the term, billed yearly in advance); Enterprise is event-based.
+// v1 is saved as a draft (edit further on the client page) or sent as a registration link: the company owner registers,
+// sets a password and accepts. Free / Support / Secure / Complete are seat subscriptions whose term is the contract term
+// (billed yearly in advance); Enterprise has a contract term and is billed per event.
 // Needs hub-data.js, billing-data.js, contract-terms.js, billing-settings-data.js and markup-data.js.
 
 (function initClientNew() {
   const root = document.getElementById('cnRoot');
   const $ = id => document.getElementById(id);
   const STEPS = [
-    { id: 'company', label: 'Company' },
+    { id: 'company', label: 'Company and owner' },
     { id: 'countries', label: 'Countries and hubs' },
     { id: 'entities', label: 'Billing entities' },
+    { id: 'plan', label: 'Plan and subscription' },
     { id: 'pricing', label: 'Pricing and fees' },
-    { id: 'billing', label: 'Billing setup' },
+    { id: 'billing', label: 'Billing settings' },
     { id: 'review', label: 'Review' }
   ];
   const TERMS = [12, 24, 36];
@@ -28,7 +30,7 @@
 
   const d = {
     step: 0, seen: 0, errors: {},
-    name: '', logo: '', logoEdited: false, tier: 'Secure', start: '2026-11-01', seats: 10, seatPrice: null, total: null, subTerm: 12, addOns: [], term: 24, end: '',
+    name: '', logo: '', logoEdited: false, tier: 'Secure', start: '2026-11-01', seats: 10, seatPrice: null, total: null, addOns: [], addonPrices: {}, devicePrice: null, autoRenew: true, term: 12, end: '',
     admin: '', adminEmail: '',
     hubs: {},
     entities: [],
@@ -61,9 +63,7 @@
       if (!n) e.name = 'Enter the client name.';
       else if (WH_CLIENTS.some(c => c.name.toLowerCase() === n.toLowerCase())) e.name = `${n} is already a client.`;
       if (!d.logo.trim()) e.logo = 'Enter 1–3 letters.';
-      if (!d.start) e.start = 'Pick a start date.';
-      if (d.term === 'custom' && (!d.end || d.end <= d.start)) e.end = 'Term end must be after the start.';
-      if (!d.admin.trim()) e.admin = 'Who accepts the contract in the client portal?';
+      if (!d.admin.trim()) e.admin = 'Who is the company owner?';
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.adminEmail.trim())) e.adminEmail = 'Enter a valid email.';
     }
     if (step === 'countries' && !countries().length) e.countries = 'Choose at least one country.';
@@ -76,12 +76,16 @@
         if (x.contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x.contact)) e[`ent${i}contact`] = 'Enter a valid email.';
       });
     }
-    if (step === 'billing') {
+    if (step === 'plan') {
+      if (!d.start) e.start = 'Pick a start date.';
+      if (d.term === 'custom' && (!d.end || d.end <= d.start)) e.end = 'The end date must be after the start.';
       if (isSeatPlan(d.tier) && !(Number.isInteger(Number(d.seats)) && Number(d.seats) > 0)) e.seats = 'Enter a whole number of seats.';
+    }
+    if (step === 'billing') {
       if (!(d.cap.limit > 0)) e.capLimit = 'Enter a cap above zero.';
       if (!d.cap.renewal) e.capRenewal = 'Pick the first renewal date.';
     }
-    if (step === 'review' && !d.note.trim()) e.note = 'Add a note for the client admin.';
+    if (step === 'review' && !d.note.trim()) e.note = 'Add a note for the company owner.';
     return e;
   }
   const err = k => (d.errors[k] ? `<div class="form-error">${escapeHtml(d.errors[k])}</div>` : '');
@@ -102,9 +106,10 @@
       routing: [], managedUsers: { enabled: managedOn() },
       cap: { ...d.cap }, splitBy: [...d.splitBy], discounts: [],
       ...(isSeatPlan(d.tier) ? { subscription: {
-        term: { start: d.start, end: addDays(addMonthsIso(d.start, Number(d.subTerm)), -1) }, billTo: d.entities[0]?.id || 'e1', autoRenew: true,
+        term: { start: d.start, end: endDate() }, billTo: d.entities[0]?.id || 'e1', autoRenew: d.autoRenew,
         blocks: [{ id: 'b1', qty: Number(d.seats), price: Number(seatPrice()), from: d.start, note: 'Initial commitment' }],
-        addOns: d.addOns.filter(key => addonAvailability(d.tier, key) === 'addon').map(key => ({ key, price: planListPrice(PLAN_ADDONS[key].listUSD, subCur()), from: d.start })),
+        addOns: d.addOns.filter(key => addonAvailability(d.tier, key) === 'addon').map(key => ({ key, price: addonPrice(key), from: d.start })),
+        ...(d.devicePrice != null && !PLANS[d.tier].free ? { devicePrice: d.devicePrice } : {}),
         ...(d.total != null && !PLANS[d.tier].free ? { agreedTotal: d.total } : {})
       } } : {})
     };
@@ -117,14 +122,9 @@
       <div class="form-group cn-wide"><label class="form-label" for="cnName">Client name ${req}</label><input class="form-input" id="cnName" data-f="name" value="${escapeHtml(d.name)}" placeholder="e.g. Orbit Labs">${err('name')}</div>
       <div class="form-group"><label class="form-label" for="cnLogo">Logo initials ${req}</label>
         <div class="cn-logo-row"><div class="client-logo" id="cnLogoPrev">${escapeHtml(d.logo || '?')}</div><input class="form-input" id="cnLogo" data-f="logo" maxlength="3" value="${escapeHtml(d.logo)}"></div>${err('logo')}</div>
-      <div class="form-group"><label class="form-label" for="cnTier">Plan</label><select class="form-select" id="cnTier" data-f="tier">${PLAN_TIERS.map(t => opt(t, `${t}${PLANS[t].free ? ' · no charge' : PLANS[t].seat ? ` · USD ${PLANS[t].listUSD}/seat` : ' · per event'}`, d.tier)).join('')}</select>
-        <div class="input-helper">${escapeHtml(PLANS[d.tier].blurb)}. <a href="/pages/settings/billing.html?tab=plans" target="_blank" class="link-sm">Compare plans</a></div></div>
-      <div class="form-group"><label class="form-label" for="cnStart">Contract start ${req}</label><input type="date" class="form-input" id="cnStart" data-f="start" value="${d.start}">${err('start')}</div>
-      <div class="form-group"><label class="form-label" for="cnTerm">Term length</label><select class="form-select" id="cnTerm" data-f="term">${TERMS.map(m => opt(m, `${m} months`, d.term)).join('')}${opt('custom', 'Custom end date', d.term)}</select>
-        ${d.term === 'custom' ? `<input type="date" class="form-input cn-mt" id="cnEnd" data-f="end" value="${d.end}" aria-label="Term ends">${err('end')}` : `<div class="input-helper">Ends ${billingDate(endDate())}</div>`}</div>
       <div class="form-group"><label class="form-label" for="cnAdmin">Company owner (client admin) ${req}</label><input class="form-input" id="cnAdmin" data-f="admin" value="${escapeHtml(d.admin)}" placeholder="Full name">${err('admin')}
-        <div class="input-helper">Gets the registration link, completes company registration and sets a password, then accepts the contract and later amendments in the client portal.</div></div>
-      <div class="form-group"><label class="form-label" for="cnAdminEmail">Admin email ${req}</label><input type="email" class="form-input" id="cnAdminEmail" data-f="adminEmail" value="${escapeHtml(d.adminEmail)}" placeholder="it-admin@client.com">${err('adminEmail')}</div>
+        <div class="input-helper">Completes company registration, sets a password and accepts the subscription and later amendments in the company portal.</div></div>
+      <div class="form-group"><label class="form-label" for="cnAdminEmail">Owner email ${req}</label><input type="email" class="form-input" id="cnAdminEmail" data-f="adminEmail" value="${escapeHtml(d.adminEmail)}" placeholder="owner@client.com">${err('adminEmail')}<div class="input-helper">The registration link is sent here.</div></div>
     </div>`;
   }
 
@@ -208,9 +208,6 @@
       <table class="device-list-table fee-grid"><thead><tr><th>Event</th><th>Billable</th>${ccs.map(cc => `<th class="num">${WH_COUNTRIES[cc][0]} ${cc}</th>`).join('')}</tr></thead><tbody>${feeRows}</tbody></table>
       <div class="readonly-note"><span class="legend-custom"></span> Client exception · ${Object.keys(d.feeExceptions).length + d.offEvents.length || 'none, all standard'}. Only exceptions are stored, so later standard changes flow through.</div>
 
-      ${isSeatPlan(d.tier) ? '' : `<h4 class="cn-sub">Billable users</h4>
-      <label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" id="cnManaged" ${d.managed ? 'checked' : ''}><span class="toggle-slider"></span></span><span>Bill a monthly rate per user holding an Assigned laptop</span></label>
-      ${d.managed ? `<table class="device-list-table cn-mt"><thead><tr><th>Billing entity</th><th class="num">Rate / user / month</th></tr></thead><tbody>${d.entities.map((x, i) => `<tr><td>${escapeHtml(x.name || `Entity ${i + 1}`)}</td><td class="num"><span class="fee-input"><span class="text-muted">${x.currency}</span><input type="number" class="form-input" min="0" step="0.5" data-mu="${i}" value="${x.muRate}" aria-label="Rate for ${escapeHtml(x.name)}"></span></td></tr>`).join('')}</tbody></table>` : ''}`}
       <div class="readonly-note">Discounts and fixed-rate overrides can be added on the client page while v1 is a draft.</div>`;
   }
 
@@ -218,29 +215,63 @@
   const seatPrice = () => (PLANS[d.tier].free ? 0 : d.seatPrice ?? planListPrice(PLANS[d.tier].listUSD, subCur()));
   // Billable users are Enterprise only
   const managedOn = () => d.managed && !isSeatPlan(d.tier);
-  function seatsHtml() {
-    if (!isSeatPlan(d.tier)) return `<h4 class="cn-sub">Billing model</h4><div class="sub-event-model"><strong>Enterprise · event-based.</strong> No seat subscription. The client is billed for lifecycle events, billable users and device sales as set in the earlier steps. Billable users are only available on Enterprise.</div>`;
+  const addonPrice = key => d.addonPrices[key] ?? planListPrice(PLAN_ADDONS[key].listUSD, subCur());
+  const devicePrice = () => d.devicePrice ?? planListPrice(PLANS[d.tier].deviceUSD || 0, subCur());
+  const addonMonthly = () => d.addOns.filter(key => addonAvailability(d.tier, key) === 'addon').reduce((n, key) => n + addonPrice(key), 0);
+  const calcAnnual = () => Math.round(Number(d.seats) * (seatPrice() + addonMonthly()) * 12 * 100) / 100;
+
+  function planHtml() {
+    const seat = isSeatPlan(d.tier);
+    const free = !!PLANS[d.tier].free;
     const cur = subCur();
-    const subEnd = addDays(addMonthsIso(d.start, Number(d.subTerm)), -1);
-    const addons = Object.entries(PLAN_ADDONS).map(([key, a]) => {
+    const head = `<div class="cn-grid">
+        <div class="form-group cn-wide"><label class="form-label" for="cnTier">Plan</label><select class="form-select" id="cnTier" data-f="tier">${PLAN_TIERS.map(t => opt(t, `${t}${PLANS[t].free ? ' · no charge' : PLANS[t].seat ? ` · USD ${PLANS[t].listUSD}/seat/month` : ' · custom, per event'}`, d.tier)).join('')}</select>
+          <div class="input-helper">${escapeHtml(PLANS[d.tier].blurb)}. <a href="/pages/settings/billing.html?tab=plans" target="_blank" class="link-sm">Compare plans</a></div></div>
+        <div class="form-group"><label class="form-label" for="cnStart">Start date ${req}</label><input type="date" class="form-input" id="cnStart" data-f="start" value="${d.start}">${err('start')}</div>
+        <div class="form-group"><label class="form-label" for="cnTerm">${seat ? 'Subscription term' : 'Contract term'}</label><select class="form-select" id="cnTerm" data-f="term">${TERMS.map(m => opt(m, `${m} months`, d.term)).join('')}${opt('custom', 'Custom end date', d.term)}</select>
+          ${d.term === 'custom' ? `<input type="date" class="form-input cn-mt" id="cnEnd" data-f="end" value="${d.end}" aria-label="${seat ? 'Expires' : 'Ends'}">${err('end')}` : `<div class="input-helper">${seat ? 'Expires' : 'Ends'} ${d.start ? billingDate(endDate()) : '—'}</div>`}</div>
+        ${seat ? `<div class="form-group cn-wide"><label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" id="cnAutoRenew" ${d.autoRenew ? 'checked' : ''}><span class="toggle-slider"></span></span><span>Auto-renew for 12 months on the same seats</span></label>
+          <div class="input-helper">${d.autoRenew ? 'Renews automatically unless renewal terms are agreed first.' : `Flagged as renewal due ${SUB_RENEW_WARN_DAYS} days before expiry. ${free ? 'Free plans are restricted on the expiry date if not renewed.' : `Paid plans get a ${SUB_GRACE_DAYS}-day grace period after expiry, then access is restricted.`}`}</div></div>` : ''}
+      </div>`;
+    if (!seat) {
+      return `${head}
+        <h4 class="cn-sub">Billing model</h4><div class="sub-event-model"><strong>Enterprise · event-based.</strong> No seat subscription. The client is billed for lifecycle events (next step), device sales and, optionally, billable users.</div>
+        <h4 class="cn-sub">Billable users</h4>
+        <label class="toggle-switch-label"><span class="toggle-switch"><input type="checkbox" id="cnManaged" ${d.managed ? 'checked' : ''}><span class="toggle-slider"></span></span><span>Bill a monthly rate per user holding an Assigned laptop</span></label>
+        ${d.managed ? `<table class="device-list-table cn-mt"><thead><tr><th>Billing entity</th><th class="num">Rate / user / month</th></tr></thead><tbody>${d.entities.map((x, i) => `<tr><td>${escapeHtml(x.name || `Entity ${i + 1}`)}</td><td class="num"><span class="fee-input"><span class="text-muted">${x.currency}</span><input type="number" class="form-input" min="0" step="0.5" data-mu="${i}" value="${x.muRate}" aria-label="Rate for ${escapeHtml(x.name)}"></span></td></tr>`).join('')}</tbody></table>` : ''}
+        <div class="readonly-note">Billable users are only available on Enterprise.</div>`;
+    }
+    const addonRows = Object.entries(PLAN_ADDONS).map(([key, a]) => {
       const av = addonAvailability(d.tier, key);
-      return `<label class="sla-check">${av === 'addon' ? `<input type="checkbox" data-addon="${key}" ${d.addOns.includes(key) ? 'checked' : ''}> ${a.label} · +${fmtAmount(cur, planListPrice(a.listUSD, cur))}/seat` : `<span class="${av ? '' : 'text-muted'}">${a.label} · ${av ? 'included' : 'not available'}</span>`}</label>`;
+      const on = d.addOns.includes(key);
+      return `<tr class="${av === 'addon' && !on ? 'row-muted' : ''}"><td>${av === 'addon' ? `<label class="sla-check"><input type="checkbox" data-addon="${key}" ${on ? 'checked' : ''}> ${a.label}</label>` : a.label}</td>
+        <td class="num">${av === 'included' ? '<span class="tag tag-hub">Included</span>' : !av ? '<span class="text-muted">Not available</span>' : free ? '' : `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-addon-price="${key}" value="${addonPrice(key)}" aria-label="${a.label} price" ${on ? '' : 'disabled'}></span>`}</td></tr>`;
     }).join('');
-    const addAmt = d.addOns.reduce((n, key) => n + planListPrice(PLAN_ADDONS[key].listUSD, cur), 0);
-    return `<h4 class="cn-sub">${d.tier} seat subscription</h4>
+    const dev = PLANS[d.tier].devices;
+    return `${head}
+      <h4 class="cn-sub">Seats</h4>
       <div class="cn-grid">
-        <div class="form-group"><label class="form-label" for="cnSeats">Committed seats ${req}</label><input type="number" class="form-input" id="cnSeats" min="1" step="1" data-sub="seats" value="${d.seats}">${err('seats')}<div class="input-helper">Can be added during the term, not reduced until renewal.</div></div>
-        ${PLANS[d.tier].free ? '' : `<div class="form-group"><label class="form-label" for="cnSeatPrice">Price per seat / month</label><span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="cnSeatPrice" min="0" step="0.5" data-sub="seatPrice" value="${seatPrice()}"></span><div class="input-helper">List USD ${PLANS[d.tier].listUSD} ≈ ${fmtAmount(cur, planListPrice(PLANS[d.tier].listUSD, cur))}. Billed to ${escapeHtml(d.entities[0]?.name || 'the parent entity')}.</div></div>`}
-        <div class="form-group"><label class="form-label" for="cnSubTerm">Subscription term</label><select class="form-select" id="cnSubTerm" data-sub="subTerm">${[12, 24, 36].map(m => opt(m, `${m} months`, Number(d.subTerm))).join('')}</select><div class="input-helper">${billingDate(d.start)} – ${billingDate(subEnd)}, then auto-renews.</div></div>
-        <div class="form-group"><span class="form-label">Add-ons</span><div class="multi-checks">${addons}</div></div>
-        ${PLANS[d.tier].free ? '' : `<div class="form-group"><label class="form-label" for="cnTotal">Annual total</label><span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="cnTotal" min="0" step="1" data-sub="total" value="${d.total ?? ''}" placeholder="${Math.round(d.seats * (seatPrice() + addAmt) * 12 * 100) / 100}"></span><div class="input-helper">Leave blank to bill the calculated amount. Enter a figure to bill an agreed total each subscription year instead.</div></div>`}
+        <div class="form-group"><label class="form-label" for="cnSeats">Seats ${req}</label><input type="number" class="form-input" id="cnSeats" min="1" step="1" data-sub="seats" value="${d.seats}">${err('seats')}<div class="input-helper">One per user. Can be added during the term, not reduced until renewal.</div></div>
+        ${free ? '<div class="form-group"><span class="form-label">Price per seat</span><div class="detail-value">No charge</div><div class="input-helper">More seats are added automatically when users join, without an order.</div></div>' : `<div class="form-group"><label class="form-label" for="cnSeatPrice">Price per seat / month</label><span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="cnSeatPrice" min="0" step="0.5" data-sub="seatPrice" value="${seatPrice()}"></span><div class="input-helper">List USD ${PLANS[d.tier].listUSD} ≈ ${fmtAmount(cur, planListPrice(PLANS[d.tier].listUSD, cur))}, in the parent entity's currency (${cur}). Also the price of seats ordered mid-term.</div></div>`}
       </div>
-      <div class="readonly-note">${PLANS[d.tier].free ? `Free plan: ${d.seats} seats at no charge. More are added automatically when users join, without an order. The subscription still needs renewing; access is restricted for the client's domain if it isn't.` : `Annual fee, billed in advance: ${d.seats} × ${fmtAmount(cur, seatPrice() + addAmt)} × 12 = ${d.total != null ? `${fmtAmount(cur, d.seats * (seatPrice() + addAmt) * 12)}, agreed total <strong>${fmtAmount(cur, d.total)}</strong>` : `<strong>${fmtAmount(cur, d.seats * (seatPrice() + addAmt) * 12)}</strong>`}, plus lifecycle fees and device sales. Each seat covers ${PLANS[d.tier].devices} device${PLANS[d.tier].devices === 1 ? '' : 's'}. New users beyond these seats, or extra devices, need an order approved by the client admin, charged once pro rata for the rest of the subscription year.`}</div>`;
+      <h4 class="cn-sub">Add-ons</h4>
+      <table class="device-list-table"><thead><tr><th>Add-on</th><th class="num">${free ? '' : 'Price / seat / month'}</th></tr></thead><tbody>${addonRows}</tbody></table>
+      <h4 class="cn-sub">Devices per user</h4>
+      <div class="cn-grid">
+        <div class="form-group"><span class="form-label">Included per seat</span><div class="detail-value">${dev} device${dev === 1 ? '' : 's'} <span class="text-muted">· laptops and peripherals</span></div></div>
+        ${free ? '<div class="form-group"><span class="form-label">Extra devices</span><div class="detail-value">No charge</div></div>' : `<div class="form-group"><label class="form-label" for="cnDevPrice">Extra device / month</label><span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="cnDevPrice" min="0" step="0.5" data-sub="devicePrice" value="${devicePrice()}"></span><div class="input-helper">Users above the limit need an upgrade order, charged pro rata like seats.</div></div>`}
+      </div>
+      ${free ? `<div class="readonly-note">Free plan: ${d.seats} seats at no charge. The subscription still needs renewing; access is restricted for the client's domain if it isn't.</div>` : `<h4 class="cn-sub">Annual total</h4>
+      <div class="cn-grid">
+        <div class="form-group"><span class="form-label">Calculated</span><div class="detail-value">${d.seats} × ${fmtAmount(cur, seatPrice() + addonMonthly())} × 12 = <strong>${fmtAmount(cur, calcAnnual())}</strong></div><div class="input-helper">Seats${addonMonthly() ? ' and add-ons' : ''}, per subscription year</div></div>
+        <div class="form-group"><label class="form-label" for="cnTotal">Agreed total (optional)</label><span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="cnTotal" min="0" step="1" data-sub="total" value="${d.total ?? ''}" placeholder="${calcAnnual()}"></span><div class="input-helper">Leave blank to bill the calculated amount.</div></div>
+      </div>
+      <div class="readonly-note">Billed in advance at the start of each subscription year: <strong>${fmtAmount(cur, d.total ?? calcAnnual())}</strong>${d.total != null ? ' (agreed)' : ''}, plus lifecycle fees and device sales. New users beyond these seats, or extra devices, need an order approved by the company owner, charged once pro rata for the rest of the subscription year.</div>`}`;
   }
 
   function billingHtml() {
     const curs = Object.keys(FX_RATES);
-    return `${seatsHtml()}<h4 class="cn-sub">Currency and FX</h4>
+    return `<h4 class="cn-sub">Currency and FX</h4>
       <div class="cn-grid">
         <div class="form-group"><label class="form-label" for="cnFx">FX source</label><select class="form-select" id="cnFx" data-f="fxSource">${Object.entries(FX_SOURCES).map(([k, l]) => opt(k, l, d.fxSource)).join('')}</select></div>
         <div class="form-group"><label class="form-label" for="cnFxLock">Rate locks at</label><select class="form-select" id="cnFxLock" data-f="fxLock">${Object.entries(FX_LOCK_LABEL).map(([k, l]) => opt(k, l, d.fxLock)).join('')}</select></div>
@@ -261,20 +292,22 @@
   function reviewHtml() {
     const t = buildTerms();
     let last = '';
-    const rows = contractRows(t).filter(r => !r.path.startsWith('feeExceptions:') || r.text.indexOf('Standard') !== 0).map(r => {
+    // Seat plans don't have billable users, so their rows are left out
+    const seat = isSeatPlan(d.tier);
+    const rows = contractRows(t).filter(r => (!r.path.startsWith('feeExceptions:') || r.text.indexOf('Standard') !== 0) && !(seat && (r.section === 'managed' || r.path.endsWith('.muRate')))).map(r => {
       const head = r.section !== last ? `<tr class="compare-section"><td colspan="2">${CONTRACT_SECTIONS[r.section]}</td></tr>` : '';
       last = r.section;
       return `${head}<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.text)}</td></tr>`;
     }).join('');
     const hubs = countries().map(cc => `${ccLabel(cc)} → ${d.hubs[cc] === 'none' ? 'no hub (client sites)' : escapeHtml(WAREHOUSES.find(w => w.id === d.hubs[cc]).name)}`).join(' · ');
     return `<div class="cn-review-head">
-        <div class="client-cell"><div class="client-logo">${escapeHtml(d.logo)}</div><div><strong>${escapeHtml(d.name)}</strong><div class="stock-sub">${d.tier} · ${billingDate(d.start)} – ${billingDate(endDate())} · admin ${escapeHtml(d.admin)} (${escapeHtml(d.adminEmail)})</div></div></div>
+        <div class="client-cell"><div class="client-logo">${escapeHtml(d.logo)}</div><div><strong>${escapeHtml(d.name)}</strong><div class="stock-sub">${d.tier} · ${billingDate(d.start)} – ${billingDate(endDate())}${isSeatPlan(d.tier) ? (d.autoRenew ? ', auto-renews' : ', no auto-renew') : ''} · owner ${escapeHtml(d.admin)} (${escapeHtml(d.adminEmail)})</div></div></div>
         <div class="stock-sub cn-mt">Hubs: ${hubs}</div>
       </div>
       <table class="table doc-table compare-table cn-mt"><thead><tr><th>Term</th><th>v1 (initial contract)</th></tr></thead><tbody>${rows}</tbody></table>
       <div class="readonly-note">Fees not listed are at the Settings standard.</div>
-      <div class="form-group cn-mt"><label class="form-label" for="cnNote">Note to client admin ${req}</label><textarea class="form-textarea" id="cnNote" data-f="note" rows="2">${escapeHtml(d.note)}</textarea>${err('note')}</div>
-      <div class="readonly-note"><strong>Save as draft</strong> keeps v1 editable on the client page (only staff can see it). <strong>Send registration link</strong> locks the terms and emails ${escapeHtml(d.admin || 'the company owner')} a link to complete registration and set a password, then accept in their portal. The client becomes active, and can be billed and order, once they accept.</div>`;
+      <div class="form-group cn-mt"><label class="form-label" for="cnNote">Note to company owner ${req}</label><textarea class="form-textarea" id="cnNote" data-f="note" rows="2">${escapeHtml(d.note)}</textarea>${err('note')}</div>
+      <div class="readonly-note"><strong>Save as draft</strong> keeps v1 editable on the client page (only staff can see it). <strong>Send registration link</strong> locks the terms and emails ${escapeHtml(d.admin || 'the company owner')} a link to complete registration and set a password, then accept in their portal. The company becomes active, and can be billed and order, once they accept.</div>`;
   }
 
   /* ---------- Layout ---------- */
@@ -287,14 +320,16 @@
       <div class="client-cell cn-mb"><div class="client-logo">${escapeHtml(d.logo || '?')}</div><strong>${escapeHtml(d.name || 'New client')}</strong></div>
       <ul class="summary-lines">
         ${li('Plan', d.tier)}
-        ${isSeatPlan(d.tier) ? li('Seats', `${d.seats} × ${fmtAmount(subCur(), seatPrice())}`) : li('Billing', 'Per event')}
-        ${li('Term', d.start ? `${billingDate(d.start)} – ${billingDate(endDate())}` : '—')}
+        ${isSeatPlan(d.tier) ? li('Seats', PLANS[d.tier].free ? `${d.seats} · no charge` : `${d.seats} × ${fmtAmount(subCur(), seatPrice())} / month`) : li('Billing', 'Per event')}
+        ${isSeatPlan(d.tier) && !PLANS[d.tier].free ? li('Annual fee', `${fmtAmount(subCur(), d.total ?? calcAnnual())}${d.total != null ? ' (agreed)' : ''}`) : ''}
+        ${li(isSeatPlan(d.tier) ? 'Subscription' : 'Term', d.start ? `${billingDate(d.start)} – ${billingDate(endDate())}` : '—')}
+        ${isSeatPlan(d.tier) ? li('Auto-renew', d.autoRenew ? 'On' : 'Off') : ''}
         ${li('Countries', ccs.length ? ccs.map(cc => WH_COUNTRIES[cc][0]).join(' ') : '—')}
         ${li('Billing entities', d.entities.length || '—')}
         ${li('Invoice currencies', [...new Set(d.entities.map(x => x.currency))].join(' · ') || '—')}
         ${li('Retail adjustments', d.markup.length || 'None')}
         ${li('Fee exceptions', exc || 'None')}
-        ${li('Billable users', isSeatPlan(d.tier) ? 'Enterprise only' : d.managed ? 'On' : 'Off')}
+        ${isSeatPlan(d.tier) ? '' : li('Billable users', d.managed ? 'On' : 'Off')}
         ${li('Procurement cap', d.cap.limit > 0 && d.cap.currency ? fmtAmount(d.cap.currency, Number(d.cap.limit), 0) : '—')}
       </ul>
       <div class="readonly-note">Created as a pending subscription (contract v1). Nothing is billed until the owner registers and accepts.</div>
@@ -304,7 +339,7 @@
   function render() {
     syncDefaults();
     const s = STEPS[d.step];
-    const body = { company: companyHtml, countries: countriesHtml, entities: entitiesHtml, pricing: pricingHtml, billing: billingHtml, review: reviewHtml }[s.id]();
+    const body = { company: companyHtml, countries: countriesHtml, entities: entitiesHtml, plan: planHtml, pricing: pricingHtml, billing: billingHtml, review: reviewHtml }[s.id]();
     const last = d.step === STEPS.length - 1;
     root.innerHTML = `<ol class="cn-steps">${STEPS.map((x, i) => `<li class="cn-step ${i === d.step ? 'active' : ''} ${i < d.step || i <= d.seen ? 'done' : ''}">
         <button type="button" data-goto="${i}" ${i <= d.seen ? '' : 'disabled'}><span class="cn-step-num">${i < d.step ? '✓' : i + 1}</span>${x.label}</button></li>`).join('')}</ol>
@@ -395,7 +430,9 @@
     } else if (ds.mu !== undefined) {
       d.entities[Number(ds.mu)].muRate = Math.max(0, Number(el.value) || 0);
     } else if (ds.sub) {
-      d[ds.sub] = ds.sub === 'seats' ? Math.round(Number(el.value) || 0) : ds.sub === 'seatPrice' ? Math.max(0, Number(el.value) || 0) : ds.sub === 'total' ? (el.value === '' ? null : Math.max(0, Number(el.value) || 0)) : el.value;
+      d[ds.sub] = ds.sub === 'seats' ? Math.round(Number(el.value) || 0) : ds.sub === 'seatPrice' || ds.sub === 'devicePrice' ? Math.max(0, Number(el.value) || 0) : ds.sub === 'total' ? (el.value === '' ? null : Math.max(0, Number(el.value) || 0)) : el.value;
+    } else if (ds.addonPrice) {
+      d.addonPrices[ds.addonPrice] = Math.max(0, Number(el.value) || 0);
     } else if (ds.cap) {
       d.cap[ds.cap] = ds.cap === 'limit' ? Number(el.value) : el.value;
       if (ds.cap === 'currency') d.capCurEdited = true;
@@ -416,10 +453,12 @@
     } else if (ds.billable) d.offEvents = el.checked ? d.offEvents.filter(k => k !== ds.billable) : [...d.offEvents, ds.billable];
     else if (ds.split) d.splitBy = el.checked ? [...d.splitBy, ds.split] : d.splitBy.filter(k => k !== ds.split);
     else if (el.id === 'cnManaged') d.managed = el.checked;
+    else if (el.id === 'cnAutoRenew') d.autoRenew = el.checked;
+    else if (ds.addonPrice) later();
     else if (ds.addon) d.addOns = el.checked ? [...d.addOns, ds.addon] : d.addOns.filter(x => x !== ds.addon);
-    else if (ds.f === 'tier') { d.seatPrice = null; d.addOns = d.addOns.filter(key => addonAvailability(d.tier, key) === 'addon'); }
+    else if (ds.f === 'tier') { d.seatPrice = null; d.devicePrice = null; d.addOns = d.addOns.filter(key => addonAvailability(d.tier, key) === 'addon'); }
     else if (ds.sub === 'total') { d.total = el.value === '' ? null : Math.max(0, Number(el.value) || 0); later(); }
-    else if (ds.sub === 'seatPrice' || ds.sub === 'seats') later();
+    else if (ds.sub === 'seatPrice' || ds.sub === 'seats' || ds.sub === 'devicePrice') later();
     else if (ds.ent !== undefined && ds.k === 'currency' && !d.entities[Number(ds.ent)].settlement.includes(el.value)) d.entities[Number(ds.ent)].settlement.push(el.value);
     if (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'date') later();
   });
