@@ -13,11 +13,12 @@
   orderBindTiles($('obTiles'), f, render);
 
   const STAGES = slaType('regular').milestones;
-  // Lane an order sits in: blocked / paused lanes first, then its current stage; delivered and cancelled lanes for those filters
+  // Lane an order sits in: quotation pre-stage, then blocked/paused, then current SLA stage
   function laneOf(o) {
     const st = orderState(o);
     if (st === 'cancelled') return 'cancelled';
     if (st === 'complete') return 'done';
+    if (o.atQuotation) return 'quotation';
     if (st === 'pending' || st === 'hold') return 'blocked';
     if (st === 'paused') return 'paused';
     return orderSla(o).cur.key;
@@ -36,9 +37,9 @@
       <div class="card-recipient">${escapeHtml(o.recipient)} · ${orderFlag(o.cc)} · ${escapeHtml(orderVendorName(o.vendor))}</div>
       <div class="card-client">${escapeHtml(o.products.map(l => `${l.qty} × ${l.name}`).join(', '))}</div>
       ${orderFlagsHtml(o)}
-      ${st === 'cancelled' ? `<div class="card-client">Cancelled · ${escapeHtml(o.cancelled.reason)}</div>` : st === 'complete' ? `<div class="card-client">Delivered ${fmtOrderTs(o.deliveredAt)}</div>` : orderRunwayHtml(o)}
-      <div class="card-tags">${o.route !== 'hub' ? `<span class="route-tag">${SLA_ROUTES[o.route].short}</span>` : ''}${o.type !== 'regular' ? `<span class="tag-package">${slaType(o.type).name}</span>` : ''}${s.cur ? `<span class="sla-pill ${pillCls}">${pillText}</span>` : ''}</div>
-      <div class="card-bottom"><span>${escapeHtml(o.owner)}</span>${canQuick ? `<button type="button" class="btn-quick" data-quick="${o.id}" title="Mark ${escapeHtml(s.cur.m.label)} done now">✓ ${escapeHtml(s.cur.m.label)}</button>` : st === 'paused' ? `<button type="button" class="btn-quick" data-resume="${o.id}">▶ Resume</button>` : st === 'pending' ? `<button type="button" class="btn-quick" data-approve="${o.id}">Approve</button>` : ''}</div>
+      ${st === 'cancelled' ? `<div class="card-client">Cancelled · ${escapeHtml(o.cancelled.reason)}</div>` : st === 'complete' ? `<div class="card-client">Delivered ${fmtOrderTs(o.deliveredAt)}</div>` : o.atQuotation ? `<div class="card-client qt-ref-tag">Quotation ${escapeHtml(o.quotationRef)}</div>` : orderRunwayHtml(o)}
+      <div class="card-tags">${o.route !== 'hub' ? `<span class="route-tag">${SLA_ROUTES[o.route].short}</span>` : ''}${o.type !== 'regular' ? `<span class="tag-package">${slaType(o.type).name}</span>` : ''}${!o.atQuotation && s.cur ? `<span class="sla-pill ${pillCls}">${pillText}</span>` : ''}</div>
+      <div class="card-bottom"><span>${escapeHtml(o.owner)}</span>${o.atQuotation ? `<button type="button" class="btn-quick" data-move-quotation="${o.id}" title="Move to Submitted to vendor">→ Start workflow</button>` : canQuick ? `<button type="button" class="btn-quick" data-quick="${o.id}" title="Mark ${escapeHtml(s.cur.m.label)} done now">✓ ${escapeHtml(s.cur.m.label)}</button>` : st === 'paused' ? `<button type="button" class="btn-quick" data-resume="${o.id}">▶ Resume</button>` : st === 'pending' ? `<button type="button" class="btn-quick" data-approve="${o.id}">Approve</button>` : ''}</div>
     </div>`;
   }
 
@@ -58,8 +59,7 @@
     });
     const by = key => list.filter(o => laneOf(o) === key);
     const sg = SLA_DEFAULTS.regular.SG;
-    let html = column('blocked', 'Pending approval · Payment hold', 'Processing blocked', by('blocked'), 'board-column-blocked');
-    html += column('paused', '⏸ SLA paused', 'Clock stopped', by('paused'), 'board-column-paused');
+    let html = column('paused', '⏸ SLA paused', 'Clock stopped', by('paused'), 'board-column-paused');
     html += STAGES.map((m, i) => column(m.key, m.label, `${m.hubOnly ? 'Via hub only · ' : ''}SG standard ${sg[i]}h`, by(m.key))).join('');
     if (['all', 'cancelled', 'delivered'].includes(f.status)) {
       if (f.status !== 'cancelled') html += column('done', 'Delivered', '', by('done'), 'board-column-done');
@@ -93,6 +93,8 @@
     if (r) { resume(orderById(r.dataset.resume)); return; }
     const a = e.target.closest('[data-approve]');
     if (a) { orderTry(() => orderApprove(orderById(a.dataset.approve)), render); return; }
+    const mq = e.target.closest('[data-move-quotation]');
+    if (mq) { orderTry(() => orderMoveFromQuotation(orderById(mq.dataset.moveQuotation)), render); return; }
     const card = e.target.closest('.order-card');
     if (card) openDrawer(card.dataset.id);
   });
@@ -149,11 +151,14 @@
     const awb = (o.stages.awb?.awb || []);
     $('obDrawerBody').innerHTML = `
       ${orderFlagsHtml(o) ? `<div class="drawer-flags">${orderFlagsHtml(o)}</div>` : ''}
-      <div class="panel-section">
+      ${o.atQuotation ? `<div class="panel-section">
+        <h4 class="panel-section-title">Quotation stage</h4>
+        <div class="readonly-note">This order is linked to quotation <strong>${escapeHtml(o.quotationRef)}</strong> and has not yet entered the vendor workflow. Click <em>Start order workflow</em> to move it to Submitted to vendor.</div>
+      </div>` : `<div class="panel-section">
         <h4 class="panel-section-title">Stages</h4>
         <ol class="ms-track">${steps}</ol>
         <div class="readonly-note">Business hours in ${WH_COUNTRIES[o.cc][1]} (${calCountry(o.cc).hours}, ${calCountry(o.cc).tz}). Elapsed ${fmtBiz(s.elapsed, o.cc)} of ${fmtBiz(s.totalMins, o.cc)} end-to-end${s.cur ? ` · due ${fmtOrderTs(s.due)}` : ''}.</div>
-      </div>
+      </div>`}
       ${s.cur && s.cur.key === 'awb' ? `<div class="panel-section">
         <h4 class="panel-section-title">Shipping info</h4>
         <div class="awb-quick">
@@ -172,15 +177,18 @@
           <div class="info-row"><span class="info-label">Revenue</span><span class="info-value">${fmtAmount(o.currency, p.totalRev)}${p.tax.rate ? ` incl. ${escapeHtml(p.tax.label)}` : ''} ${marginBadge(p.pct)}</span></div>
           <div class="info-row"><span class="info-label">Expected delivery</span><span class="info-value">${fmtOrderDate(o.expected)}</span></div>
           <div class="info-row"><span class="info-label">Owner</span><span class="info-value">${escapeHtml(o.owner)}</span></div>
+          ${o.quotationRef ? `<div class="info-row"><span class="info-label">Quotation</span><span class="info-value"><a href="/pages/orders/quotations.html" class="order-qt-link" title="View quotation">${escapeHtml(o.quotationRef)}</a></span></div>` : ''}
         </div>
       </div>`;
     const block = orderBlockedReason(o);
     const paused = orderIsPaused(o);
     $('obDrawerFoot').innerHTML = `<a href="/pages/orders/order.html?id=${o.id}" class="btn btn-secondary">Open order</a>
-      ${orderPendingApproval(o) ? '<button type="button" class="btn btn-primary" id="dwApprove">Approve</button>' : ''}
-      ${o.paymentHold ? '<button type="button" class="btn btn-primary" id="dwRelease">Release hold</button>' : ''}
-      ${!block && s.cur ? `<button type="button" class="btn btn-secondary" id="dwPause">${paused ? '▶ Resume SLA' : '⏸ Pause SLA'}</button><button type="button" class="btn btn-primary" id="dwDone">Mark ${escapeHtml(s.cur.m.label)} done</button>` : ''}`;
+      ${o.atQuotation ? '<button type="button" class="btn btn-primary" id="dwMoveQuotation">→ Start order workflow</button>' : ''}
+      ${!o.atQuotation && orderPendingApproval(o) ? '<button type="button" class="btn btn-primary" id="dwApprove">Approve</button>' : ''}
+      ${!o.atQuotation && o.paymentHold ? '<button type="button" class="btn btn-primary" id="dwRelease">Release hold</button>' : ''}
+      ${!o.atQuotation && !block && s.cur ? `<button type="button" class="btn btn-secondary" id="dwPause">${paused ? '▶ Resume SLA' : '⏸ Pause SLA'}</button><button type="button" class="btn btn-primary" id="dwDone">Mark ${escapeHtml(s.cur.m.label)} done</button>` : ''}`;
     const on = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+    on('dwMoveQuotation', () => orderTry(() => orderMoveFromQuotation(o), render));
     on('dwDone', () => quickDone(o));
     on('dwApprove', () => orderTry(() => orderApprove(o), render));
     on('dwRelease', () => orderTry(() => orderSetHold(o, false), render));

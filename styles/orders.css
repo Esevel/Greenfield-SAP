@@ -34,6 +34,12 @@
   min-width: 0;
 }
 
+.board-column-quotation .board-column-header {
+  background-color: rgba(101, 84, 178, 0.08);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+.qt-ref-tag { color: #6553b8; font-size: 12px; font-weight: 600; }
+
 .board-column-blocked .board-column-header {
   background-color: rgba(245, 158, 11, 0.08);
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;

@@ -17,7 +17,10 @@ const HUB_ONLY = { hubOnly: true };
 // Received at hub and QC & dispatch only apply when the vendor ships to an Esevel hub.
 const ORDER_MILESTONES = () => [
   ms('submitted', 'Submitted to vendor', 'h'),
-  ms('confirmed', 'Confirmed by vendor', 'h'),
+  ms('quote_sent', 'Quotation sent for approval', 'h'),
+  ms('quote_approved', 'Quotation approved', 'h'),
+  ms('quote_released', 'Quotation released to client', 'h'),
+  ms('client_confirmed', 'Client confirmed', 'h'),
   ms('payment', 'Payment confirmed', 'h'),
   ms('awb', 'Shipping info (AWB)', 'h'),
   ms('received', 'Received at hub', 'h', HUB_ONLY),
@@ -49,11 +52,12 @@ const SLA_TYPES = [
     milestones: [ms('response', 'Response', 'h'), ms('resolution', 'Resolution', 'h')] }
 ];
 
+//               submitted  quote_sent  quote_approved  quote_released  client_confirmed  payment  awb  received  qc   out  delivered
 const SLA_BASE = {
-  regular: [9, 9, 9, 18, 36, 9, 18, 9],
-  rush: [4, 4, 4, 9, 18, 9, 9, 9],
-  bulk: [18, 18, 9, 27, 54, 18, 27, 9],
-  preorder: [9, 9, 9, 18, 36, 9, 18, 9],
+  regular:  [9,         9,          18,             9,              24,               9,       18,  36,       9,   18,  9],
+  rush:     [4,         4,          9,              4,              12,               4,       9,   18,       9,   9,   9],
+  bulk:     [18,        9,          18,             9,              36,               9,       27,  54,       18,  27,  9],
+  preorder: [9,         9,          18,             9,              24,               9,       18,  36,       9,   18,  9],
   stock: [4, 1, 1, 2],
   onboarding: [2, 3, 1, 1, 2, 1],
   offboarding: [2, 3, 3, 2, 5],
@@ -99,11 +103,12 @@ const SLA_DEFAULT_META = Object.fromEntries(SLA_TYPES.map(t => [t.key, { version
 
 // Sparse per-milestone overrides: null means the milestone follows the country default
 const SLA_OVERRIDES = {
-  'acme|regular|SG': [4, null, null, null, 27, null, 9, null],
+  // 11-element arrays: submitted, quote_sent, quote_approved, quote_released, client_confirmed, payment, awb, received, qc, out, delivered
+  'acme|regular|SG': [4, null, null, null, null, null, null, 27, null, 9, null],
   'acme|stock|SG': [2, null, null, 1],
-  'techglobal|rush|US': [2, null, null, null, null, null, null, null],
-  'techglobal|regular|US': [null, null, 4, null, null, null, 18, null],
-  'northwind|regular|SG': [null, null, null, null, null, null, 9, null],
+  'techglobal|rush|US': [2, null, null, null, null, null, null, null, null, null, null],
+  'techglobal|regular|US': [null, null, null, null, null, 4, null, null, null, 18, null],
+  'northwind|regular|SG': [null, null, null, null, null, null, null, null, null, 9, null],
   'northwind|repair|SG': [2, 1, 3, 1],
   'northwind|repair|US': [2, 1, 4, null],
   'northwind|support|SG': [1, 4],

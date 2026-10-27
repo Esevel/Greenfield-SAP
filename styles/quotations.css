@@ -113,6 +113,12 @@
 .qt-approve:hover { background: #d4f3e5; }
 .qt-reject { padding: 4px 9px; border: 1px solid #e07474; border-radius: 6px; color: #a63030; background: #fff2f2; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 .qt-reject:hover { background: #fde5e5; }
+.qt-convert { padding: 4px 9px; border: 1px solid #6553b8; border-radius: 6px; color: #4b3ca0; background: #f0edff; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.qt-convert:hover { background: #e3dffa; }
+.qt-order-link { color: #4b3ca0; font-size: 12px; font-weight: 700; text-decoration: none; }
+.qt-order-link:hover { text-decoration: underline; }
+.order-qt-link { color: #6553b8; font-size: 13px; font-weight: 650; text-decoration: none; }
+.order-qt-link:hover { text-decoration: underline; }
 
 /* Modal overlay */
 .qt-modal-overlay { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; background: #00000040; backdrop-filter: blur(2px); }

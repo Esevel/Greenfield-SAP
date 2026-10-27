@@ -3,7 +3,7 @@
 // browser session and posts Delivered charges to the Billing ledger when billing-engine.js is loaded.
 // Needs hub-data.js, supply-data.js, sla-data.js, calendar-data.js, billing-data.js and orders-data.js.
 
-const ORDERS_KEY = 'sap-orders-v1';
+const ORDERS_KEY = 'sap-orders-v2';
 const ORDER_TEMPLATES_KEY = 'sap-order-templates-v1';
 sessionStorage.removeItem('sap-order-tabs-v1');
 const ORDER_AT_RISK = 0.75;
@@ -263,6 +263,7 @@ function orderBuild(seed, rng) {
     orderedBy: ORDER_CLIENT_ADMIN[seed.client], owner: seed.owner || ORDER_OWNERS[Math.floor(rng() * ORDER_OWNERS.length)],
     ticket: seed.ticket || '', po: seed.po || '', costCentre: seed.costCentre || '', blocker: seed.blocker || '',
     approvalRequired: !!seed.approval, approval: seed.approval || '', paymentHold: !!seed.hold,
+    quotationRef: seed.quotationRef || '', atQuotation: !!seed.atQuotation,
     address: '', expected: seed.expected || '', notes: {}, audit: [], pauses: [], stages: {}, posted: false
   };
   o.products = orderProductsFrom(seed.lines, seed.client, cur, seed.delivered);
@@ -271,7 +272,13 @@ function orderBuild(seed, rng) {
   o.shippingRev = ship.rev;
   o.fees = (seed.fees || []).map(t => orderFee(t, o));
   if (!seed.fees && orderLaptops(o) && rng() < 0.35) o.fees.push(orderFee('Windows Autopilot', o));
-  orderSeedTimeline(o, seed, rng);
+  if (seed.atQuotation) {
+    // Orders in the Quotation pre-stage haven't entered the SLA workflow yet
+    o.createdAt = seed.created || orderIso(new Date(ORDER_NOW.getTime() - 2 * 864e5));
+    o.expected = seed.expected || '';
+  } else {
+    orderSeedTimeline(o, seed, rng);
+  }
   if (seed.cancelReason) {
     o.cancelled = { at: orderIso(new Date(new Date(o.createdAt).getTime() + 864e5 * 1.2)), by: seed.cancelBy || 'Ops', reason: seed.cancelReason };
     delete o.deliveredAt;
@@ -305,7 +312,7 @@ function orderGenerated() {
     const kit = pick([[['mbp14', 1], ['mxm3s', 1]], [['air13', 1]], [['xps15', 1], ['u2723', 1]], [['x1c', 1], ['mxm3s', 1], ['u2723', 1]], [['mbp14', 1], ['u2723', 2], ['magickb', 1]], [['air13', 2], ['mxm3s', 2]]]);
     return kit.map(([m, q]) => [m, q]);
   };
-  const stageKeys = ['submitted', 'confirmed', 'payment', 'awb', 'received', 'qc', 'out', 'delivered'];
+  const stageKeys = ['submitted', 'quote_sent', 'quote_approved', 'quote_released', 'client_confirmed', 'payment', 'awb', 'received', 'qc', 'out', 'delivered'];
   const next = () => `ORD-${n++}`;
   const make = extra => {
     const client = extra.client || pick(clients);
@@ -331,7 +338,7 @@ function orderGenerated() {
     out.push(make({ ...o0, at, frac }));
   }
   // One paused order
-  const p = make({ at: 'confirmed', frac: 0.5, route: 'hub' });
+  const p = make({ at: 'quote_approved', frac: 0.5, route: 'hub' });
   p.pauses.push({ at: orderIso(bizSub(p.cc, ORDER_NOW, 90)), by: 'Natasa', reason: 'Client asked to hold until their budget approval on 20 Oct' });
   p.audit.push({ at: p.pauses[0].at, who: 'Natasa', text: `SLA paused: ${p.pauses[0].reason}` });
   out.push(p);
@@ -520,6 +527,38 @@ function orderAddNote(o, stage, tag, text) {
   if (!text.trim()) throw new Error('Write a note first.');
   (o.notes[stage] = o.notes[stage] || []).push({ who: orderUser(), tag, text: text.trim(), at: orderNowIso() });
   saveOrders();
+}
+
+// Exposed globally so the Quotation page can call it without loading the full board
+window.orderConvertFromQuotation = function orderConvertFromQuotation(quote) {
+  const rng = orderRng(Date.now());
+  const clientObj = WH_CLIENTS.find(c => c.name === quote.client);
+  const clientId = clientObj ? clientObj.id : null;
+  if (!clientId) throw new Error(`Client "${quote.client}" not found in orders system.`);
+  const cc = quote.country || 'SG';
+  const vendorEntry = Object.entries(SUPPLY_SUPPLIERS).find(([, v]) => v.name === (SUPPLY_SUPPLIERS[quote.vendor]?.name || quote.vendor));
+  const vendorKey = vendorEntry ? vendorEntry[0] : (quote.vendor || 'ingram');
+  const seed = {
+    id: nextOrderId(), type: 'regular', client: clientId, cc, vendor: vendorKey,
+    priority: 'Normal', route: 'hub', lines: [['mbp14', Math.max(1, quote.quantity || 1)]],
+    quotationRef: quote.quoteNumber, atQuotation: true
+  };
+  const o = orderBuild(seed, rng);
+  // Clear any auto-generated stage timestamps — order hasn't actually started the SLA workflow yet
+  o.stages = {};
+  o.audit = [{ at: orderNowIso(), who: orderUser(), text: `Order created from quotation ${quote.quoteNumber}` }];
+  ORDERS.unshift(o);
+  saveOrders();
+  return o;
+};
+
+// Move an order out of the Quotation pre-stage and into the first SLA stage (Submitted to vendor)
+function orderMoveFromQuotation(o) {
+  if (!o.atQuotation) throw new Error('This order is not in the Quotation stage.');
+  o.atQuotation = false;
+  orderAudit(o, 'Moved from Quotation to Submitted to vendor');
+  saveOrders();
+  return `${o.id} is now in the order workflow.`;
 }
 
 /* ---------- Billing ---------- */
