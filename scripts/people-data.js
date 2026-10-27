@@ -215,3 +215,14 @@ function leaverMissing(p) {
   if (RETRIEVAL_METHODS[p.leaver.method].needsAddress && !p.address) m.push('return address');
   return m;
 }
+
+// Prototype only: keep queue and state changes for the browser session so they carry between pages
+const PEOPLE_KEY = 'sap-people-v1';
+const PEOPLE_FIELDS = ['state', 'phone', 'address', 'end', 'joiner', 'leaver'];
+function savePeople() {
+  sessionStorage.setItem(PEOPLE_KEY, JSON.stringify(Object.fromEntries(PEOPLE.map(p => [p.id, Object.fromEntries(PEOPLE_FIELDS.map(f => [f, p[f]]))]))));
+}
+try {
+  const saved = JSON.parse(sessionStorage.getItem(PEOPLE_KEY) || 'null');
+  if (saved) PEOPLE.forEach(p => { if (saved[p.id]) PEOPLE_FIELDS.forEach(f => { if (saved[p.id][f] !== undefined) p[f] = saved[p.id][f]; else delete p[f]; }); });
+} catch (e) { sessionStorage.removeItem(PEOPLE_KEY); }

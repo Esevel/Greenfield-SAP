@@ -28,7 +28,9 @@ function initAmendment() {
     const actions = [`<a class="btn btn-secondary" href="${clientHref(ver.v)}">${ver.status === 'draft' ? 'Edit draft' : 'View full terms'}</a>`];
     if (ver.status === 'pending') {
       actions.push('<button class="btn btn-secondary" id="amWithdraw">Withdraw</button>');
-      actions.push('<button class="btn btn-primary" id="amAccept" title="Prototype only: simulates the client admin accepting in their portal">Simulate client acceptance</button>');
+      // A new company's owner registers first (company details and password), then accepts the subscription
+      if (initial && !k.registeredAt) actions.push('<button class="btn btn-secondary" id="amResend">Resend link</button><button class="btn btn-primary" id="amRegister" title="Prototype only: simulates the owner completing registration">Simulate owner registration</button>');
+      else actions.push('<button class="btn btn-primary" id="amAccept" title="Prototype only: simulates the client admin accepting in their portal">Simulate client acceptance</button>');
     }
     $('amActions').innerHTML = actions.join('');
 
@@ -72,9 +74,14 @@ function initAmendment() {
     // Publish card (drafts only)
     $('amPublishCard').hidden = ver.status !== 'draft';
     $('amOnlyChanged').closest('label').style.display = initial ? 'none' : '';
-    $('amPublish').textContent = initial ? 'Send for acceptance' : 'Publish';
-    $('amPublishCard').querySelector('.card-title').textContent = initial ? 'Send to client admin' : 'Publish to client';
+    $('amPublish').textContent = initial ? 'Send registration link' : 'Publish';
+    $('amPublishCard').querySelector('.card-title').textContent = initial ? 'Send to company owner' : 'Publish to client';
     $('amPublish').disabled = !initial && !diffs.length;
+    if (ver.status === 'draft' && typeof subValidate === 'function') {
+      const errs = subValidate(activeVersion(k) ? contractTerms(k, activeVersion(k).v) : null, { ...ver.terms, tier: ver.terms.tier || k.tier }, $('amEffective').value);
+      $('amError').textContent = errs.join(' ');
+      $('amError').hidden = !errs.length;
+    }
     if (initial && ver.status === 'draft') {
       $('amEffective').value = $('amEffective').value || k.start;
       $('amNote').value = $('amNote').value || 'Initial contract';
@@ -100,6 +107,14 @@ function initAmendment() {
           <div class="info-row am-info"><span class="info-label">IP address</span><span class="info-value">${escapeHtml(ver.ip)}</span></div>
           <div class="info-row am-info"><span class="info-label">Version accepted</span><span class="info-value">v${ver.v}</span></div>
         </div>`;
+    } else if (ver.status === 'pending' && initial) {
+      const step = (done, label, sub) => `<li class="reg-step ${done ? 'reg-done' : ''}"><span class="reg-dot">${done ? '✓' : ''}</span><div><strong>${label}</strong><div class="stock-sub">${sub}</div></div></li>`;
+      accept = `<ol class="reg-steps">
+          ${step(true, 'Registration link sent', `${escapeHtml(k.adminEmail || clientAdminFor(k))} · ${escapeHtml(k.linkSentAt || ver.publishedAt || '')}`)}
+          ${step(!!k.registeredAt, 'Owner registered', k.registeredAt ? `${escapeHtml(clientAdminFor(k))} completed company registration and set a password · ${escapeHtml(k.registeredAt)}` : 'Waiting for the owner to open the link, complete company details and set a password')}
+          ${step(false, 'Subscription accepted', k.registeredAt ? `Waiting for ${escapeHtml(clientAdminFor(k))} to accept in the company portal` : 'After registration')}
+        </ol>
+        <div class="readonly-note">Terms stay locked; nothing is billed and orders can't be raised until the owner accepts. Withdraw to change terms.</div>`;
     } else if (ver.status === 'pending') {
       accept = `<div class="accept-wait">Waiting for ${escapeHtml(clientAdminFor(k))}</div><div class="readonly-note">Sent to the client admin in their portal. Terms stay locked; ${initial ? 'nothing is billed and orders can\'t be raised until the client accepts' : `the active contract (v${activeVersion(k).v}) keeps applying until acceptance`}.</div>`;
     } else if (ver.status === 'withdrawn') {
@@ -107,7 +122,7 @@ function initAmendment() {
     } else {
       accept = '<div class="text-muted">Not sent yet. The client admin accepts after you publish.</div>';
     }
-    $('amAcceptCard').innerHTML = `<div class="card-header"><h3 class="card-title">Client acceptance</h3></div><div class="card-body">${accept}</div>`;
+    $('amAcceptCard').innerHTML = `<div class="card-header"><h3 class="card-title">${initial && !ver.acceptedBy ? 'Registration and acceptance' : 'Client acceptance'}</h3></div><div class="card-body">${accept}</div>`;
   }
 
   function note(text) {
@@ -116,12 +131,16 @@ function initAmendment() {
   }
 
   $('amOnlyChanged').addEventListener('change', render);
+  $('amEffective').addEventListener('change', render);
   $('amEffective').min = '2026-10-17';
 
   $('amPublish').addEventListener('click', () => {
     const eff = $('amEffective').value;
     const txt = $('amNote').value.trim();
-    const msg = !eff ? 'Pick an effective date.' : !txt ? 'Add a note explaining the change for the client.' : '';
+    // Seats are committed for the subscription term: check the draft before it can be sent
+    const prevTerms = activeVersion(k) ? contractTerms(k, activeVersion(k).v) : null;
+    const subErr = typeof subValidate === 'function' ? subValidate(prevTerms, { ...ver.terms, tier: ver.terms.tier || k.tier }, eff) : [];
+    const msg = !eff ? 'Pick an effective date.' : !txt ? 'Add a note explaining the change for the client.' : subErr.length ? subErr.join(' ') : '';
     $('amError').textContent = msg;
     $('amError').hidden = !msg;
     if (msg) return;
@@ -129,8 +148,10 @@ function initAmendment() {
       // The first contract keeps its full terms; there is nothing earlier to diff against
       Object.assign(ver, { status: 'pending', effective: eff, note: txt, changes: [], publishedBy: 'You', publishedAt: '2026-10-16 16:40 SGT' });
       k.start = eff;
+      k.linkSentAt = '2026-10-16 16:40 SGT';
+      delete k.registeredAt;
       saveContracts();
-      note(`Sent to ${clientAdminFor(k)} for acceptance. ${client.name} becomes active once they accept.`);
+      note(`Registration link sent to ${clientAdminFor(k)}${k.adminEmail ? ` (${k.adminEmail})` : ''}. ${client.name} becomes active once they register and accept.`);
       return render();
     }
     const changes = contractDiff(contractTerms(k, activeVersion(k).v), ver.terms);
@@ -146,8 +167,20 @@ function initAmendment() {
     if (e.target.id === 'amWithdraw' && initial) {
       // Withdrawing the first contract sends it back to draft so terms can be changed and re-sent
       Object.assign(ver, { status: 'draft', publishedAt: '', publishedBy: '' });
+      delete k.registeredAt;
+      delete k.linkSentAt;
       saveContracts();
       note('Initial contract withdrawn and back in draft. Edit the terms, then send it again.');
+      render();
+    } else if (e.target.id === 'amRegister' && initial) {
+      k.registeredAt = '2026-10-16 17:05 SGT';
+      saveContracts();
+      note(`${clientAdminFor(k)} registered ${client.name} and set a password. Next: they accept the subscription in the company portal.`);
+      render();
+    } else if (e.target.id === 'amResend' && initial) {
+      k.linkSentAt = '2026-10-16 17:10 SGT';
+      saveContracts();
+      note(`Registration link sent again to ${k.adminEmail || clientAdminFor(k)}.`);
       render();
     } else if (e.target.id === 'amAccept' && initial) {
       const t = cloneTerms(ver.terms);
@@ -185,7 +218,7 @@ function initAmendment() {
   });
 
   render();
-  if (params.get('created')) note(`${client.name} created and the initial contract sent to ${clientAdminFor(k)}${k.adminEmail ? ` (${k.adminEmail})` : ''} for acceptance.`);
+  if (params.get('created')) note(`${client.name} created as a pending subscription. Registration link sent to ${clientAdminFor(k)}${k.adminEmail ? ` (${k.adminEmail})` : ''}.`);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAmendment);

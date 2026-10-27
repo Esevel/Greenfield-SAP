@@ -65,6 +65,7 @@ function chargeBasisText(e) {
   const b = e.basis;
   if (!b) return '';
   if (b.managed) return `${fmtAmount(e.cur, e.unit)} per user (entity rate)`;
+  if (b.subscription) return b.text || `${fmtAmount(e.cur, e.unit)} per seat per month`;
   if (b.device) return `Order revenue (products, shipping and fees, before tax) in ${e.cur}`;
   const fee = b.discount
     ? `${fmtAmount(b.feeCur, b.fee)} after ${b.discount.split(': ')[1]} on ${fmtAmount(b.feeCur, b.base)} ${b.custom ? 'contract exception' : 'standard fee'} (${WH_COUNTRIES[e.cc][1]})`

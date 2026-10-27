@@ -22,7 +22,10 @@
         <div class="page-header">
           <div class="flex-between">
             <h1 class="page-title">Clients</h1>
-            <a href="/pages/clients/new.html" class="btn btn-primary">New client</a>
+            <div class="header-actions">
+              <button type="button" class="btn btn-secondary" id="clQuick" title="Fast setup with defaults, for demos">Quick setup</button>
+              <a href="/pages/clients/new.html" class="btn btn-primary">New client</a>
+            </div>
           </div>
           <p class="page-description">Each client's contract: plan, billing entities, currency, fees and caps. Open a client to see or amend its terms.</p>
         </div>
@@ -32,7 +35,7 @@
           <a href="/pages/clients/caps.html" class="tab-link">Procurement caps</a>
         </nav>
         
-        <div class="inventory-summary stock-summary stock-summary-5" id="clTiles"></div>
+        <div class="inventory-summary stock-summary stock-summary-6" id="clTiles"></div>
         
         <div class="asset-toolbar">
           <div class="filter-chips stock-filters">
@@ -51,7 +54,8 @@
             <thead class="catalogue-table-header">
               <tr>
                 <th>Client</th>
-                <th>Plan tier</th>
+                <th>Plan</th>
+                <th>Seats / billing</th>
                 <th>Current version</th>
                 <th>Effective date</th>
                 <th>Status</th>
@@ -66,11 +70,30 @@
       </div>
     </main>
   </div>
+
+  <div class="modal-overlay" id="qsOverlay" role="dialog" aria-modal="true" aria-labelledby="qsTitle">
+    <div class="modal">
+      <div class="modal-header"><h3 class="modal-title" id="qsTitle">Quick company setup</h3><button type="button" class="modal-close" id="qsClose" aria-label="Close">&times;</button></div>
+      <div class="modal-body">
+        <p class="text-muted">Creates an active company with default settings, ready to use as soon as you log in. Recommended for demo setups; use <strong>New client</strong> for real onboarding.</p>
+        <div class="qs-grid">
+          <div class="form-group qs-wide"><label class="form-label" for="qsName">Company name</label><input class="form-input" id="qsName" placeholder="e.g. Orbit Labs Demo"></div>
+          <div class="form-group"><label class="form-label" for="qsCountry">Country</label><select class="form-select" id="qsCountry"></select></div>
+          <div class="form-group"><label class="form-label" for="qsTier">Plan</label><select class="form-select" id="qsTier"></select></div>
+          <div class="form-group qs-wide"><label class="form-label" for="qsEmail">Send login credentials to</label><input type="email" class="form-input" id="qsEmail" value="you@esevel.com"></div>
+        </div>
+        <ul class="qs-defaults" id="qsDefaults"></ul>
+        <div class="form-error" id="qsError" hidden></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" id="qsCancel">Cancel</button><button type="button" class="btn btn-primary" id="qsCreate">Create company</button></div>
+    </div>
+  </div>
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/subscription-data.js"></script>
   <script>
     (function () {
       const $ = id => document.getElementById(id);
@@ -80,6 +103,15 @@
       $('fTier').innerHTML = '<option value="">All</option>' + PLAN_TIERS.map(t => `<option>${t}</option>`).join('');
       $('fStatus').innerHTML = '<option value="">All</option>' + Object.entries(CONTRACT_STATUS).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
       $('fCur').innerHTML = '<option value="">All</option>' + curs.map(c => `<option>${c}</option>`).join('');
+
+      // Seats and subscription health for seat plans
+      function subCell(k) {
+        const sub = k.terms.subscription;
+        const st = subStatus(k);
+        const seats = subSeatsAt(sub, SUB_TODAY) || sub.blocks.reduce((n, b) => n + b.qty, 0);
+        const rate = PLANS[k.tier].free ? 'No charge' : subPeriod(sub) ? `${fmtAmount(subCurrency(k.terms), subAnnualRate(k.terms).amount)} / year` : `Term ended ${fmt(sub.term.end)}`;
+        return `${seats} seats${st && st.key !== 'active' ? ` <span class="badge ${st.cls} badge-sm">${st.label}</span>` : ''}<div class="stock-sub">${rate}</div>`;
+      }
 
       function render() {
         const q = $('clSearch').value.trim().toLowerCase();
@@ -91,12 +123,16 @@
         const tile = (label, value, sub = '', cls = '') => `<div class="summary-tile ${cls}"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div>${sub ? `<div class="summary-tile-sub">${sub}</div>` : ''}</div>`;
         const count = s => all.filter(r => r.k.status === s).length;
         const renewSoon = all.filter(r => r.k.status !== 'expired' && r.k.status !== 'onboarding' && r.k.end <= '2027-01-31').length;
+        const subSt = all.map(r => subStatus(r.k)).filter(Boolean);
+        const subDue = subSt.filter(st => st.key === 'due').length;
+        const subOut = subSt.filter(st => st.key === 'expired' || st.key === 'restricted').length;
         $('clTiles').innerHTML = [
-          tile('Onboarding', count('onboarding'), 'New clients, first contract not yet accepted', count('onboarding') ? 'summary-tile-alert' : ''),
+          tile('Onboarding', count('onboarding'), 'Pending subscriptions: draft, registering or awaiting acceptance', count('onboarding') ? 'summary-tile-alert' : ''),
           tile('Active', count('active')),
           tile('Amendment pending', count('amendment'), 'Waiting for client admin acceptance', count('amendment') ? 'summary-tile-alert' : ''),
           tile('Expired', count('expired'), 'Billing continues on last accepted terms', count('expired') ? 'summary-tile-breached' : ''),
-          tile('Renewing by Jan 2027', renewSoon)
+          tile('Renewing by Jan 2027', renewSoon),
+          tile('Subscriptions', `${subDue} due · ${subOut} lapsed`, 'Renewal due in 90 days; expired or restricted', subOut ? 'summary-tile-breached' : subDue ? 'summary-tile-alert' : '')
         ].join('');
 
         $('clRows').innerHTML = rows.map(({ c, k }) => {
@@ -106,7 +142,8 @@
             return `<tr data-id="${c.id}" tabindex="0">
             <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}</span></div></td>
             <td>${k.tier}</td>
-            <td>—<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : 'awaiting acceptance'}</div></td>
+            <td>${k.terms.subscription ? `${k.terms.subscription.blocks.reduce((n, b) => n + b.qty, 0)} seats` : '<span class="text-muted">Per event</span>'}</td>
+            <td>—<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : k.registeredAt ? 'registered · awaiting acceptance' : 'registration link sent'}</div></td>
             <td>${fmt(k.start)}<div class="stock-sub">Proposed start</div></td>
             <td><span class="badge ${CONTRACT_STATUS.onboarding[1]} badge-sm">${CONTRACT_STATUS.onboarding[0]}</span></td>
             <td>${contractCurrencies(k.terms).map(c => `<span class="cur-pill">${c}</span>`).join(' ')}</td>
@@ -116,15 +153,16 @@
           const [sLabel, sCls] = CONTRACT_STATUS[k.status];
           const ents = k.terms.entities;
           return `<tr data-id="${c.id}" tabindex="0">
-            <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}</span></div></td>
+            <td><div class="client-cell"><div class="client-logo">${escapeHtml(c.logo)}</div><span>${escapeHtml(c.name)}${k.setup === 'quick' ? ' <span class="tag">Quick setup</span>' : ''}</span></div></td>
             <td>${k.tier}</td>
+            <td>${k.terms.subscription ? subCell(k) : '<span class="text-muted">Per event</span>'}</td>
             <td>v${v.v}${p ? `<div class="stock-sub">v${p.v} ${p.status === 'draft' ? 'draft' : 'awaiting acceptance'}</div>` : ''}</td>
             <td>${fmt(v.effective)}<div class="stock-sub">Term ends ${fmt(k.end)}</div></td>
             <td><span class="badge ${sCls} badge-sm">${sLabel}</span></td>
             <td>${contractCurrencies(k.terms).map(c => `<span class="cur-pill">${c}</span>`).join(' ')}</td>
             <td>${ents.length} <span class="text-muted">· ${ents.map(e => `${WH_COUNTRIES[e.country][0]} ${e.currency}`).join(' · ')}</span></td>
           </tr>`;
-        }).join('') || '<tr><td colspan="7" class="text-muted sla-empty">No clients match</td></tr>';
+        }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No clients match</td></tr>';
         $('clCount').textContent = `${rows.length} of ${all.length} clients`;
       }
 
@@ -133,6 +171,62 @@
       $('clRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
       ['fTier', 'fStatus', 'fCur'].forEach(id => $(id).addEventListener('change', render));
       $('clSearch').addEventListener('input', render);
+
+      // Quick setup: one seat plan, today + 1 year, 50 seats, standard fees, active straight away
+      const QS_SEATS = 50;
+      const qsEnd = () => addDays(addMonthsIso(SUB_TODAY, 12), -1);
+      $('qsCountry').innerHTML = Object.keys(COUNTRY_CURRENCY).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][0]} ${WH_COUNTRIES[cc][1]}</option>`).join('');
+      $('qsTier').innerHTML = PLAN_TIERS.filter(isSeatPlan).map(t => `<option ${t === 'Secure' ? 'selected' : ''}>${t}</option>`).join('');
+      function qsDefaults() {
+        const cc = $('qsCountry').value;
+        const cur = COUNTRY_CURRENCY[cc];
+        const tier = $('qsTier').value;
+        const price = planListPrice(PLANS[tier].listUSD, cur);
+        $('qsDefaults').innerHTML = [
+          `Starts today (${fmt(SUB_TODAY)}), expires ${fmt(qsEnd())}, auto-renews`,
+          `${QS_SEATS} seats on ${tier}${PLANS[tier].free ? ', no charge' : ` at list price ${fmtAmount(cur, price)} / seat / month (${fmtAmount(cur, price * 12 * QS_SEATS)} / year)`}`,
+          `One billing entity in ${WH_COUNTRIES[cc][1]} (${cur}), standard fees, no hub assigned`,
+          'Seats, prices, term and entities can be changed afterwards on the client page'
+        ].map(x => `<li>${escapeHtml(x)}</li>`).join('');
+      }
+      const qsOpen = () => { $('qsError').hidden = true; qsDefaults(); $('qsOverlay').classList.add('show'); $('qsName').focus(); };
+      const qsClose = () => $('qsOverlay').classList.remove('show');
+      $('clQuick').addEventListener('click', qsOpen);
+      ['qsClose', 'qsCancel'].forEach(id => $(id).addEventListener('click', qsClose));
+      $('qsOverlay').addEventListener('click', e => { if (e.target.id === 'qsOverlay') qsClose(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') qsClose(); });
+      ['qsCountry', 'qsTier'].forEach(id => $(id).addEventListener('change', qsDefaults));
+      $('qsCreate').addEventListener('click', () => {
+        const name = $('qsName').value.trim();
+        const email = $('qsEmail').value.trim();
+        const err = !name ? 'Enter a company name.' : WH_CLIENTS.some(c => c.name.toLowerCase() === name.toLowerCase()) ? 'A client with this name already exists.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? 'Enter a valid email for the credentials.' : '';
+        $('qsError').textContent = err;
+        $('qsError').hidden = !err;
+        if (err) return;
+        const cc = $('qsCountry').value;
+        const cur = COUNTRY_CURRENCY[cc];
+        const tier = $('qsTier').value;
+        const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 16) || 'client';
+        let id = base;
+        for (let n = 2; WH_CLIENTS.some(c => c.id === id) || CONTRACTS[id]; n++) id = `${base}${n}`;
+        const logo = name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+        const terms = {
+          countries: [cc], fxSource: 'ecb', fxLock: 'milestone',
+          entities: [{ id: 'e1', name, country: cc, taxId: '', contact: email, parent: null, currency: cur, settlement: [cur], taxStatus: 'Registered', taxNote: '', ior: 'esevel', muRate: 0 }],
+          feeExceptions: {}, offEvents: [], pricing: { markup: [], note: '' }, routing: [], managedUsers: { enabled: false },
+          cap: { limit: 100000, currency: cur, period: 'Annual', renewal: addMonthsIso(SUB_TODAY, 12) }, splitBy: ['entity'], discounts: [],
+          subscription: { term: { start: SUB_TODAY, end: qsEnd() }, billTo: 'e1', autoRenew: true, addOns: [],
+            blocks: [{ id: 'b1', qty: QS_SEATS, price: planListPrice(PLANS[tier].listUSD, cur), from: SUB_TODAY, note: 'Quick setup' }] }
+        };
+        WH_CLIENTS.push({ id, name, logo, isNew: true });
+        HUB_ASSIGNMENTS[id] = { [cc]: 'none' };
+        CONTRACTS[id] = { tier, start: SUB_TODAY, end: qsEnd(), status: 'active', admin: 'Esevel staff', adminEmail: email, setup: 'quick', terms,
+          versions: [{ v: 1, status: 'active', effective: SUB_TODAY, note: 'Quick company setup (default settings)', changes: [], createdBy: 'You', acceptedBy: 'Quick setup', acceptedAt: '2026-10-16 17:20 SGT', ip: '—' }] };
+        CAP_SPEND[id] = { byEntity: {}, orders: [] };
+        saveNewClients();
+        saveContracts();
+        location.href = `/pages/clients/detail.html?c=${id}&quick=1`;
+      });
       render();
     })();
   </script>

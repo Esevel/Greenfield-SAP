@@ -1,11 +1,11 @@
 // Needs attention: one queue across Orders, Services and Support with everything breached, at risk, blocked or
 // unassigned. Orders and services come from TRACKER_ITEMS (orders join via orderTrackerItems), tickets from
-// support-data.js. Filters: kind tabs, health tiles, client, country, owner and "mine".
+// support-data.js, subscriptions and seat orders from subscription-data.js and seats-data.js. Filters: kind tabs, health tiles, client, country, owner and "mine".
 // Needs tracker-sla.js, orders-engine.js and support-data.js.
 
 (function initAttention() {
   const $ = id => document.getElementById(id);
-  const KIND = { orders: ['📦', 'Orders'], services: ['🛠', 'Services'], support: ['💬', 'Support'] };
+  const KIND = { orders: ['📦', 'Orders'], services: ['🛠', 'Services'], support: ['💬', 'Support'], subscriptions: ['💳', 'Subscriptions'] };
   const KEY = 'sap-attention-filters-v1';
   const def = () => ({ kind: 'all', health: 'all', client: '', cc: '', owner: '' });
   let f;
@@ -31,7 +31,31 @@
       };
     }).filter(r => r.health === 'breached' || r.health === 'risk' || r.blocked);
     const support = supportAttentionItems().map(r => ({ ...r, kind: 'support', typeLabel: 'Support', where: r.stage, sub: r.title, blocked: !!r.blocker, owner: r.owner || '' }));
-    return [...tracker, ...support];
+    return [...tracker, ...support, ...subscriptionItems()];
+  }
+
+  // Seat subscriptions: renewal due, expired (grace) or restricted, and seat orders waiting for the client admin
+  function subscriptionItems() {
+    if (typeof subStatus !== 'function') return [];
+    const rows = [];
+    Object.entries(CONTRACTS).forEach(([id, k]) => {
+      const st = subStatus(k);
+      if (!st) return;
+      const cc = parentEntity(k.terms).country;
+      const href = `/pages/clients/detail.html?c=${id}#sec-subscription`;
+      const base = { kind: 'subscriptions', icon: '💳', client: id, cc, owner: '', note: null, href };
+      if (st.key !== 'active') {
+        const days = st.key === 'due' ? st.left : st.key === 'expired' ? SUB_GRACE_DAYS - st.since : -st.since;
+        rows.push({ ...base, id: `SUB-${id.toUpperCase().slice(0, 4)}`, typeLabel: `Subscription · ${k.tier}`, where: st.label, sub: st.text,
+          health: st.key === 'due' ? 'risk' : 'breached', ratio: st.key === 'due' ? 1 - st.left / SUB_RENEW_WARN_DAYS : 1, left: days * 1440,
+          blocker: st.key === 'due' ? '' : st.key === 'expired' ? 'Notifications paused until renewed' : 'Client access restricted',
+          blocked: st.key !== 'due', timeText: st.key === 'due' ? `${st.left} days to term end` : st.key === 'expired' ? `Restricted in ${days} days` : `Restricted ${st.since - SUB_GRACE_DAYS > 0 ? `${st.since - SUB_GRACE_DAYS} days` : 'today'}` });
+      }
+      if (typeof seatOrdersFor === 'function') seatOrdersFor(id, 'pending').forEach(o => rows.push({ ...base, id: o.id, typeLabel: o.seat ? 'Seat order' : 'Device upgrade', where: 'Waiting for client admin',
+        sub: `${seatOrderLabel(o)} for ${o.name} · ${fmtAmount(o.cur, o.amount)} one-off · onboarding on hold`, health: 'risk', ratio: 0.9, left: 0, blocker: `Approval from ${o.admin}`, blocked: true,
+        timeText: `Raised ${billingDateSub(o.created)}`, href: o.pid ? `/pages/people/joiners.html?open=${o.pid}` : href }));
+    });
+    return rows;
   }
 
   const RANK = { breached: 0, risk: 1, ok: 2, complete: 3 };
@@ -83,7 +107,7 @@
         <td><span class="note-preview">${r.note ? `<strong>${escapeHtml(r.note.who)}:</strong> ${escapeHtml(r.note.text)}` : ''}</span></td>
       </tr>`;
     }).join('') || '<tr><td colspan="8" class="text-muted sla-empty">Nothing needs attention with these filters. 🎉</td></tr>';
-    $('naCount').textContent = `${rows.length} of ${all.length} items · breached first, then by share of the stage used · Orders and services use stage targets; Support uses first response, then resolution`;
+    $('naCount').textContent = `${rows.length} of ${all.length} items · breached first, then by share of the stage used · Orders and services use stage targets; Support uses first response, then resolution; Subscriptions flag renewals due in ${SUB_RENEW_WARN_DAYS} days, lapsed terms and seat orders`;
   }
 
   document.addEventListener('click', e => {

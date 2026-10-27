@@ -3,7 +3,7 @@
 
 function initBillingSettings() {
   const $ = id => document.getElementById(id);
-  const tab = ['fees', 'tax', 'fx'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'fees';
+  const tab = ['plans', 'fees', 'tax', 'fx'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'plans';
   const clientName = id => WH_CLIENTS.find(c => c.id === id).name;
   const effective = r => `${billingDate(r.from)}${r.to ? ` → ${billingDate(r.to)}` : ' → open'}`;
   const note = t => { $('bsSaved').textContent = `✓ ${t}`; $('bsSaved').hidden = false; };
@@ -163,6 +163,29 @@ function initBillingSettings() {
       </tr>`).join('');
   }
 
+  /* Plans: list price per seat, add-ons, clients on each plan and the feature matrix */
+  function renderPlans() {
+    const on = tier => Object.entries(CONTRACTS).filter(([, kk]) => kk.tier === tier && kk.status !== 'expired');
+    $('plCards').innerHTML = PLAN_TIERS.map(tier => {
+      const p = PLANS[tier];
+      const clients = on(tier);
+      const seats = clients.reduce((n, [, kk]) => n + (kk.terms.subscription ? subSeatsAt(kk.terms.subscription, SUB_TODAY) : 0), 0);
+      const addons = Object.entries(PLAN_ADDONS).map(([, a]) => a.plans[tier] ? `<li>${a.label}: ${a.plans[tier] === 'included' ? 'included' : `+ USD ${a.listUSD} / seat / month`}</li>` : '').join('');
+      return `<div class="plan-card ${p.seat ? '' : 'plan-card-enterprise'}">
+        <div class="plan-name">${tier}</div>
+        <div class="plan-price">${p.free ? 'Free<span> · seats at no charge</span>' : p.seat ? `USD ${p.listUSD}<span> / seat / month · billed yearly</span>` : 'Custom<span> · per event</span>'}</div>
+        ${p.seat ? `<div class="plan-devices">${p.devices} device${p.devices === 1 ? '' : 's'} per user${p.free ? '' : ` · extra USD ${p.deviceUSD} / device / month`}</div>` : ''}
+        <div class="plan-blurb">${escapeHtml(p.blurb)}</div>
+        ${addons ? `<ul class="plan-addons">${addons}</ul>` : ''}
+        <div class="plan-meta">${clients.length} client${clients.length === 1 ? '' : 's'}${p.seat ? ` · ${seats} ${p.free ? '' : 'committed '}seats` : ''}${clients.length ? `<div class="stock-sub">${clients.map(([id]) => escapeHtml(clientName(id))).join(', ')}</div>` : ''}</div>
+      </div>`;
+    }).join('');
+    const cell = v => (v === true ? '<span class="plan-yes" aria-label="Included">✓</span>' : v === 'addon' ? '<span class="plan-addon">Add-on</span>' : '<span class="plan-no" aria-label="Not included">—</span>');
+    $('plHead').innerHTML = `<tr><th>Features</th>${PLAN_TIERS.map(t => `<th class="plan-col">${t}</th>`).join('')}</tr>`;
+    $('plRows').innerHTML = PLAN_FEATURES.map(([group, rows]) => `<tr class="compare-section"><td colspan="${PLAN_TIERS.length + 1}">${group}</td></tr>${rows.map(([name, ...v]) => `<tr><td>${name}</td>${v.map(x => `<td class="plan-col">${cell(x)}</td>`).join('')}<td class="plan-col"><span class="plan-custom">Per contract</span></td></tr>`).join('')}`).join('');
+  }
+
+  renderPlans();
   renderFees();
   renderTax();
   renderFx();

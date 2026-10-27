@@ -217,8 +217,149 @@ function initClientDetail() {
         ${fieldHtml(CONTRACT_FIELDS.overview[1], t, cmp)}
         <div><div class="detail-label">Countries</div><div class="detail-value">${t.countries.map(cc => `${WH_COUNTRIES[cc][0]} ${cc}`).join(' · ')}</div></div>
         <div><div class="detail-label">Invoice currencies</div><div class="detail-value">${contractCurrencies(t).join(' · ')}</div></div>
+        <div><div class="detail-label">Billing model</div><div class="detail-value">${t.subscription ? `${t.subscription.blocks.reduce((n, b) => n + b.qty, 0)} seats · ${PLANS[t.tier].free ? 'no charge' : `${fmtAmount(subCurrency(t), subAnnualRate(t, [SUB_TODAY, t.subscription.term.start].sort().pop()).amount)} / year in advance`} + lifecycle fees · <a href="#sec-subscription" class="link-sm">Plan & seats</a>` : 'Per lifecycle event (no seat subscription)'}</div></div>
         <div><div class="detail-label">SLAs</div><div class="detail-value">${exc ? `${exc} client exception${exc === 1 ? '' : 's'}` : 'Standard SLAs'} · <a href="/pages/sla-config/exceptions.html?client=${client.id}" class="link-sm">SLA configuration</a></div></div>
       </div>`;
+  }
+
+  /* Seat ledger, subscription status and seat orders (live view of the active contract) */
+  function subStatusHtml(st, t) {
+    const pending = pendingVersion(k);
+    const renewBtn = !pending ? '<button type="button" class="btn btn-primary btn-sm" data-sub-renew>Renew subscription…</button>' : `<a class="btn btn-secondary btn-sm" href="${amendHref(pending.v)}">Open v${pending.v}</a>`;
+    if (st.key === 'active') return `<div class="sub-status sub-status-ok"><span class="badge ${st.cls} badge-sm">${st.label}</span> ${escapeHtml(st.text)}</div>`;
+    const msg = {
+      due: `Renewal due · ${escapeHtml(st.text)}. The client keeps working until the term ends. Agree renewal terms (seats can go down here) or turn on auto-renew.`,
+      expired: `${escapeHtml(st.text)}. Password and MFA expiry notifications are paused until the subscription is renewed. Only available seats can be assigned; seats can’t be ordered.`,
+      restricted: `${escapeHtml(st.text)}${PLANS[t.tier].free ? ' (Free plans restrict at the renewal date)' : ` since ${billingDate(addDays(st.graceEnd, 1))}`}. New users can’t be added and notifications are paused. The client has been asked to contact support@esevel.com about their JumpCloud users and devices.`
+    }[st.key];
+    return `<div class="sub-status sub-status-${st.key}"><span class="badge ${st.cls} badge-sm">${st.label}</span><span>${msg}</span>${renewBtn}</div>`;
+  }
+
+  function seatsHtml(c, cur) {
+    const tile = (label, value, sub, cls = '') => `<div class="seat-tile ${cls}"><div class="seat-tile-label">${label}</div><div class="seat-tile-value">${value}</div><div class="seat-tile-sub">${sub}</div></div>`;
+    const led = SEATS[client.id];
+    const pct = x => (c.total ? (x / c.total) * 100 : 0);
+    return `<div class="seat-tiles">
+        ${tile('Initial seats', c.initial, 'Bought at the start of the term')}
+        ${tile('Total seats', c.total, c.added ? `${c.initial} initial + ${c.added} added` : 'No seats added this term')}
+        ${tile('Active', c.active, 'Active, onboarding or offboarding users')}
+        ${tile('Available', c.available, 'Assign without an order', c.available ? '' : 'seat-tile-alert')}
+        ${tile('Used', c.used, 'Used twice; cleared at renewal')}
+      </div>
+      <div class="seat-bar" aria-label="${c.active} active, ${c.available} available, ${c.used} used of ${c.total}">
+        <span class="seat-bar-active" style="width:${pct(c.active)}%"></span><span class="seat-bar-used" style="width:${pct(c.used)}%"></span>
+      </div>
+      <div class="seat-legend"><span><i class="seat-dot seat-dot-active"></i>Active ${c.active}</span><span><i class="seat-dot seat-dot-available"></i>Available ${c.available}</span><span><i class="seat-dot seat-dot-used"></i>Used ${c.used}</span><span class="text-muted">Total ${c.total} = ${c.active} + ${c.available} + ${c.used}</span>${led.cleared ? `<span class="text-muted">· ${led.cleared} used seats cleared at renewal</span>` : ''}</div>
+      <details class="seat-roster"><summary>Seat roster (${c.total}) · plan price per user</summary>
+        <div class="readonly-note">Plan price shows <strong>-</strong> when the seat was already paid for: bought in the initial subscription, reused after its first user left, or covered by the renewal. It shows the order amount when this user's seat or extra devices were bought this term. Renewal resets every user to -.</div>
+        <table class="device-list-table"><thead><tr><th>Seat</th><th>Status</th><th>Current user</th><th class="num">Devices</th><th class="num">Plan price</th><th>Uses</th><th>History</th></tr></thead><tbody>${led.seats.map(s => {
+          const h = seatHolder(s);
+          const [l, cls] = SEAT_STATUS[seatState(s)];
+          const p = h && h.pid ? personById(h.pid) : null;
+          return `<tr><td class="asset-serial">${s.id}</td><td><span class="badge ${cls} badge-sm">${l}</span></td>
+            <td>${h ? (p ? `<a href="/pages/people/person.html?id=${p.id}" class="link-sm">${escapeHtml(h.name)}</a> <span class="text-muted">· ${PERSON_STATE[p.state][0]}</span>` : escapeHtml(h.name)) : '<span class="text-muted">—</span>'}</td>
+            <td class="num">${p ? `${personDevices(p)} / ${subDeviceLimit(k.tier) + (s.extra || 0)}` : h ? `≤ ${subDeviceLimit(k.tier) + (s.extra || 0)}` : '—'}</td>
+            <td class="num" title="${h && h.paid ? `Order ${h.paid.order}` : 'Seat already paid for (initial subscription, reused seat or renewal)'}">${h ? (h.paid ? fmtAmount(h.paid.cur, h.paid.seat + h.paid.devices) : '-') : ''}</td>
+            <td class="num">${s.uses.length} / 2</td>
+            <td class="stock-sub">${s.uses.map(u => `${escapeHtml(u.name)} ${billingDate(u.from)}${u.to ? ` – ${billingDate(u.to)}` : ' – now'}`).join('<br>') || 'Never used'}</td></tr>`;
+        }).join('')}</tbody></table>
+      </details>`;
+  }
+
+  function seatOrdersHtml(cur) {
+    const orders = seatOrdersFor(client.id).slice().sort((a, b) => (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1) || b.created.localeCompare(a.created));
+    if (!orders.length) return '<h4 class="panel-section-title">Subscription orders</h4><div class="text-muted">No seat orders yet. One is raised when a new user joins and no seat is available.</div>';
+    return `<h4 class="panel-section-title">Subscription orders</h4>
+      <table class="device-list-table seat-orders"><thead><tr><th>Order</th><th>For</th><th>Ordered</th><th class="num">One-off amount</th><th>Status</th><th></th></tr></thead><tbody>${orders.map(o => {
+        const [l, cls] = SEAT_ORDER_STATUS[o.status];
+        const p = o.pid ? personById(o.pid) : null;
+        return `<tr><td><span class="card-id">${o.id}</span><div class="stock-sub">Raised ${billingDate(o.created)}</div></td>
+          <td>${p ? `<a href="/pages/people/joiners.html?open=${p.id}" class="link-sm">${escapeHtml(o.name)}</a>` : escapeHtml(o.name)}</td>
+          <td>${seatOrderLabel(o)}</td><td class="num"><strong>${fmtAmount(o.cur, o.amount)}</strong>${o.lines.map(l => `<div class="stock-sub">${l.qty} × ${fmtAmount(o.cur, l.monthly)} / mo × ${l.days} d ÷ 30</div>`).join('')}</td>
+          <td><span class="badge ${cls} badge-sm">${l}</span>${o.decided ? `<div class="stock-sub">${o.status === 'approved' ? 'Approved' : 'Rejected'} by ${escapeHtml(o.by || '—')} ${billingDate(o.decided)}${o.reason ? ` · ${escapeHtml(o.reason)}` : ''}</div>` : `<div class="stock-sub">${escapeHtml(o.admin)}</div>`}</td>
+          <td>${o.status === 'pending' ? `<div class="seat-order-actions"><button type="button" class="btn btn-secondary btn-sm" data-so-approve="${o.id}" title="Prototype: simulate the client admin">Simulate approval</button><button type="button" class="btn-text" data-so-reject="${o.id}">Reject</button></div>` : ''}</td></tr>`;
+      }).join('')}</tbody></table>
+      <div class="readonly-note">The client admin approves orders in their portal. An order is charged once: monthly price × days left in the subscription year ÷ 30 (at most 360 days, so never more than 12 months). The seat or devices are then committed until the term ends and included in the annual fee from the next subscription year.</div>`;
+  }
+
+  /* Seat subscription: committed seats per block, add-ons, usage vs seats, renewal. Enterprise shows its event model instead. */
+  function subscriptionHtml(t, cmp) {
+    const ed = editable();
+    const sub = t.subscription;
+    const was = cmp && cmp.subscription;
+    const changed = cmp && JSON.stringify(was || null) !== JSON.stringify(sub || null);
+    if (!sub) {
+      return isSeatPlan(t.tier) ? '<div class="text-muted">This seat plan has no subscription yet.</div>'
+        : `<div class="sub-event-model"><strong>Event-based billing.</strong> ${escapeHtml(PLANS.Enterprise.blurb)}: lifecycle fees, billable users and device sales as set on the Billing, Pricing and Billable users tabs. Moving to Support, Secure or Complete adds a seat subscription.</div>`;
+    }
+    const cur = subCurrency(t);
+    // Before the term starts, show the rate it will start at
+    const run = subAnnualRate(t, [SUB_TODAY, sub.term.start].sort().pop());
+    const dlim = subDeviceLimit(t.tier);
+    const live = !isOnboarding(k) && viewing().status === 'active' && typeof seatCounts === 'function';
+    const counts = live ? seatCounts(client.id) : null;
+    const status = live ? subStatus(k) : null;
+    const free = PLANS[t.tier].free;
+    const committedIds = new Set((activeVersion(k) && contractTerms(k, activeVersion(k).v).subscription || { blocks: [] }).blocks.map(b => b.id));
+    const midTerm = SUB_TODAY <= sub.term.end && activeVersion(k);
+    const blockRow = (b, i) => {
+      const committed = committedIds.has(b.id) && midTerm && viewing().status !== 'active';
+      const prev = was && was.blocks.find(x => x.id === b.id);
+      const ch = cmp && (!prev || prev.qty !== b.qty || prev.price !== b.price);
+      return `<tr class="${ch ? 'field-changed' : ''}">
+        <td>${ed && !committed ? `<input type="date" class="form-input" data-sub-block="${i}" data-k="from" value="${b.from}" min="${sub.term.start}" max="${sub.term.end}" aria-label="Seats start">` : billingDate(b.from)}${committed ? '<div class="stock-sub">Committed</div>' : ''}</td>
+        <td class="num">${ed ? `<input type="number" class="form-input qty-input" min="${committed ? prev?.qty || b.qty : 1}" step="1" data-sub-block="${i}" data-k="qty" value="${b.qty}" aria-label="Seats">` : `<strong>${b.qty}</strong>`}</td>
+        <td class="num">${ed ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-sub-block="${i}" data-k="price" value="${b.price}" aria-label="Price per seat"></span>` : fmtAmount(cur, b.price)}</td>
+        <td class="num">${fmtAmount(cur, b.qty * b.price * 12)}${b.charge != null ? `<div class="stock-sub">${fmtAmount(cur, b.charge)} one-off this year</div>` : ''}</td>
+        <td>${ed ? `<input class="form-input" data-sub-block="${i}" data-k="note" value="${escapeHtml(b.note || '')}" placeholder="Note" aria-label="Note">` : escapeHtml(b.note || '')}</td>
+        <td>${ed && !committed && sub.blocks.length > 1 ? `<button type="button" class="btn-text" data-sub-rm="${i}">Remove</button>` : ''}</td>
+      </tr>`;
+    };
+    const addonRows = Object.entries(PLAN_ADDONS).map(([key, a]) => {
+      const av = addonAvailability(t.tier, key);
+      const on = sub.addOns.find(x => x.key === key);
+      const state = av === 'included' ? '<span class="tag tag-hub">Included</span>' : !av ? '<span class="text-muted">Not available on this plan</span>' : on ? `${fmtAmount(cur, on.price)} / seat / month` : '<span class="text-muted">Off</span>';
+      return `<tr><td>${a.label}</td><td>${state}</td><td>${ed && av === 'addon' ? (on ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-sub-addon="${key}" value="${on.price}" aria-label="${a.label} price"></span> <button type="button" class="btn-text" data-sub-addon-off="${key}">Remove</button>` : `<button type="button" class="btn btn-secondary btn-sm" data-sub-addon-on="${key}">Add · list ${fmtAmount(cur, planListPrice(a.listUSD, cur))}</button>`) : ''}</td></tr>`;
+    }).join('');
+    const nx = sub.next;
+    return `${changed ? `<div class="readonly-note">${changedTag} against v${activeVersion(k)?.v}</div>` : ''}
+      <div class="sub-summary">
+        <div><div class="detail-label">Plan</div><div class="detail-value"><strong>${t.tier}</strong> · ${escapeHtml(PLANS[t.tier].blurb)}</div></div>
+        <div><div class="detail-label">Term</div><div class="detail-value">${ed ? `${billingDate(sub.term.start)} – <input type="date" class="form-input sub-end" data-sub-term="end" value="${sub.term.end}" min="${sub.term.start}" aria-label="Term ends">` : subTermText(sub)}</div></div>
+        <div><div class="detail-label">Committed seats</div><div class="detail-value"><strong>${run.seats || sub.blocks.reduce((n, b) => n + b.qty, 0)}</strong>${run.seats !== sub.blocks.reduce((n, b) => n + b.qty, 0) ? ` <span class="text-muted">(${sub.blocks.reduce((n, b) => n + b.qty, 0)} incl. scheduled)</span>` : ''}</div></div>
+        <div><div class="detail-label">Annual fee</div><div class="detail-value"><strong>${free ? 'No charge' : fmtAmount(cur, run.amount)}</strong>${run.agreed ? ` <span class="tag">Agreed</span> <span class="text-muted">calculated ${fmtAmount(cur, run.calc)}</span>` : ''} <span class="text-muted">${free ? '' : `per subscription year, in advance${run.year ? ` (next ${billingDate(addDays(run.year.end, 1))})` : ''} · `}billed to ${escapeHtml((entityById(t, sub.billTo) || {}).name || '—')}</span></div></div>
+      </div>
+      ${status ? subStatusHtml(status, t) : ''}
+      ${counts ? seatsHtml(counts, cur) : ''}
+      <h4 class="panel-section-title">Seat blocks</h4>
+      <table class="device-list-table sub-blocks"><thead><tr><th>From</th><th class="num">Seats</th><th class="num">Price / seat / month</th><th class="num">Per year</th><th>Note</th><th></th></tr></thead><tbody>${sub.blocks.map(blockRow).join('')}</tbody></table>
+      ${ed ? `<div class="inline-add sub-add">
+          <input type="number" class="form-input qty-input" id="sbQty" min="1" step="1" value="5" aria-label="Seats to add">
+          <span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" id="sbPrice" min="0" step="0.5" value="${subLastPrice(sub)}" aria-label="Price per added seat"></span>
+          <input type="date" class="form-input" id="sbFrom" value="${[firstOfNextMonth(), sub.term.start].sort().pop()}" min="${sub.term.start}" max="${sub.term.end}" aria-label="Seats start">
+          <button type="button" class="btn btn-secondary btn-sm" id="sbAdd">Add seats</button>
+        </div><div class="form-error" id="sbError" hidden></div>` : ''}
+      <div class="readonly-note">Seats are committed until ${billingDate(sub.term.end)}: they can be added at any time, at their own price, but not removed or reduced before then. Each subscription year is billed in advance (seats × monthly price × 12). Seats added mid-year are charged once for the rest of that year (monthly price × days left ÷ 30, at most 360 days), then join the annual fee. Lower the count in the renewal.</div>
+      ${free ? '' : `<h4 class="panel-section-title">Annual total</h4>
+      <div class="sub-overage-price">${ed ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="1" data-sub-total value="${sub.agreedTotal ?? ''}" placeholder="${run.calc}" aria-label="Agreed annual total"></span> per subscription year · leave blank to bill the calculated ${fmtAmount(cur, run.calc)}` : sub.agreedTotal != null ? `<strong>${fmtAmount(cur, sub.agreedTotal)}</strong> agreed per subscription year (calculated ${fmtAmount(cur, run.calc)})` : `Calculated from seats, add-ons and devices: <strong>${fmtAmount(cur, run.calc)}</strong> per year`}</div>
+      <div class="readonly-note">An agreed total replaces the calculated annual fee on the invoice. Seats and devices ordered mid-year are still charged pro rata at the per-seat rates; set a new total in the renewal to include them. It can't be lowered mid-term.</div>`}
+      <h4 class="panel-section-title">Devices per user</h4>
+      <div class="sub-overage-price">Each seat covers <strong>${dlim} device${dlim === 1 ? '' : 's'}</strong> (laptops and peripherals) on ${t.tier}. ${free ? 'Extra devices are added at no charge.' : `Extra devices: ${ed ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-sub-devprice value="${subDevicePrice(t)}" aria-label="Extra device price"></span>` : `<strong>${fmtAmount(cur, subDevicePrice(t))}</strong>`} per device per month${sub.devicePrice == null ? ` <span class="text-muted">· list USD ${PLANS[t.tier].deviceUSD}</span>` : ''}, ordered as an upgrade and charged pro rata like seats.`}</div>
+      ${subDeviceBlocks(sub).length ? `<table class="device-list-table"><thead><tr><th>From</th><th class="num">Extra devices</th><th class="num">Price / device / month</th><th class="num">Per year</th><th>Note</th></tr></thead><tbody>${subDeviceBlocks(sub).map(d => `<tr><td>${billingDate(d.from)}</td><td class="num">${d.qty}</td><td class="num">${fmtAmount(cur, d.price)}</td><td class="num">${fmtAmount(cur, d.qty * d.price * 12)}${d.charge != null ? `<div class="stock-sub">${fmtAmount(cur, d.charge)} one-off this year</div>` : ''}</td><td>${escapeHtml(d.note || '')}</td></tr>`).join('')}</tbody></table>` : '<div class="text-muted">No extra devices this term.</div>'}
+      <h4 class="panel-section-title">Add-ons</h4>
+      <table class="device-list-table"><tbody>${addonRows}</tbody></table>
+      <h4 class="panel-section-title">Additional seats</h4>
+      <div class="sub-overage-price">${free ? 'Free plan: seats are added at no charge when a new user joins and no seat is available. No order needed.' : `${ed ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-sub-addprice value="${subAddPrice(sub)}" aria-label="Additional seat price"></span>` : `<strong>${fmtAmount(cur, subAddPrice(sub))}</strong>`} per seat per month${sub.addPrice == null ? ' <span class="text-muted">· defaults to the latest seat price</span>' : ''}`}</div>
+      ${free ? '' : `<div class="readonly-note">When a new user joins and no seat is available, the client admin approves a subscription order for one seat at this price plus add-ons, charged once for the rest of the subscription year. Today that is ${fmtAmount(cur, (subQuote({ ...t, tier: t.tier }, 'seats', 1) || { amount: 0 }).amount)} (${(subQuote({ ...t, tier: t.tier }, 'seats', 1) || {}).days || 0} days). The price can be raised mid-term, not lowered.</div>`}
+      ${live ? seatOrdersHtml(cur) : ''}
+      <h4 class="panel-section-title">Renewal</h4>
+      ${nx ? `<table class="device-list-table"><thead><tr><th>Renewal term</th><th class="num">Seats</th><th class="num">Price / seat</th><th></th></tr></thead><tbody>${nx.blocks.map((b, i) => `<tr><td>${subTermText(nx)}</td>
+          <td class="num">${ed ? `<input type="number" class="form-input qty-input" min="1" step="1" data-sub-next="${i}" data-k="qty" value="${b.qty}" aria-label="Renewal seats">` : b.qty}</td>
+          <td class="num">${ed ? `<span class="fee-input"><span class="text-muted">${cur}</span><input type="number" class="form-input" min="0" step="0.5" data-sub-next="${i}" data-k="price" value="${b.price}" aria-label="Renewal price"></span>` : fmtAmount(cur, b.price)}</td>
+          <td>${ed ? '<button type="button" class="btn-text" data-sub-next-rm>Remove renewal</button>' : ''}</td></tr>`).join('')}</tbody></table>
+          <div class="readonly-note">From ${billingDate(nx.term.start)} the subscription bills ${nx.blocks.reduce((n, b) => n + b.qty, 0)} seats. This is where the seat count can go down.</div>`
+        : `<div class="detail-value">${sub.autoRenew ? `Auto-renews for 12 months on ${sub.blocks.reduce((n, b) => n + b.qty, 0)} seats from ${billingDate(addDays(sub.term.end, 1))}.` : 'Ends at term end.'}</div>
+          ${ed ? `<div class="sub-renew-actions"><label class="sla-check"><input type="checkbox" data-sub-auto ${sub.autoRenew ? 'checked' : ''}> Auto-renew</label><button type="button" class="btn btn-secondary btn-sm" data-sub-next-add>Set renewal terms…</button></div>` : ''}`}`;
   }
 
   function splitShipmentsHtml() {
@@ -246,7 +387,8 @@ function initClientDetail() {
     $('cdActions').innerHTML = actions.join('');
     const banner = isOnboarding(k) ? (v.status === 'draft'
       ? `New client · initial contract v1 is a draft. Edit any section below, then review and send it to ${escapeHtml(clientAdminFor(k))} to accept. Nothing is billed until then.`
-      : `New client · initial contract v1 was sent ${escapeHtml(v.publishedAt || '')} and is waiting for ${escapeHtml(clientAdminFor(k))} to accept. Terms are locked; withdraw it on the contract page to make changes.`) : {
+      : k.registeredAt ? `Pending subscription · ${escapeHtml(clientAdminFor(k))} registered ${escapeHtml(k.registeredAt)} and still needs to accept contract v1. Terms are locked; withdraw it on the contract page to make changes.`
+        : `Pending subscription · registration link sent ${escapeHtml(k.linkSentAt || v.publishedAt || '')} to ${escapeHtml(clientAdminFor(k))}${k.adminEmail ? ` (${escapeHtml(k.adminEmail)})` : ''}. They complete company registration and set a password, then accept contract v1. Terms are locked.`) : {
       superseded: `Read-only · v${v.v} was replaced by a later version. Accepted by ${escapeHtml(v.acceptedBy || '—')} on ${escapeHtml(v.acceptedAt || '—')}. <a href="${amendHref(v.v)}">See what changed</a>`,
       withdrawn: `Read-only · v${v.v} was withdrawn before the client accepted it.`,
       pending: `Locked · v${v.v} was published ${escapeHtml(v.publishedAt || '')} and is waiting for ${escapeHtml(clientAdminFor(k))} to accept. Changes are highlighted against v${activeVersion(k).v}.`,
@@ -259,6 +401,7 @@ function initClientDetail() {
 
   const TABS = [
     { id: 'overview', label: 'Overview', sections: ['overview'] },
+    { id: 'subscription', label: 'Plan & seats', sections: ['subscription'] },
     { id: 'billing', label: 'Billing', sections: ['entities', 'fx', 'fees', 'routing', 'splitting'] },
     { id: 'pricing', label: 'Pricing', sections: ['pricing', 'discounts'] },
     { id: 'users', label: 'Billable users', sections: ['managed'] },
@@ -268,8 +411,11 @@ function initClientDetail() {
 
   let activeTab = 'overview';
 
+  // Billable users are Enterprise only
+  const visibleTabs = () => TABS.filter(tb => tb.id !== 'users' || !isSeatPlan(termsOf(viewing()).tier));
   function renderTabs() {
-    $('cdTabs').innerHTML = TABS.map(tab => `<button type="button" class="tab-link ${tab.id === activeTab ? 'active' : ''}" data-tab="${tab.id}">${tab.label}</button>`).join('');
+    if (!visibleTabs().some(tb => tb.id === activeTab)) activeTab = 'overview';
+    $('cdTabs').innerHTML = visibleTabs().map(tab => `<button type="button" class="tab-link ${tab.id === activeTab ? 'active' : ''}" data-tab="${tab.id}">${tab.label}</button>`).join('');
   }
 
   function renderSectionNav() {
@@ -278,6 +424,7 @@ function initClientDetail() {
     const t = termsOf(v);
     const SECTION_TITLES = {
       overview: 'Overview',
+      subscription: 'Plan & seats',
       entities: 'Billing entities',
       fx: 'Currency and FX',
       pricing: 'Device pricing',
@@ -301,6 +448,7 @@ function initClientDetail() {
     const cmp = (v.status === 'draft' || v.status === 'pending') && activeVersion(k) ? contractTerms(k, activeVersion(k).v) : null;
     const allSections = {
       overview: section('overview', 'Overview', overviewHtml(t, cmp)),
+      subscription: section('subscription', t.subscription ? `${t.tier} · seat subscription` : `${t.tier} · event-based`, subscriptionHtml(t, cmp), t.subscription ? 'Committed for the term' : ''),
       entities: section('entities', 'Billing entities', entitiesHtml(t, cmp), `${t.entities.length} entit${t.entities.length === 1 ? 'y' : 'ies'} · company structure`),
       fx: section('fx', 'Currency and FX', grid('fx', t, cmp) + '<div class="readonly-note">Invoice currency is set per billing entity. The FX source converts fees priced in another country\'s currency, and spend into the cap currency.</div>'),
       pricing: section('pricing', 'Device pricing', pricingHtml(t, cmp)),
@@ -345,7 +493,8 @@ function initClientDetail() {
   const render = () => { renderHeader(); renderTabs(); renderSections(); renderHistory(); checkHash(); };
   const show = v => { viewV = v; history.replaceState(null, '', `?c=${client.id}&v=${v}`); render(); };
   const note = text => { $('cdSaved').textContent = `✓ ${text}`; $('cdSaved').hidden = false; };
-  const commit = () => { saveContracts(); const y = window.scrollY; renderSections(); window.scrollTo(0, y); };
+  // Re-render after the event finishes: a change fired by blur can't replace the node it came from
+  const commit = () => { saveContracts(); setTimeout(() => { const y = window.scrollY; renderSections(); window.scrollTo(0, y); }); };
 
   $('cdSections').addEventListener('change', e => {
     // if (e.target.id === 'cdSplitShip') {
@@ -365,19 +514,82 @@ function initClientDetail() {
       t.offEvents = e.target.checked ? t.offEvents.filter(x => x !== d.billable) : [...t.offEvents, d.billable];
     } else if (d.markup !== undefined) {
       t.pricing.markup[Number(d.markup)].markup = Math.max(-100, Math.min(100, Number(e.target.value) || 0));
+    } else if (d.subBlock !== undefined) {
+      const b = t.subscription.blocks[Number(d.subBlock)];
+      b[d.k] = d.k === 'qty' ? Math.max(1, Math.round(Number(e.target.value) || 1)) : d.k === 'price' ? Math.max(0, Number(e.target.value) || 0) : e.target.value;
+    } else if (d.subNext !== undefined) {
+      const b = t.subscription.next.blocks[Number(d.subNext)];
+      b[d.k] = d.k === 'qty' ? Math.max(1, Math.round(Number(e.target.value) || 1)) : Math.max(0, Number(e.target.value) || 0);
+    } else if (d.subAddon) {
+      t.subscription.addOns.find(a => a.key === d.subAddon).price = Math.max(0, Number(e.target.value) || 0);
+    } else if (d.subAddprice !== undefined) {
+      const v = Math.max(0, Number(e.target.value) || 0);
+      if (v === subLastPrice(t.subscription)) delete t.subscription.addPrice;
+      else t.subscription.addPrice = v;
+    } else if (d.subTotal !== undefined) {
+      if (e.target.value === '') delete t.subscription.agreedTotal;
+      else t.subscription.agreedTotal = Math.max(0, Number(e.target.value) || 0);
+    } else if (d.subDevprice !== undefined) {
+      const v = Math.max(0, Number(e.target.value) || 0);
+      if (v === planListPrice(PLANS[t.tier].deviceUSD || 0, subCurrency(t))) delete t.subscription.devicePrice;
+      else t.subscription.devicePrice = v;
+    } else if (d.subTerm) {
+      t.subscription.term.end = e.target.value;
+    } else if (d.subAuto !== undefined) {
+      t.subscription.autoRenew = e.target.checked;
     } else if (d.path) {
       const raw = d.kind === 'toggle' ? e.target.checked : d.kind === 'number' ? Math.max(0, Number(e.target.value) || 0) : e.target.value;
+      const before = d.path === 'tier' ? { tier: t.tier, subscription: t.subscription ? JSON.parse(JSON.stringify(t.subscription)) : null } : null;
       setPath(t, d.path, raw);
+      if (before) {
+        subNormalize(t, activeVersion(k) ? contractTerms(k, activeVersion(k).v) : before, client.id);
+        note(isSeatPlan(t.tier) ? `${t.tier}: seats and add-ons updated in the draft. Check Plan & seats.` : `${t.tier}: event-based billing. The seat subscription ends at the current term.`);
+      }
     } else return;
     commit();
   });
 
   $('cdSections').addEventListener('click', e => {
+    const sb = e.target.closest('[data-so-approve], [data-so-reject], [data-sub-renew]');
+    if (sb && sb.dataset.subRenew !== undefined) {
+      // Renewal opens a draft with next-term seats prefilled from the current term
+      const next = Math.max(...k.versions.map(x => x.v)) + 1;
+      const t = contractTerms(k, activeVersion(k).v);
+      if (!t.subscription.next) t.subscription.next = subRenewalDraft(t.subscription);
+      k.versions.unshift({ v: next, status: 'draft', effective: '', note: '', terms: t, createdBy: 'You' });
+      saveContracts();
+      note(`Draft v${next} created with renewal terms from ${billingDate(t.subscription.next.term.start)}. Adjust seats, then review and publish for the client admin to accept.`);
+      return show(next);
+    }
+    if (sb) {
+      const id = sb.dataset.soApprove || sb.dataset.soReject;
+      const reason = sb.dataset.soReject ? (prompt('Reason for rejecting (shown on the joiner)', 'Hire on hold') ?? null) : '';
+      if (reason === null) return;
+      const o = seatOrderDecide(id, !!sb.dataset.soApprove, reason);
+      if (o) note(o.status === 'approved' ? `${o.id} approved by ${o.by}. ${seatOrderLabel(o)} for ${o.name} from ${billingDate(o.decided)}, charged ${fmtAmount(o.cur, o.amount)} once.` : `${o.id} rejected. ${o.name} can’t be onboarded without a seat.`);
+      return setTimeout(() => { const y = window.scrollY; renderSections(); window.scrollTo(0, y); });
+    }
     if (!editable()) return;
     const t = viewing().terms;
     const b = e.target.closest('button');
     if (!b) return;
     if (b.dataset.reset) { delete t.feeExceptions[b.dataset.reset]; return commit(); }
+    if (b.id === 'sbAdd') {
+      const qty = Math.round(Number($('sbQty').value));
+      const price = Number($('sbPrice').value);
+      const from = $('sbFrom').value;
+      const sub = t.subscription;
+      const err = !(qty > 0) ? 'Enter how many seats to add.' : !(price >= 0) ? 'Enter a price per seat.' : !from || from < sub.term.start || from > sub.term.end ? `Start date must be within the term (${subTermText(sub)}).` : '';
+      if (err) { $('sbError').textContent = err; $('sbError').hidden = false; return; }
+      sub.blocks.push({ id: subNextBlockId(sub), qty, price, from, note: 'Added seats' });
+      note(`${qty} seats added from ${billingDate(from)} at ${fmtAmount(subCurrency(t), price)}. They bill once the client accepts this version.`);
+      return commit();
+    }
+    if (b.dataset.subRm !== undefined) { t.subscription.blocks.splice(Number(b.dataset.subRm), 1); return commit(); }
+    if (b.dataset.subAddonOn) { t.subscription.addOns.push({ key: b.dataset.subAddonOn, price: planListPrice(PLAN_ADDONS[b.dataset.subAddonOn].listUSD, subCurrency(t)), from: [firstOfNextMonth(), t.subscription.term.start].sort().pop() }); return commit(); }
+    if (b.dataset.subAddonOff) { t.subscription.addOns = t.subscription.addOns.filter(a => a.key !== b.dataset.subAddonOff); return commit(); }
+    if (b.dataset.subNextAdd !== undefined) { t.subscription.next = subRenewalDraft(t.subscription); return commit(); }
+    if (b.dataset.subNextRm !== undefined) { delete t.subscription.next; return commit(); }
     if (b.dataset.markupRm !== undefined) { t.pricing.markup.splice(Number(b.dataset.markupRm), 1); return commit(); }
     if (b.dataset.routeRm !== undefined) { t.routing.splice(Number(b.dataset.routeRm), 1); return commit(); }
     if (b.dataset.discRm !== undefined) { t.discounts.splice(Number(b.dataset.discRm), 1); return commit(); }
@@ -436,6 +648,7 @@ function initClientDetail() {
   });
 
   render();
+  if (params.get('quick')) note(`${client.name} created with quick setup: ${k.tier}, ${k.terms.subscription.blocks[0].qty} seats, ${billingDate(k.start)} – ${billingDate(k.end)}. Login credentials sent to ${k.adminEmail}. The company is active and ready to use; adjust seats, prices and entities with Edit terms.`);
   if (params.get('created')) note(`${client.name} created with a draft initial contract (v1). Check the terms, then review and send it to ${clientAdminFor(k)}.`);
 }
 

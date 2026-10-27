@@ -106,10 +106,16 @@
         <div class="input-helper" id="lvReminderHint"></div>
       </div>
       
+      <div class="panel-section" id="lvSeatSection" hidden>
+        <h4 class="panel-section-title">Seat</h4>
+        <div id="lvSeat"></div>
+      </div>
+
       <div class="saved-note" id="lvDone" hidden></div>
     </div>
     <div class="side-panel-footer">
       <button class="btn btn-secondary" type="button" id="lvCancel">Close</button>
+      <button class="btn btn-secondary" type="button" id="lvComplete" hidden title="Prototype: mark the employee as left">Complete offboarding</button>
       <button class="btn btn-primary" type="button" id="lvSchedule">Schedule retrieval</button>
     </div>
   </div>
@@ -120,7 +126,10 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/subscription-data.js"></script>
   <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/seats-data.js"></script>
   <script src="/scripts/people-list.js"></script>
   <script src="/scripts/people-header.js"></script>
   <script src="/scripts/people-leavers.js"></script>

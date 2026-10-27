@@ -48,7 +48,7 @@ const ENTITY_FIELDS = [
 ];
 
 const CONTRACT_SECTIONS = {
-  overview: 'Overview', entities: 'Billing entities', fx: 'Currency and FX', pricing: 'Device pricing',
+  overview: 'Overview', subscription: 'Seat subscription', entities: 'Billing entities', fx: 'Currency and FX', pricing: 'Device pricing',
   fees: 'Lifecycle fees', discounts: 'Discounts and rate overrides', routing: 'Charge routing', managed: 'Billable users', cap: 'Procurement cap', splitting: 'Invoice splitting'
 };
 
@@ -80,6 +80,21 @@ function contractRows(t) {
   const rows = [];
   const add = (section, label, path, text) => rows.push({ section, label, path, text });
   Object.keys(CONTRACT_SECTIONS).forEach(section => {
+    if (section === 'subscription') {
+      const sub = t.subscription;
+      if (!sub) { add(section, 'Billing model', 'subscription', isSeatPlan(t.tier) ? 'Seat plan without seats (needs a subscription)' : 'Event-based: no seat subscription'); return; }
+      const cur = (entityById(t, sub.billTo) || parentEntity(t)).currency;
+      add(section, 'Subscription term', 'subscription.term', subTermText(sub));
+      add(section, 'Committed seats', 'subscription.blocks', `${sub.blocks.reduce((n, b) => n + b.qty, 0)} seats · ${subBlocksText(sub, cur)}`);
+      add(section, 'Add-ons', 'subscription.addOns', subAddonsText(sub, cur));
+      add(section, 'Annual total', 'subscription.agreedTotal', PLANS[t.tier] && PLANS[t.tier].free ? 'No charge' : subTotalText(t, cur));
+      add(section, 'Additional-seat price', 'subscription.addPrice', subAddPriceText(sub, cur));
+      add(section, 'Devices per user', 'subscription.devicePrice', `${subDeviceLimit(t.tier)} per seat · extra ${fmtAmount(cur, subDevicePrice(t))} per device per month, charged pro rata`);
+      add(section, 'Extra devices', 'subscription.deviceBlocks', subDevicesText(sub, cur));
+      add(section, 'Subscription billed to', 'subscription.billTo', (entityById(t, sub.billTo) || {}).name || '—');
+      add(section, 'Renewal', 'subscription.next', subNextText(sub, cur));
+      return;
+    }
     if (section === 'entities') {
       add(section, 'Billing entities', 'entities.length', t.entities.map(e => e.name).join(' · '));
       t.entities.forEach((e, i) => ENTITY_FIELDS.forEach(f => {
@@ -121,7 +136,9 @@ function contractDiff(a, b) {
     const y = rb.find(r => r.path === path);
     if (JSON.stringify(rowValue(a, path)) === JSON.stringify(rowValue(b, path))) return null;
     // Billable toggles are stored as the offEvents list, so the reversible change is the whole list
-    const store = path.startsWith('offEvents:') ? { path: 'offEvents', fromVal: a.offEvents, toVal: b.offEvents }
+    // The whole subscription is stored on each change so acceptance and rebuilding old versions stay exact
+    const store = path.startsWith('subscription') ? { path: 'subscription', fromVal: a.subscription || null, toVal: b.subscription || null }
+      : path.startsWith('offEvents:') ? { path: 'offEvents', fromVal: a.offEvents, toVal: b.offEvents }
       : path === 'entities.length' ? { path: 'entities', fromVal: a.entities, toVal: b.entities }
         : { path, fromVal: rowValue(a, path), toVal: rowValue(b, path) };
     return { section: (y || x).section, field: (y || x).label, from: x ? x.text : '—', to: y ? y.text : '—', rowPath: path, ...store };

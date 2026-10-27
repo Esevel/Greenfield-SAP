@@ -31,8 +31,36 @@ function amountsHtml(byCur, dp = 2) {
 
 /* ---------- Contracts ---------- */
 
-const PLAN_TIERS = ['Essentials', 'Growth', 'Enterprise'];
+/* ---------- Plans and seat subscriptions ---------- */
+
+// Free, Support, Secure and Complete are seat subscriptions: a number of seats committed for the subscription term,
+// billed annually in advance (seats × monthly price × 12) at the start of each subscription year. Seats can't be
+// reduced, repriced lower or removed until renewal. A user added when no seat is available needs a subscription order
+// (approved by the client admin), charged once for the rest of the subscription year: monthly price × remaining days
+// ÷ 30, with days capped at 360. Each seat covers a number of devices; assigning more needs an upgrade order priced the
+// same way per extra device. Free adds seats and devices at no charge, without orders. Enterprise has no subscription:
+// it keeps event-based billing (lifecycle fees, billable users, devices) and is the only plan with billable users.
+// devices: device limit per user (laptops and peripherals). deviceUSD: proposed price per extra device per month.
+const PLANS = {
+  Free: { seat: true, free: true, rank: 0, listUSD: 0, devices: 1, deviceUSD: 0, blurb: 'Webstore, catalogue, order and inventory tracking. Seats added without orders; renewal still required' },
+  Support: { seat: true, rank: 1, listUSD: 12, devices: 1, deviceUSD: 6, blurb: 'Procurement, inventory, last mile and hands-on device support' },
+  Secure: { seat: true, rank: 2, listUSD: 25, devices: 3, deviceUSD: 8, blurb: 'Adds device management, employee records, on/offboarding and SSO' },
+  Complete: { seat: true, rank: 3, listUSD: 45, devices: 5, deviceUSD: 9, blurb: 'Everything in Support and Secure, MFA and software support included' },
+  Enterprise: { seat: false, rank: 4, blurb: 'Custom contract billed per lifecycle event; no seat subscription' }
+};
+const PLAN_TIERS = Object.keys(PLANS);
+const PLAN_ALIAS = { Essentials: 'Support', Growth: 'Secure' };
+// Add-ons priced per seat per month (billed with the seat); included or unavailable depending on the plan
+const PLAN_ADDONS = {
+  mfa: { label: 'Multi-Factor Authentication', listUSD: 3, plans: { Secure: 'addon', Complete: 'included' } },
+  software: { label: 'Software Support', listUSD: 5, plans: { Support: 'addon', Secure: 'addon', Complete: 'included' } }
+};
+const isSeatPlan = tier => !!(PLANS[tier] && PLANS[tier].seat);
+const planListPrice = (usd, cur) => Math.round(fxConvert(usd, 'USD', cur) * 2) / 2;
+const subBlock = (id, qty, price, from, note = '') => ({ id, qty, price, from, note });
+const subscription = (start, end, billTo, blocks, addOns = [], autoRenew = true) => ({ term: { start, end }, billTo, blocks, addOns, autoRenew });
 // onboarding: a new client whose first contract (v1) is a draft or waiting for the client admin to accept
+const PLAN_TIERS_NOTE = 'Support, Secure and Complete bill seats annually in advance; Free has seats at no charge; Enterprise bills per event';
 const CONTRACT_STATUS = { onboarding: ['Onboarding', 'badge-info'], active: ['Active', 'badge-success'], amendment: ['Amendment pending', 'badge-warning'], expired: ['Expired', 'badge-neutral'] };
 const INVOICE_SPLITS = { entity: 'Billing entity', costCentre: 'Cost centre', country: 'Country', po: 'PO number' };
 
@@ -137,7 +165,7 @@ const CONTRACTS = {
     ]
   },
   digital: {
-    tier: 'Growth', start: '2024-06-20', end: '2027-06-19', status: 'active',
+    tier: 'Secure', start: '2024-06-20', end: '2027-06-19', status: 'active',
     terms: {
       countries: ['AU', 'GB'], fxSource: 'ecb', fxLock: 'milestone',
       entities: [
@@ -151,7 +179,8 @@ const CONTRACTS = {
       managedUsers: { enabled: false },
       cap: { limit: 180000, currency: 'AUD', period: 'Annual', renewal: '2027-06-20' },
       splitBy: ['entity', 'country'],
-      discounts: []
+      discounts: [],
+      subscription: subscription('2026-06-20', '2027-06-19', 'e1', [subBlock('b1', 30, 36, '2026-06-20', 'Renewal commitment'), subBlock('b2', 10, 40, '2026-09-01', 'Added for UK hires')])
     },
     versions: [
       { v: 3, status: 'active', effective: '2026-06-20', note: 'Renewal on standard fees; disposal handled by client', acceptedBy: 'Hannah Clarke', acceptedAt: '2026-06-10 13:02 AEST', ip: '101.188.67.4',
@@ -161,7 +190,7 @@ const CONTRACTS = {
     ]
   },
   mediaworks: {
-    tier: 'Growth', start: '2026-01-04', end: '2027-01-03', status: 'active',
+    tier: 'Secure', start: '2026-01-04', end: '2027-01-03', status: 'active',
     terms: {
       countries: ['SG', 'MY', 'AU', 'US'], fxSource: 'fixed', fxLock: 'checkout',
       entities: [ent('e1', 'MediaWorks Asia Pte Ltd', 'SG', 'UEN 201733456D', 'finance@mediaworks.com', { settlement: ['SGD', 'MYR'], taxNote: 'GST registered', muRate: 15 })],
@@ -169,15 +198,16 @@ const CONTRACTS = {
       offEvents: [],
       pricing: { markup: [], note: '' },
       routing: [],
-      managedUsers: { enabled: true },
+      managedUsers: { enabled: false },
       cap: { limit: 120000, currency: 'SGD', period: 'Annual', renewal: '2027-01-04' },
       splitBy: ['costCentre'],
-      discounts: []
+      discounts: [],
+      subscription: subscription('2026-01-04', '2027-01-03', 'e1', [subBlock('b1', 70, 32, '2026-01-04', 'Initial commitment')], [{ key: 'mfa', price: 4, from: '2026-01-04' }])
     },
     versions: [{ v: 1, status: 'active', effective: '2026-01-04', note: 'Initial contract', acceptedBy: 'Aisha Rahman', acceptedAt: '2025-12-20 17:41 SGT', ip: '118.200.13.77', changes: [] }]
   },
   finance: {
-    tier: 'Essentials', start: '2025-05-18', end: '2027-05-17', status: 'active',
+    tier: 'Support', start: '2025-05-18', end: '2027-05-17', status: 'active',
     terms: {
       countries: ['SG', 'GB'], fxSource: 'ecb', fxLock: 'milestone',
       entities: [ent('e1', 'FinanceExperts Ltd', 'GB', 'VAT GB 987 6543 21', 'ap@financeexperts.co.uk', { taxNote: 'VAT registered' })],
@@ -188,7 +218,8 @@ const CONTRACTS = {
       managedUsers: { enabled: false },
       cap: { limit: 60000, currency: 'GBP', period: 'Annual', renewal: '2027-05-18' },
       splitBy: [],
-      discounts: []
+      discounts: [],
+      subscription: Object.assign(subscription('2026-05-18', '2027-05-17', 'e1', [subBlock('b1', 25, 9.5, '2026-05-18', 'Renewal commitment')], [{ key: 'software', price: 4, from: '2026-05-18' }]), { deviceBlocks: [{ id: 'd1', qty: 2, price: 4.5, from: '2026-05-18', note: 'Second device for 2 users' }] })
     },
     versions: [
       { v: 2, status: 'active', effective: '2026-05-18', note: 'Added SG office', acceptedBy: 'Oliver Grant', acceptedAt: '2026-05-09 10:20 BST', ip: '81.2.69.142',
@@ -197,7 +228,7 @@ const CONTRACTS = {
     ]
   },
   cloud: {
-    tier: 'Growth', start: '2025-10-01', end: '2026-09-30', status: 'expired',
+    tier: 'Secure', start: '2025-10-01', end: '2026-09-30', status: 'expired',
     terms: {
       countries: ['AU', 'US'], fxSource: 'oanda', fxLock: 'checkout',
       entities: [ent('e1', 'CloudSystems LLC', 'US', 'EIN 46-5551234', 'ap@cloudsystems.com', { settlement: ['USD', 'AUD'], taxStatus: 'Exempt (resale)', taxNote: 'Resale certificate on file for CA and NV', muRate: 10 })],
@@ -205,10 +236,11 @@ const CONTRACTS = {
       offEvents: [],
       pricing: { markup: [{ category: 'Monitors', tier: 't2', markup: 9 }], note: '' },
       routing: [],
-      managedUsers: { enabled: true },
+      managedUsers: { enabled: false },
       cap: { limit: 250000, currency: 'USD', period: 'Annual', renewal: '2026-10-01' },
       splitBy: ['po'],
-      discounts: []
+      discounts: [],
+      subscription: subscription('2025-10-01', '2026-09-30', 'e1', [subBlock('b1', 80, 24, '2025-10-01', 'Initial commitment')], [], false)
     },
     versions: [{ v: 1, status: 'active', effective: '2026-02-02', note: 'Initial contract · renewal in negotiation', acceptedBy: 'Nathan Ong', acceptedAt: '2026-01-28 12:10 PT', ip: '64.233.160.5', changes: [] }]
   },
@@ -240,7 +272,7 @@ const CONTRACTS = {
     ]
   },
   brightpath: {
-    tier: 'Essentials', start: '2026-08-15', end: '2027-08-14', status: 'active',
+    tier: 'Support', start: '2026-08-15', end: '2027-08-14', status: 'active',
     terms: {
       countries: ['SG', 'MY', 'AU'], fxSource: 'ecb', fxLock: 'milestone',
       entities: [ent('e1', 'BrightPath Education Pte Ltd', 'SG', 'UEN 201544332E', 'accounts@brightpath.edu.sg', { settlement: ['SGD', 'MYR', 'AUD'], taxNote: 'Education services zero-rated where eligible' })],
@@ -251,7 +283,8 @@ const CONTRACTS = {
       managedUsers: { enabled: false },
       cap: { limit: 80000, currency: 'SGD', period: 'Annual', renewal: '2027-08-15' },
       splitBy: ['country'],
-      discounts: []
+      discounts: [],
+      subscription: subscription('2026-08-15', '2027-08-14', 'e1', [subBlock('b1', 30, 16, '2026-08-15', 'Initial commitment')])
     },
     versions: [{ v: 1, status: 'active', effective: '2026-08-15', note: 'Initial contract', acceptedBy: 'BrightPath IT', acceptedAt: '2026-08-06 10:00 SGT', ip: '165.21.4.90', changes: [] }]
   }
@@ -353,7 +386,10 @@ function setPath(obj, path, value) {
   }
   const keys = path.split('.');
   const last = keys.pop();
-  keys.reduce((o, k) => o[k], obj)[last] = JSON.parse(JSON.stringify(value));
+  const target = keys.reduce((o, k) => o[k], obj);
+  // A version without a subscription (Enterprise) stores null; drop the key rather than keep a null subscription
+  if ((value === null || value === undefined) && path === 'subscription') delete target[last];
+  else target[last] = JSON.parse(JSON.stringify(value));
 }
 
 // Terms as they were (or will be) in a given version: undo newer changes, or apply a pending one
@@ -378,7 +414,7 @@ function saveContracts() {
   const data = {};
   // Onboarding clients edit tier and term end inside their v1 terms; mirror them for list pages
   Object.values(CONTRACTS).forEach(k => { if (!activeVersion(k) && k.terms.tier) { k.tier = k.terms.tier; k.end = k.terms.end; } });
-  Object.entries(CONTRACTS).forEach(([id, k]) => { data[id] = { status: k.status, tier: k.tier, start: k.start, end: k.end, admin: k.admin, adminEmail: k.adminEmail, terms: k.terms, versions: k.versions }; });
+  Object.entries(CONTRACTS).forEach(([id, k]) => { data[id] = { status: k.status, tier: k.tier, start: k.start, end: k.end, admin: k.admin, adminEmail: k.adminEmail, linkSentAt: k.linkSentAt, registeredAt: k.registeredAt, setup: k.setup, terms: k.terms, versions: k.versions }; });
   sessionStorage.setItem(CONTRACTS_KEY, JSON.stringify(data));
 }
 try {
@@ -390,6 +426,21 @@ try {
     });
   }
 } catch (e) { sessionStorage.removeItem(CONTRACTS_KEY); }
+// Contracts saved before seat plans: rename old plan names and attach the seeded subscription
+const SUB_SEED = Object.fromEntries(Object.entries(CONTRACTS).map(([id, k]) => [id, k.terms.subscription]).filter(([, v]) => v));
+Object.entries(CONTRACTS).forEach(([id, k]) => {
+  k.tier = PLAN_ALIAS[k.tier] || k.tier;
+  k.versions.forEach(v => {
+    if (v.terms && v.terms.tier) v.terms.tier = PLAN_ALIAS[v.terms.tier] || v.terms.tier;
+    (v.changes || []).filter(c => c.path === 'tier').forEach(c => { c.fromVal = PLAN_ALIAS[c.fromVal] || c.fromVal; c.toVal = PLAN_ALIAS[c.toVal] || c.toVal; });
+  });
+  if (isSeatPlan(k.tier) && !k.terms.subscription && SUB_SEED[id]) k.terms.subscription = JSON.parse(JSON.stringify(SUB_SEED[id]));
+  // Users above seats are now ordered as seats: the old overage price becomes the additional-seat price
+  const subs = [k.terms.subscription, ...k.versions.map(v => v.terms && v.terms.subscription)].filter(Boolean);
+  subs.forEach(sub => { if ('overagePrice' in sub) { sub.addPrice = sub.overagePrice; delete sub.overagePrice; } });
+  // Billable users are Enterprise only
+  if (isSeatPlan(k.tier)) k.terms.managedUsers.enabled = false;
+});
 // A new client without a contract (storage cleared mid-session) can't be shown
 for (let i = WH_CLIENTS.length - 1; i >= 0; i--) if (!CONTRACTS[WH_CLIENTS[i].id]) WH_CLIENTS.splice(i, 1);
 

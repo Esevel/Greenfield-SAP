@@ -18,7 +18,10 @@ function makeCharge(e) {
   const ent = e.entity ? entityById(t, e.entity) : pay.entity;
   const why = ent.id === pay.entity.id ? pay.why : 'Billing entity set on the order';
   let unit, basis;
-  if (e.event === 'managed') {
+  if (e.event === 'subscription') {
+    unit = e.unit;
+    basis = { why: 'Subscription bill-to entity', subscription: true, text: e.basisText };
+  } else if (e.event === 'managed') {
     unit = ent.muRate;
     basis = { why, managed: true };
   } else {
@@ -27,7 +30,8 @@ function makeCharge(e) {
     unit = Math.round(fee.amount * (fx ? fx.rate : 1) * 100) / 100;
     basis = { why, feeCur: fee.cur, fee: fee.amount, base: fee.base, custom: fee.custom, fx, discount: fee.discount ? discountLabel(fee.discount, fee.cur) : '' };
   }
-  return { id: ledgerNextId(), kind: 'charge', status: 'unbilled', qty: 1, cur: ent.currency, amount: Math.round(unit * (e.qty || 1) * 100) / 100, unit, basis, ...e, entity: ent.id };
+  const amount = e.event === 'subscription' ? e.amount : Math.round(unit * (e.qty || 1) * 100) / 100;
+  return { id: ledgerNextId(), kind: 'charge', status: 'unbilled', qty: 1, cur: ent.currency, unit, basis, ...e, amount, entity: ent.id };
 }
 
 (function seedLedger() {
@@ -54,6 +58,8 @@ function makeCharge(e) {
     const snap = `MU-${client.toUpperCase().slice(0, 4)}-2026-09`;
     add({ at: '2026-10-01 00:10', client, cc: ent.country, event: 'managed', qty, wo: 'Billable users', step: 'Sep 2026 snapshot', asset: `${qty} billable users`, recipient: '—', doc: `Snapshot ${snap} (locked)`, entity, costCentre: '', po: '' });
   }));
+  // Seat subscriptions: annual fees and pro-rata additions not yet invoiced (since 1 Sep), including approved seat orders
+  if (typeof subYearLines === 'function') Object.entries(CONTRACTS).forEach(([id, k]) => { if (k.terms.subscription && k.status !== 'expired' && activeVersion(k)) postSubscriptionDue(id, '2026-09-01', BILLING_TODAY); });
   // Already invoiced
   add({ at: '2026-09-28 13:15', client: 'acme', cc: 'SG', event: 'retrieval', wo: 'OFF-2031', step: 'Received at hub', asset: 'C02XK3501A · MacBook Pro 14" M3', recipient: 'Daniel Ho', doc: 'Intake · 3 photos', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '', status: 'invoiced', invoice: 'INV-2026-0912' });
   add({ at: '2026-09-25 10:40', client: 'techglobal', cc: 'US', event: 'deployment', wo: 'ONB-1160', step: 'Delivered', asset: '8HJ24102A · Dell XPS 15', recipient: 'Maya Patel', doc: 'fedex-7712440011.pdf', entity: 'e1', costCentre: '', po: 'PO-TG-9050', status: 'invoiced', invoice: 'INV-2026-0918' });
@@ -78,7 +84,34 @@ function makeCharge(e) {
     pendingReversal: { reason: 'Client says device arrived damaged; replacement shipped free of charge', requestedBy: 'CS · Aisha', at: '2026-10-15 11:02' } });
 })();
 
-const LEDGER_EVENT_LABEL = { ...Object.fromEntries(FEE_EVENTS.map(e => [e.key, e.label])), managed: 'Billable users', device: 'Device sale' };
+const LEDGER_EVENT_LABEL = { subscription: 'Subscription', ...Object.fromEntries(FEE_EVENTS.map(e => [e.key, e.label])), managed: 'Billable users', device: 'Device sale' };
+
+// Seat subscriptions: each subscription year is billed in advance on its first day (seats, add-ons and extra devices
+// × monthly price × 12); seats and devices added mid-year post one pro-rata charge on the day they start.
+// Posting is idempotent per line key, so re-running a window never double-bills. Free plans post nothing.
+function postSubscriptionDue(clientId, from, to) {
+  const k = CONTRACTS[clientId];
+  if (!k || !k.terms.subscription || typeof subYearLines !== 'function' || (PLANS[k.tier] && PLANS[k.tier].free)) return [];
+  const t = k.terms;
+  const sub = t.subscription;
+  const posted = [];
+  const ref = `SUB-${clientId.toUpperCase().slice(0, 4)}`;
+  const day = d => `${billingDateSub(d)} ${d.slice(0, 4)}`;
+  const post = (l, on, step) => {
+    if (on < from || on > to || LEDGER.some(x => x.event === 'subscription' && x.client === clientId && x.subKey === l.key && x.kind !== 'reversal' && !x.reversedBy)) return;
+    const e = makeCharge({ at: `${on} 00:20`, client: clientId, cc: (entityById(t, sub.billTo) || parentEntity(t)).country, event: 'subscription', entity: sub.billTo,
+      qty: l.qty, unit: l.unit, amount: l.amount, basisText: l.basis, subKey: l.key, wo: ref, step, asset: l.desc, recipient: '—', doc: `Subscription · contract v${(activeVersion(k) || {}).v || 1}`, costCentre: '', po: '' });
+    LEDGER.push(e);
+    posted.push(e);
+  };
+  [sub, sub.next].filter(Boolean).forEach(term => {
+    const p = { ...sub, ...term };
+    subYearStarts(p).forEach(ys => subYearLines(t, ys).forEach(l => post(l, ys, `${day(ys)} · Annual · ${l.label}`)));
+    p.blocks.forEach(b => { const c = subBlockCharge(t, b, 'seats'); if (c) post(c, b.from, `${day(b.from)} · ${c.label}`); });
+    subDeviceBlocks(p).forEach(d => { const c = subBlockCharge(t, d, 'devices'); if (c) post(c, d.from, `${day(d.from)} · ${c.label}`); });
+  });
+  return posted;
+}
 const LEDGER_KIND = { charge: 'Charge', reversal: 'Reversal', rebill: 'Re-bill' };
 
 const ledgerById = id => LEDGER.find(e => e.id === id);

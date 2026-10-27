@@ -1305,6 +1305,10 @@
   grid-template-columns: repeat(5, 1fr);
 }
 
+.stock-summary-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
 .cn-steps {
   display: flex;
   gap: var(--space-xs);
@@ -1481,7 +1485,314 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .stock-summary-5 {
+  .stock-summary-5,
+  .stock-summary-6 {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* Plans and seat subscriptions */
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.plan-card {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.plan-card-enterprise {
+  background: var(--color-background);
+}
+
+.plan-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+}
+
+.plan-price {
+  margin: var(--space-xs) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.plan-price span,
+.plan-blurb,
+.plan-addons {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+}
+
+.plan-addons {
+  margin: var(--space-sm) 0 0;
+  padding-left: var(--space-lg);
+}
+
+.plan-meta {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  font-size: var(--font-size-sm);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.plan-matrix .plan-col {
+  width: 14%;
+  text-align: center;
+}
+
+.plan-yes {
+  color: var(--color-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.plan-no,
+.plan-custom {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.plan-addon {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: #92400e;
+}
+
+.sub-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.sub-blocks .form-input {
+  min-width: 0;
+}
+
+.sub-end {
+  display: inline-block;
+  width: auto;
+}
+
+.sub-renew-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.sub-event-model {
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-background);
+  border-radius: var(--border-radius-md);
+}
+
+@media (max-width: 1280px) {
+  .plan-cards,
+  .sub-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1280px) {
+  #cdSections,
+  #cdSections + .edit-sidebar-column {
+    min-width: 0;
+  }
+
+  .edit-layout:has(#cdSections) {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-layout:has(#cdSections) .edit-sidebar-column {
+    position: static;
+  }
+
+  .seat-tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .sub-status {
+    flex-wrap: wrap;
+  }
+}
+
+.sub-overage-price {
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-sm);
+}
+
+/* Subscription status and seat ledger */
+.sub-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-background);
+  border-radius: var(--border-radius-md);
+}
+
+.sub-status > span:nth-child(2) {
+  flex: 1;
+}
+
+.sub-status-due {
+  color: #92400e;
+  background: #fffbeb;
+}
+
+.sub-status-expired,
+.sub-status-restricted {
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.seat-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.seat-tile {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+}
+
+.seat-tile-alert {
+  border-color: var(--color-warning);
+  background: #fffbeb;
+}
+
+.seat-tile-label,
+.seat-tile-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.seat-tile-value {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
+
+.seat-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  background: #dbeafe;
+  border-radius: 4px;
+}
+
+.seat-bar-active {
+  background: var(--color-success);
+}
+
+.seat-bar-used {
+  background: var(--color-text-muted);
+}
+
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin: var(--space-xs) 0 var(--space-md);
+  font-size: var(--font-size-xs);
+}
+
+.seat-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-radius: 50%;
+}
+
+.seat-dot-active { background: var(--color-success); }
+.seat-dot-available { background: #93c5fd; }
+.seat-dot-used { background: var(--color-text-muted); }
+
+.seat-roster {
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.seat-roster summary {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.seat-roster table {
+  margin-top: var(--space-sm);
+}
+
+.seat-order-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.plan-devices {
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* New company: registration then acceptance */
+.reg-steps {
+  margin: 0 0 var(--space-sm);
+  padding: 0;
+  list-style: none;
+}
+
+.reg-step {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-sm);
+}
+
+.reg-dot {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  color: #fff;
+  border: 2px solid var(--color-border-hover);
+  border-radius: 50%;
+}
+
+.reg-done .reg-dot {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+/* Quick company setup */
+.qs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.qs-grid .qs-wide {
+  grid-column: 1 / -1;
+}
+
+.qs-defaults {
+  margin: var(--space-md) 0 0;
+  padding-left: 1.1rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }

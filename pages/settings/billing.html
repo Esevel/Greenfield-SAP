@@ -21,16 +21,29 @@
       <div class="page-content">
         <div class="page-header">
           <h1 class="page-title">Billing</h1>
-          <p class="page-description">Defaults every client starts from. Client contracts store only what differs. Staff only.</p>
+          <p class="page-description">Plans, standard fees, tax and FX every client starts from. Client contracts store only what differs. Staff only.</p>
         </div>
         
         <nav class="tab-strip" id="bsTabs">
+          <a href="?tab=plans" class="tab-link" data-tab="plans">Plans</a>
           <a href="?tab=fees" class="tab-link" data-tab="fees">Standard fees</a>
           <a href="?tab=tax" class="tab-link" data-tab="tax">Tax and duties</a>
           <a href="?tab=fx" class="tab-link" data-tab="fx">FX</a>
         </nav>
         
         <div class="saved-note" id="bsSaved" hidden></div>
+        
+        <!-- Plans -->
+        <div id="tab-plans" hidden>
+          <div class="info-line">Free, Support, Secure and Complete are seat subscriptions: one seat per user, committed for the term (usually 12 months) and billed annually in advance (seats × monthly price × 12) in the client's currency. When a new user joins and no seat is available, the client admin approves a subscription order for one more seat, charged once: monthly price × days left in the subscription year ÷ 30, with days capped at 360. Each seat covers a set number of devices (laptops and peripherals); more devices need an upgrade order priced the same way per extra device. A seat already paid for (initial, reused or renewed) shows a plan price of '-'. Seats can't be reduced until renewal. Free plans add seats and devices at no charge without orders. All plans need renewing: paid plans get a 30-day grace period after expiry (notifications paused), then access is restricted; Free restricts at the renewal date. Enterprise has no subscription, bills per lifecycle event and is the only plan with billable users. Lifecycle fees and device sales are billed on every plan.</div>
+          <div class="plan-cards" id="plCards"></div>
+          <div class="table-container">
+            <table class="table catalogue-table plan-matrix">
+              <thead class="catalogue-table-header" id="plHead"></thead>
+              <tbody id="plRows"></tbody>
+            </table>
+          </div>
+        </div>
         
         <!-- Standard fees -->
         <div id="tab-fees" hidden>
@@ -170,6 +183,7 @@
   <script src="/scripts/components.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/subscription-data.js"></script>
   <script src="/scripts/contract-terms.js"></script>
   <script src="/scripts/billing-settings-data.js"></script>
   <script src="/scripts/billing-settings.js"></script>

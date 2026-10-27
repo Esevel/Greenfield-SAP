@@ -74,7 +74,10 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/subscription-data.js"></script>
   <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/seats-data.js"></script>
   <script>
     (function () {
       const $ = id => document.getElementById(id);
@@ -86,11 +89,20 @@
       $('pTags').innerHTML = `<span class="badge ${cls}">${label}</span><span class="text-muted">· ${escapeHtml(p.role)} · ${peopleClientName(p.client)} · ${WH_COUNTRIES[p.cc][0]} ${WH_COUNTRIES[p.cc][1]}</span>`;
 
       const missing = '<span class="text-error">Missing</span>';
+      // Seat-plan clients: which seat this person holds, or what's holding up their onboarding
+      function personSeatHtml(p) {
+        const seat = seatOfPerson(p);
+        const plan = `<a href="/pages/clients/detail.html?c=${p.client}#sec-subscription" class="link-sm">${CONTRACTS[p.client].tier} plan</a>`;
+        if (seat) { const s = joinerSeat(p); return `${seat.id} · plan price ${escapeHtml(seatPriceOf(p).text)} · ${personDevices(p)} of ${subDeviceLimit(CONTRACTS[p.client].tier) + (seat.extra || 0)} devices${s && !s.ok ? ` · <span class="text-warning">${escapeHtml(s.text)}</span>` : ''} · ${plan}`; }
+        if (p.joiner && p.state === 'joining') { const s = joinerSeat(p); return `<span class="${s.key === 'pending' ? 'text-warning' : 'text-error'}">${escapeHtml(s.text)}</span> · ${plan}`; }
+        return `<span class="text-muted">${p.state === 'left' ? 'Released' : 'None'}</span> · ${plan}`;
+      }
       $('pDetails').innerHTML = [
         ['Work email', escapeHtml(p.email)], ['Phone', p.phone ? escapeHtml(p.phone) : missing],
         ['Department', escapeHtml(p.dept)], ['Role', escapeHtml(p.role)],
         ['Start date', peopleFmt(p.start)], ['Departure date', p.end ? `${peopleFmt(p.end)} · ${p.endConfirmed ? 'Confirmed' : 'Estimated'}` : '<span class="text-muted">—</span>'],
-        ['Delivery / return address', p.address ? escapeHtml(p.address) : missing]
+        ['Delivery / return address', p.address ? escapeHtml(p.address) : missing],
+        ...(isSeatClient(p.client) ? [['Seat', personSeatHtml(p)]] : [])
       ].map(([l, v]) => `<div><div class="detail-label">${l}</div><div class="detail-value">${v}</div></div>`).join('');
 
       $('pAssetCount').textContent = p.assets.length;

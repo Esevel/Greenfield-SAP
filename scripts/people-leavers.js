@@ -1,5 +1,7 @@
 // People › Leavers: plan retrieval up to the offboarding work order. Fulfilment is tracked in Tracker › Offboarding.
-// Needs hub-data.js, supply-data.js, stock-data.js, people-data.js and people-header.js.
+// Seat-plan clients: the leaver keeps their seat while offboarding; it's released when they've left (available again
+// after its first use, used after its second). Needs hub-data.js, supply-data.js, stock-data.js, billing-data.js,
+// subscription-data.js, people-data.js, seats-data.js and people-header.js.
 
 const LEAVER_STATUS = {
   new: ['New', 'badge-info'],
@@ -15,7 +17,7 @@ function initLeavers() {
   const overlay = $('lvOverlay');
   let current = null;
   let page = 1;
-  let nextWo = 2070;
+  let nextWo = Math.max(2069, ...PEOPLE.filter(p => p.leaver && p.leaver.wo).map(p => Number(p.leaver.wo.split('-')[1]) || 0)) + 1;
 
   $('fClient').innerHTML = '<option value="">All</option>' + [...new Set(leavers().map(p => p.client))].map(id => `<option value="${id}">${peopleClientName(id)}</option>`).join('');
   $('fCountry').innerHTML = '<option value="">All</option>' + Object.keys(WH_COUNTRIES).map(cc => `<option value="${cc}">${WH_COUNTRIES[cc][1]}</option>`).join('');
@@ -101,6 +103,14 @@ function initLeavers() {
     $('lvReminder').checked = l.reminder;
     $('lvReminderHint').textContent = reminderHint(p);
 
+    const seat = isSeatClient(p.client) ? seatOfPerson(p) : null;
+    $('lvSeatSection').hidden = !isSeatClient(p.client);
+    if (isSeatClient(p.client)) {
+      $('lvSeat').innerHTML = seat
+        ? `<div>Holds seat <strong>${seat.id}</strong> (use ${seat.uses.length} of 2) until offboarding completes. Then it becomes <strong>${seat.uses.length >= 2 ? 'used' : 'available'}</strong>${seat.uses.length >= 2 ? ' and can’t be reassigned until renewal' : ' for the next joiner'}.</div>`
+        : `<div class="text-muted">${p.state === 'left' ? 'Seat released.' : 'No seat held.'}</div>`;
+    }
+    $('lvComplete').hidden = !locked || p.state === 'left';
     $('lvSchedule').hidden = locked;
     $('lvDone').hidden = !locked;
     $('lvDone').innerHTML = locked ? `✓ Work order <a href="/pages/services/offboarding-detail.html">${l.wo}</a> created. Track retrieval in Tracker › Offboarding.` : '';
@@ -147,6 +157,7 @@ function initLeavers() {
   $('lvMethod').addEventListener('change', renderMethod);
   $('lvReminder').addEventListener('change', () => {
     current.leaver.reminder = $('lvReminder').checked;
+    savePeople();
     $('lvReminderHint').textContent = reminderHint(current);
     render();
   });
@@ -162,7 +173,20 @@ function initLeavers() {
     if (msg) return;
     if (m.needsAddress) current.address = address;
     Object.assign(current.leaver, { method, date, status: 'created', wo: `OFF-${nextWo++}` });
+    savePeople();
     $('lvNote').textContent = `✓ ${m.label} scheduled for ${peopleFmt(date)}.`;
+    $('lvNote').hidden = false;
+    renderPanel();
+    render();
+  });
+
+  $('lvComplete').addEventListener('click', () => {
+    const seat = isSeatClient(current.client) ? seatOfPerson(current) : null;
+    current.state = 'left';
+    if (!current.end || current.end > PEOPLE_TODAY) current.end = PEOPLE_TODAY;
+    savePeople();
+    seatSync(current.client);
+    $('lvNote').textContent = `✓ ${current.name} offboarded.${seat ? ` Seat ${seat.id} is now ${seatState(seat)}.` : ''}`;
     $('lvNote').hidden = false;
     renderPanel();
     render();
