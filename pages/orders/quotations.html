@@ -27,10 +27,10 @@
           <a href="/pages/orders/board.html" class="tab-link" data-orders-view="orders">Board</a><a href="/pages/orders/list.html" class="tab-link" data-orders-view="orders">List</a><a href="/pages/orders/insights.html" class="tab-link" data-orders-view="orders">Insights</a><a href="/pages/orders/templates.html" class="tab-link" data-orders-view="orders">Templates</a><a href="/pages/orders/quotations.html" class="tab-link active" data-orders-view="quotation" aria-current="page">Quotation</a>
         </nav>
         <section class="qt-editor" id="qtEditor" hidden>
-          <div class="qt-editor-heading"><div><p class="qt-eyebrow">NEW QUOTATION</p><h2>Quotation details</h2><p>Enter request and vendor pricing. USD costs, totals and margin calculate automatically.</p></div><button class="qt-close" type="button" id="qtClose" aria-label="Close quotation form">×</button></div>
+          <div class="qt-editor-heading"><div><p class="qt-eyebrow">QUOTATION</p><h2 id="qtEditorTitle">New quotation</h2><p>Enter request and vendor pricing. USD costs, totals and margin calculate automatically.</p></div><button class="qt-close" type="button" id="qtClose" aria-label="Close quotation form">×</button></div>
           <form id="qtForm" novalidate>
             <div id="qtFields"></div>
-            <div class="qt-form-actions"><span class="qt-required-note">Required fields are marked *</span><div><button class="btn btn-secondary" type="button" id="qtCancel">Cancel</button><button class="btn btn-primary" type="submit">Save quotation</button></div></div>
+            <div class="qt-form-actions"><span class="qt-required-note">Required fields are marked *</span><div><button class="btn btn-secondary" type="button" id="qtCancel">Cancel</button><button class="btn btn-primary" type="submit" id="qtSubmit">Save quotation</button></div></div>
           </form>
         </section>
         <section class="qt-list-panel">
