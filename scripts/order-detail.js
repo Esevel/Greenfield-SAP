@@ -195,6 +195,7 @@ function renderOrderDetail(root, id, opts = {}) {
     ${o.costCentre ? `<div class="info-row"><span class="info-label">Cost centre</span><span class="info-value">${escapeHtml(o.costCentre)}</span></div>` : ''}
     <div class="info-row"><span class="info-label">Owner</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-owner aria-label="Owner">${ORDER_OWNERS.map(n => `<option${n === o.owner ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span></div>
     <div class="info-row"><span class="info-label">Approval</span><span class="info-value">${o.approvalRequired ? { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }[o.approval] : 'Not required'}</span></div>
+    ${o.quotationRef ? `<div class="info-row"><span class="info-label">Quotation</span><span class="info-value"><a href="/pages/orders/quotations.html" class="link-sm order-qt-link" title="Open quotation ${escapeHtml(o.quotationRef)}">${escapeHtml(o.quotationRef)} ↗</a></span></div>` : ''}
   </div></div></div>`;
   const feed = [
     ...o.audit.map((x, i) => ({ at: x.at, who: x.who, html: escapeHtml(x.text), kind: 'audit', i })),
