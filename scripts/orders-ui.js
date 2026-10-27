@@ -1,7 +1,7 @@
 // Shared Orders UI: page header actions, Board | List | Insights toggle, filters, CSV export, daily digest,
 // templates, reason prompt and toast. Needs orders-engine.js.
 
-const ORDER_VIEWS = [['board', 'Board', '/pages/orders/board.html'], ['list', 'List', '/pages/orders/list.html'], ['insights', 'Insights', '/pages/orders/insights.html'], ['templates', 'Templates', '/pages/orders/templates.html']];
+const ORDER_VIEWS = [['board', 'Board', '/pages/orders/board.html'], ['list', 'List', '/pages/orders/list.html'], ['insights', 'Insights', '/pages/orders/insights.html'], ['templates', 'Templates', '/pages/orders/templates.html'], ['quotation', 'Quotation', '/pages/orders/quotations.html']];
 
 // Module header shared by Board, List, Insights and Templates: title, New order, More menu, view tabs
 function renderOrderHeader(active, getScope) {
@@ -16,7 +16,7 @@ function renderOrderHeader(active, getScope) {
       </div>
       <p class="page-description">Purchase orders from submission to delivery, with SLA timing in business hours.</p>
     </div>
-    <nav class="tab-strip order-tabs">${ORDER_VIEWS.map(([k, l, h]) => `<a href="${h}" class="tab-link${k === active ? ' active' : ''}">${l}${k === 'board' || k === 'list' ? ` <span class="tab-count">${openOrders().length}</span>` : k === 'templates' ? ` <span class="tab-count">${ORDER_TEMPLATES.length}</span>` : ''}</a>`).join('')}</nav>`;
+    <nav class="tab-strip order-tabs">${ORDER_VIEWS.filter(([k]) => k !== 'quotation' || window.RoleAccess?.canAccess('quotation')).map(([k, l, h]) => `<a href="${h}" class="tab-link${k === active ? ' active' : ''}">${l}${k === 'board' || k === 'list' ? ` <span class="tab-count">${openOrders().length}</span>` : k === 'templates' ? ` <span class="tab-count">${ORDER_TEMPLATES.length}</span>` : ''}</a>`).join('')}</nav>`;
   orderBindHeader(getScope);
 }
 

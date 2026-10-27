@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders · Quotations - Admin Portal</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/catalogue.css">
+  <link rel="stylesheet" href="/styles/catalogue-edit.css">
+  <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/orders.css">
+  <link rel="stylesheet" href="/styles/quotations.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+    <main class="main-content">
+      <div id="header-container"></div>
+      <div class="page-content">
+        <nav class="breadcrumbs-custom"><a href="/pages/orders/board.html" class="breadcrumb-link" data-orders-view="orders">Orders</a><span class="breadcrumb-separator" data-orders-view="orders">›</span><span class="breadcrumb-current">Quotation</span></nav>
+        <div class="page-header order-module-header">
+          <div class="flex-between"><h1 class="page-title">Orders</h1><button class="btn btn-primary" type="button" id="qtCreate">＋ Create quotation</button></div>
+          <p class="page-description">Build and track client quotations, pricing, margins and approvals.</p>
+        </div>
+        <nav class="tab-strip order-tabs" aria-label="Orders views">
+          <a href="/pages/orders/board.html" class="tab-link" data-orders-view="orders">Board</a><a href="/pages/orders/list.html" class="tab-link" data-orders-view="orders">List</a><a href="/pages/orders/insights.html" class="tab-link" data-orders-view="orders">Insights</a><a href="/pages/orders/templates.html" class="tab-link" data-orders-view="orders">Templates</a><a href="/pages/orders/quotations.html" class="tab-link active" data-orders-view="quotation" aria-current="page">Quotation</a>
+        </nav>
+        <section class="qt-editor" id="qtEditor" hidden>
+          <div class="qt-editor-heading"><div><p class="qt-eyebrow">NEW QUOTATION</p><h2>Quotation details</h2><p>Enter request and vendor pricing. USD costs, totals and margin calculate automatically.</p></div><button class="qt-close" type="button" id="qtClose" aria-label="Close quotation form">×</button></div>
+          <form id="qtForm" novalidate>
+            <div id="qtFields"></div>
+            <div class="qt-form-actions"><span class="qt-required-note">Required fields are marked *</span><div><button class="btn btn-secondary" type="button" id="qtCancel">Cancel</button><button class="btn btn-primary" type="submit">Save quotation</button></div></div>
+          </form>
+        </section>
+        <section class="qt-list-panel">
+          <div class="qt-list-heading"><div><h2>Quotations</h2><p id="qtCount">No quotations yet</p></div><div class="qt-list-tools"><input id="qtSearch" type="search" placeholder="Search quotations" aria-label="Search quotations"><select id="qtClientFilter" aria-label="Filter by client"><option value="">All clients</option></select><select id="qtVendorFilter" aria-label="Filter by vendor"><option value="">All vendors</option></select><select id="qtProductFilter" aria-label="Filter by product"><option value="">All products</option></select><select id="qtStatusFilter" aria-label="Filter by quote status"><option value="">All statuses</option></select><button class="btn btn-secondary btn-sm" type="button" id="qtClearFilters">Clear filters</button></div></div>
+          <div class="qt-list" id="qtList"></div>
+        </section>
+        <div class="qt-toast" id="qtToast" role="status" aria-live="polite" hidden></div>
+      </div>
+    </main>
+  </div>
+  <script src="/scripts/navigation.js"></script>
+  <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/billing-data.js"></script>
+  <script src="/scripts/quotations.js"></script>
+</body>
+</html>
