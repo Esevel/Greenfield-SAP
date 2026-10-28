@@ -316,22 +316,28 @@
     const ccs = countries();
     const exc = Object.keys(d.feeExceptions).filter(k => ccs.includes(k.split('.')[1])).length + d.offEvents.length;
     const li = (l, v) => `<li><span>${l}</span><span>${v}</span></li>`;
+    // Only show lines for steps the user has reached, so form defaults don't look like entered terms
+    const seen = id => d.seen >= STEPS.findIndex(s => s.id === id);
+    const lines = [
+      seen('plan') ? [
+        li('Plan', d.tier),
+        isSeatPlan(d.tier) ? li('Seats', PLANS[d.tier].free ? `${d.seats} · no charge` : `${d.seats} × ${fmtAmount(subCur(), seatPrice())} / month`) : li('Billing', 'Per event'),
+        isSeatPlan(d.tier) && !PLANS[d.tier].free ? li('Annual fee', `${fmtAmount(subCur(), d.total ?? calcAnnual())}${d.total != null ? ' (agreed)' : ''}`) : '',
+        li(isSeatPlan(d.tier) ? 'Subscription' : 'Term', d.start ? `${billingDate(d.start)} – ${billingDate(endDate())}` : '—'),
+        isSeatPlan(d.tier) ? li('Auto-renew', d.autoRenew ? 'On' : 'Off') : ''
+      ].join('') : '',
+      seen('countries') ? li('Countries', ccs.length ? ccs.map(cc => WH_COUNTRIES[cc][0]).join(' ') : '—') : '',
+      seen('entities') ? li('Billing entities', d.entities.length || '—') + li('Invoice currencies', [...new Set(d.entities.map(x => x.currency))].join(' · ') || '—') : '',
+      seen('pricing') ? [
+        li('Retail adjustments', d.markup.length || 'None'),
+        li('Fee exceptions', exc || 'None'),
+        isSeatPlan(d.tier) ? '' : li('Billable users', d.managed ? 'On' : 'Off')
+      ].join('') : '',
+      seen('billing') ? li('Procurement cap', d.cap.limit > 0 && d.cap.currency ? fmtAmount(d.cap.currency, Number(d.cap.limit), 0) : '—') : ''
+    ].join('');
     return `<section class="card"><div class="card-header"><h3 class="card-title">Contract summary</h3></div><div class="card-body">
       <div class="client-cell cn-mb"><div class="client-logo">${escapeHtml(d.logo || '?')}</div><strong>${escapeHtml(d.name || 'New client')}</strong></div>
-      <ul class="summary-lines">
-        ${li('Plan', d.tier)}
-        ${isSeatPlan(d.tier) ? li('Seats', PLANS[d.tier].free ? `${d.seats} · no charge` : `${d.seats} × ${fmtAmount(subCur(), seatPrice())} / month`) : li('Billing', 'Per event')}
-        ${isSeatPlan(d.tier) && !PLANS[d.tier].free ? li('Annual fee', `${fmtAmount(subCur(), d.total ?? calcAnnual())}${d.total != null ? ' (agreed)' : ''}`) : ''}
-        ${li(isSeatPlan(d.tier) ? 'Subscription' : 'Term', d.start ? `${billingDate(d.start)} – ${billingDate(endDate())}` : '—')}
-        ${isSeatPlan(d.tier) ? li('Auto-renew', d.autoRenew ? 'On' : 'Off') : ''}
-        ${li('Countries', ccs.length ? ccs.map(cc => WH_COUNTRIES[cc][0]).join(' ') : '—')}
-        ${li('Billing entities', d.entities.length || '—')}
-        ${li('Invoice currencies', [...new Set(d.entities.map(x => x.currency))].join(' · ') || '—')}
-        ${li('Retail adjustments', d.markup.length || 'None')}
-        ${li('Fee exceptions', exc || 'None')}
-        ${isSeatPlan(d.tier) ? '' : li('Billable users', d.managed ? 'On' : 'Off')}
-        ${li('Procurement cap', d.cap.limit > 0 && d.cap.currency ? fmtAmount(d.cap.currency, Number(d.cap.limit), 0) : '—')}
-      </ul>
+      ${lines ? `<ul class="summary-lines">${lines}</ul>` : '<div class="text-muted">Terms appear here as you complete each step.</div>'}
       <div class="readonly-note">Created as a pending subscription (contract v1). Nothing is billed until the owner registers and accepts.</div>
     </div></section>`;
   }

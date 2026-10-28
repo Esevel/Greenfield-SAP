@@ -1,11 +1,11 @@
 // Orders · Board: a column per order stage plus Pending approval / Payment hold and SLA paused lanes; quick-done and
-// bulk mark done; card click opens a drawer with the stage list and quick actions. Needs orders-ui.js.
+// bulk mark done; card click opens the order page (same detail as Orders · List). Needs orders-ui.js.
 
 (function initOrdersBoard() {
   const $ = id => document.getElementById(id);
   const f = orderFiltersLoad();
   const selected = new Set();
-  let drawerId = null;
+  const openOrder = id => { location.href = `/pages/orders/order.html?id=${id}`; };
 
   renderOrderHeader('board', () => ORDERS.filter(o => orderMatches(o, f)));
   $('obFilters').innerHTML = orderFilterBarHtml(f);
@@ -67,7 +67,6 @@
     }
     $('obBoard').innerHTML = html;
     syncBulk();
-    if (drawerId) renderDrawer();
   }
 
   function syncBulk() {
@@ -76,10 +75,10 @@
     $('obBulkCount').textContent = `${selected.size} order${selected.size === 1 ? '' : 's'} selected`;
   }
 
-  // Quick-done needs an AWB on the shipping stage, so that one opens the drawer instead
+  // Quick-done needs an AWB on the shipping stage, so that one opens the order page instead
   function quickDone(o) {
     const s = orderSla(o);
-    if (s.cur.key === 'awb' && !(o.stages.awb?.awb || []).length) { openDrawer(o.id); orderToast('Add the AWB / tracking number first.', 'error'); return; }
+    if (s.cur.key === 'awb' && !(o.stages.awb?.awb || []).length) { openOrder(o.id); return; }
     orderTry(() => orderMarkDone(o), render);
   }
 
@@ -96,9 +95,9 @@
     const mq = e.target.closest('[data-move-quotation]');
     if (mq) { orderTry(() => orderMoveFromQuotation(orderById(mq.dataset.moveQuotation)), render); return; }
     const card = e.target.closest('.order-card');
-    if (card) openDrawer(card.dataset.id);
+    if (card) openOrder(card.dataset.id);
   });
-  $('obBoard').addEventListener('keydown', e => { const card = e.target.closest('.order-card'); if (card && e.key === 'Enter' && e.target === card) openDrawer(card.dataset.id); });
+  $('obBoard').addEventListener('keydown', e => { const card = e.target.closest('.order-card'); if (card && e.key === 'Enter' && e.target === card) openOrder(card.dataset.id); });
 
   $('obBulkDone').addEventListener('click', () => {
     const list = [...selected].map(orderById);
@@ -118,89 +117,7 @@
     if (v) orderTry(() => orderResume(o, v.r), render);
   }
 
-  /* ---------- Drawer ---------- */
-
-  function openDrawer(id) {
-    drawerId = id;
-    renderDrawer();
-    $('obDrawer').classList.add('open');
-    $('obOverlay').classList.add('show');
-  }
-  function closeDrawer() {
-    drawerId = null;
-    $('obDrawer').classList.remove('open');
-    $('obOverlay').classList.remove('show');
-  }
-  $('obDrawerClose').addEventListener('click', closeDrawer);
-  $('obOverlay').addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerId && !document.querySelector('.modal-overlay')) closeDrawer(); });
-
-  function renderDrawer() {
-    const o = orderById(drawerId);
-    const s = orderSla(o);
-    const p = orderPricing(o);
-    $('obDrawerTitle').textContent = `${o.id} · ${orderClient(o.client).name}`;
-    $('obDrawerMeta').innerHTML = `${orderStateBadge(o)} ${orderPriorityTag(o.priority)} · ${escapeHtml(o.recipient)} · ${orderFlag(o.cc)} ${WH_COUNTRIES[o.cc][1]}`;
-    const steps = s.active.map(st => {
-      const cls = st.state === 'done' ? (st.over ? 'ms-done ms-health-breached' : 'ms-done') : st.state === 'current' ? `ms-current${s.health === 'breached' ? ' ms-health-breached' : s.health === 'risk' ? ' ms-health-risk' : ''}` : st.state === 'skipped' ? 'ms-skipped' : 'ms-upcoming';
-      const detail = st.state === 'done' ? `${fmtOrderTs(st.doneAt)} · ${fmtBiz(st.mins, o.cc)} of ${st.hours}h${st.over ? ' · over target' : ''}`
-        : st.state === 'current' ? `${fmtBiz(st.mins, o.cc)} of ${st.hours}h${s.paused ? ' · paused' : ''}`
-          : st.state === 'skipped' ? escapeHtml(st.skipReason) : `Target ${st.hours}h`;
-      return `<li class="${cls}"><div class="ms-name">${st.m.label}${st.custom ? ' <span class="ms-custom">custom</span>' : ''}</div><div class="ms-detail">${detail}</div></li>`;
-    }).join('');
-    const awb = (o.stages.awb?.awb || []);
-    $('obDrawerBody').innerHTML = `
-      ${orderFlagsHtml(o) ? `<div class="drawer-flags">${orderFlagsHtml(o)}</div>` : ''}
-      ${o.atQuotation ? `<div class="panel-section">
-        <h4 class="panel-section-title">Quotation stage</h4>
-        <div class="readonly-note">This order is linked to quotation <strong>${escapeHtml(o.quotationRef)}</strong> and has not yet entered the vendor workflow. Click <em>Start order workflow</em> to move it to Submitted to vendor.</div>
-      </div>` : `<div class="panel-section">
-        <h4 class="panel-section-title">Stages</h4>
-        <ol class="ms-track">${steps}</ol>
-        <div class="readonly-note">Business hours in ${WH_COUNTRIES[o.cc][1]} (${calCountry(o.cc).hours}, ${calCountry(o.cc).tz}). Elapsed ${fmtBiz(s.elapsed, o.cc)} of ${fmtBiz(s.totalMins, o.cc)} end-to-end${s.cur ? ` · due ${fmtOrderTs(s.due)}` : ''}.</div>
-      </div>`}
-      ${s.cur && s.cur.key === 'awb' ? `<div class="panel-section">
-        <h4 class="panel-section-title">Shipping info</h4>
-        <div class="awb-quick">
-          <input class="form-input" id="dwCourier" placeholder="Courier" value="${escapeHtml(awb[0]?.courier || ORDER_COURIER[o.cc])}" aria-label="Courier">
-          <input class="form-input" id="dwTracking" placeholder="Tracking number" value="${escapeHtml(awb[0]?.tracking || '')}" aria-label="Tracking number">
-          <button type="button" class="btn btn-secondary btn-sm" id="dwAwbSave">Save AWB</button>
-        </div>
-        <div class="readonly-note">Add more shipments on the order page.</div>
-      </div>` : ''}
-      <div class="panel-section">
-        <h4 class="panel-section-title">Order</h4>
-        <div class="info-grid">
-          <div class="info-row"><span class="info-label">Items</span><span class="info-value">${o.products.map(l => `${l.qty} × ${escapeHtml(l.name)}`).join('<br>')}</span></div>
-          <div class="info-row"><span class="info-label">Vendor</span><span class="info-value">${escapeHtml(orderVendorName(o.vendor))}${o.po ? ` · ${escapeHtml(o.po)}` : ''}</span></div>
-          <div class="info-row"><span class="info-label">Route</span><span class="info-value">${SLA_ROUTES[o.route].label}</span></div>
-          <div class="info-row"><span class="info-label">Revenue</span><span class="info-value">${fmtAmount(o.currency, p.totalRev)}${p.tax.rate ? ` incl. ${escapeHtml(p.tax.label)}` : ''} ${marginBadge(p.pct)}</span></div>
-          <div class="info-row"><span class="info-label">Expected delivery</span><span class="info-value">${fmtOrderDate(o.expected)}</span></div>
-          <div class="info-row"><span class="info-label">Owner</span><span class="info-value">${escapeHtml(o.owner)}</span></div>
-          ${o.quotationRef ? `<div class="info-row"><span class="info-label">Quotation</span><span class="info-value"><a href="/pages/orders/quotations.html" class="order-qt-link" title="View quotation">${escapeHtml(o.quotationRef)}</a></span></div>` : ''}
-        </div>
-      </div>`;
-    const block = orderBlockedReason(o);
-    const paused = orderIsPaused(o);
-    $('obDrawerFoot').innerHTML = `<a href="/pages/orders/order.html?id=${o.id}" class="btn btn-secondary">Open order</a>
-      ${o.atQuotation ? '<button type="button" class="btn btn-primary" id="dwMoveQuotation">→ Start order workflow</button>' : ''}
-      ${!o.atQuotation && orderPendingApproval(o) ? '<button type="button" class="btn btn-primary" id="dwApprove">Approve</button>' : ''}
-      ${!o.atQuotation && o.paymentHold ? '<button type="button" class="btn btn-primary" id="dwRelease">Release hold</button>' : ''}
-      ${!o.atQuotation && !block && s.cur ? `<button type="button" class="btn btn-secondary" id="dwPause">${paused ? '▶ Resume SLA' : '⏸ Pause SLA'}</button><button type="button" class="btn btn-primary" id="dwDone">Mark ${escapeHtml(s.cur.m.label)} done</button>` : ''}`;
-    const on = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
-    on('dwMoveQuotation', () => orderTry(() => orderMoveFromQuotation(o), render));
-    on('dwDone', () => quickDone(o));
-    on('dwApprove', () => orderTry(() => orderApprove(o), render));
-    on('dwRelease', () => orderTry(() => orderSetHold(o, false), render));
-    on('dwPause', async () => {
-      if (paused) return resume(o);
-      const v = await orderDialog({ title: `Pause SLA · ${o.id}`, text: 'The clock stops until you resume it. Marking a stage done resumes it automatically.', fields: [{ id: 'r', label: 'Reason', type: 'textarea', required: true, placeholder: 'e.g. Waiting for client to confirm address' }], confirm: 'Pause SLA' });
-      if (v) orderTry(() => orderPause(o, v.r), render);
-    });
-    on('dwAwbSave', () => orderTry(() => orderSetAwb(o, [{ courier: $('dwCourier').value.trim(), tracking: $('dwTracking').value.trim(), url: '' }, ...(o.stages.awb?.awb || []).slice(1)]), render));
-  }
-
+  // Links from other pages (e.g. quotations) may still use ?open= — redirect to the order page
   const openParam = new URLSearchParams(location.search).get('open');
-  render();
-  if (openParam && orderById(openParam)) openDrawer(openParam);
+  if (openParam && orderById(openParam)) { openOrder(openParam); } else { render(); }
 })();
