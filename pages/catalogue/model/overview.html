@@ -28,6 +28,11 @@
                     <label class="form-label">Model name</label>
                     <input type="text" class="form-input" value="MacBook Pro 14&quot; M3">
                   </div>
+
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" rows="3" placeholder="Brief product description visible to client admins in the catalogue…">The MacBook Pro 14&quot; with M3 chip delivers exceptional performance for creative and technical workloads. Features a stunning Liquid Retina XDR display, all-day battery life, and a full suite of ports including Thunderbolt 4 and HDMI 2.1. Ideal for designers, engineers, and power users.</textarea>
+                  </div>
                   
                   <div class="form-group">
                     <label class="form-label">Brand</label>
@@ -36,17 +41,44 @@
                       <option>Dell</option>
                       <option>Lenovo</option>
                       <option>HP</option>
+                      <option>Microsoft</option>
                       <option>Logitech</option>
+                      <option>Jabra</option>
+                      <option>Sony</option>
+                      <option>Samsung</option>
+                      <option>LG</option>
                     </select>
                   </div>
                   
                   <div class="form-group">
                     <label class="form-label">Category</label>
                     <select class="form-select">
-                      <option selected>Laptops</option>
-                      <option>Monitors</option>
-                      <option>Accessories</option>
-                      <option>Peripherals</option>
+                      <optgroup label="Computers">
+                        <option selected>MacBooks</option>
+                        <option>PC Laptops</option>
+                        <option>Laptops</option>
+                        <option>Desktops</option>
+                        <option>All-in-One Desktops</option>
+                      </optgroup>
+                      <optgroup label="Displays">
+                        <option>Monitors</option>
+                      </optgroup>
+                      <optgroup label="Peripherals">
+                        <option>Keyboards</option>
+                        <option>Mice</option>
+                        <option>Headsets</option>
+                        <option>Speakers</option>
+                        <option>Webcams</option>
+                      </optgroup>
+                      <optgroup label="Storage &amp; Cables">
+                        <option>Hard Drives &amp; SSDs</option>
+                        <option>Cables &amp; Adapters</option>
+                      </optgroup>
+                      <optgroup label="Wearables &amp; Protection">
+                        <option>Apple Watch</option>
+                        <option>AppleCare Protection Plan</option>
+                        <option>Bags &amp; Cases</option>
+                      </optgroup>
                     </select>
                   </div>
                   
@@ -62,6 +94,72 @@
                       <button class="segment-button" data-value="draft">Draft</button>
                       <button class="segment-button active" data-value="active">Active</button>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-lg">
+              <div class="card-header"><h3 class="card-title">Specifications</h3></div>
+              <div class="card-body">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Processor</label>
+                    <input type="text" class="form-input" value="Apple M3 (8-core CPU, 10-core GPU)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Memory</label>
+                    <select class="form-select">
+                      <option>8 GB</option>
+                      <option selected>16 GB</option>
+                      <option>24 GB</option>
+                      <option>36 GB</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Storage</label>
+                    <select class="form-select">
+                      <option>256 GB SSD</option>
+                      <option selected>512 GB SSD</option>
+                      <option>1 TB SSD</option>
+                      <option>2 TB SSD</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Display</label>
+                    <input type="text" class="form-input" value="14.2&quot; Liquid Retina XDR, 3024 × 1964, ProMotion 120 Hz">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Battery</label>
+                    <input type="text" class="form-input" value="70 Wh · Up to 18h (rated)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Weight</label>
+                    <input type="text" class="form-input" value="1.55 kg">
+                  </div>
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Ports</label>
+                    <input type="text" class="form-input" value="3 × Thunderbolt 4 (USB-C) · HDMI 2.1 · SD card · MagSafe 3 · 3.5 mm">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Connectivity</label>
+                    <input type="text" class="form-input" value="Wi-Fi 6E · Bluetooth 5.3">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Colour options</label>
+                    <input type="text" class="form-input" value="Space Black · Silver">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Operating system</label>
+                    <input type="text" class="form-input" value="macOS Sequoia 15 (Jamf enrolled)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Part number</label>
+                    <input type="text" class="form-input" value="MR7J3LL/A">
+                  </div>
+                  <div class="form-group form-group-span-2">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" rows="2" placeholder="Additional spec notes…"></textarea>
                   </div>
                 </div>
               </div>

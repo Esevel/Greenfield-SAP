@@ -132,7 +132,7 @@ window.RoleAccess = (() => {
       localStorage.setItem(USER_KEY, 'yuying');
       return 'yuying';
     }
-    return simulated || 'matthew';
+    return simulated || 'yuying';
   }
 
   function userById(userId = currentUserId(), state = readState()) {
