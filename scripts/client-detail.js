@@ -175,6 +175,37 @@ function initClientDetail() {
       ${live ? '<div id="buPanel" class="bu-panel"></div>' : ''}`;
   }
 
+  // Device management rollup (mdm-data.js): client-level enrolment %, MFA %, SSO apps and password manager adoption
+  function mdmRollupHtml() {
+    if (typeof CLIENT_MDM === 'undefined' || !CLIENT_MDM[client.id]) {
+      return '<div class="readonly-note">Device management is part of the Secure and Complete plans. This client\'s plan doesn\'t include it.</div>';
+    }
+    const p = MDM_PLATFORMS[CLIENT_MDM[client.id]];
+    const devices = mdmClientDevices(client.id);
+    const verified = devices.filter(d => d.state === 'verified').length;
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    const bar = (a, b) => {
+      const v = pct(a, b);
+      return `<div class="util cap-inline"><div class="util-bar"><div class="util-fill util-${v >= 80 ? 'healthy' : 'near'}" style="width:${v}%"></div></div><span class="util-pct">${v}%</span></div>`;
+    };
+    const idn = CLIENT_IDENTITY[client.id];
+    const mfa = MFA_ROSTERS[client.id];
+    const sso = (SSO_APPS[client.id] || []);
+    const line = (label, value, barHtml = '') => `<div><div class="detail-label">${label}</div><div class="detail-value">${value}</div>${barHtml}</div>`;
+    return `<div class="detail-grid">
+        ${line('Platform', p.name)}
+        ${line('Devices enrolled', `${verified} of ${devices.length} verified`, bar(verified, devices.length))}
+        ${idn.mfaPurchased && mfa
+          ? line('MFA enrolment', `${mfa.enrolled} of ${mfa.total} users`, bar(mfa.enrolled, mfa.total))
+          : line('MFA enrolment', `Not purchased · add-on on the ${idn.plan} plan`)}
+        ${line('SSO applications', sso.length ? `${sso.filter(a => a.status === 'Active').length} active${sso.some(a => a.status === 'Pending') ? ` · ${sso.filter(a => a.status === 'Pending').length} pending` : ''}` : 'None connected')}
+        ${CLIENT_MDM[client.id] === 'jumpcloud' && idn.pmUsers
+          ? line('Password manager', `${idn.pmEnrolled} of ${idn.pmUsers} users enrolled`, bar(idn.pmEnrolled, idn.pmUsers))
+          : ''}
+      </div>
+      <div class="readonly-note">Synced from ${p.name} (${MDM_LAST_SYNC[CLIENT_MDM[client.id]]}). Per-device state is on the <a href="/pages/assets/list.html" class="link-sm">Asset console</a> (MDM column and filter); sync health is in <a href="/pages/integrations/list.html" class="link-sm">Integrations</a>.</div>`;
+  }
+
   function capHtml(t, cmp) {
     if (!CAP_SPEND[client.id] || isOnboarding(k)) return grid('cap', t, cmp);
     const i = capInfo(client.id);
@@ -406,7 +437,7 @@ function initClientDetail() {
     { id: 'pricing', label: 'Pricing', sections: ['pricing', 'discounts'] },
     { id: 'users', label: 'Billable users', sections: ['managed'] },
     { id: 'disputes', label: 'Disputes', sections: ['disputes'] },
-    { id: 'operations', label: 'Operations', sections: ['cap'/*, 'shipments'*/] }
+    { id: 'operations', label: 'Operations', sections: ['cap', 'mdm'/*, 'shipments'*/] }
   ];
 
   let activeTab = 'overview';
@@ -434,6 +465,7 @@ function initClientDetail() {
       managed: 'Billable users',
       disputes: 'Client disputes',
       cap: 'Procurement cap',
+      mdm: 'Device management',
       splitting: 'Invoice splitting'
       // shipments: 'Split shipments'
     };
@@ -458,6 +490,7 @@ function initClientDetail() {
       managed: section('managed', 'Billable users', managedHtml(t, cmp)),
       disputes: section('disputes', 'Client disputes', disputesHtml(), 'Open and recent'),
       cap: section('cap', 'Procurement cap', capHtml(t, cmp), 'One cap across all entities'),
+      mdm: section('mdm', 'Device management', mdmRollupHtml(), 'Ops status · not a contract term'),
       splitting: section('splitting', 'Invoice splitting', grid('splitting', t, cmp))
       // shipments: section('shipments', 'Split shipments', splitShipmentsHtml(), 'Ops setting · not versioned')
     };

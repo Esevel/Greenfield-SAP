@@ -957,12 +957,20 @@
   border-radius: var(--border-radius-md);
 }
 
-.redeploy-fields .form-grid .form-group {
+.redeploy-fields .form-grid .form-group,
+.request-form .form-grid .form-group {
   margin-bottom: 0;
 }
 
-.redeploy-fields .form-grid {
+.redeploy-fields .form-grid,
+.request-form .form-grid {
   margin-bottom: var(--space-lg);
+}
+
+.request-form .multi-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
 }
 
 .radio-row {

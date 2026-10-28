@@ -324,10 +324,31 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/staff-requests.js"></script>
   <script src="/scripts/services-tabs.js"></script>
   <script>
     // Single prototype detail page for all offboarding cards
     document.querySelectorAll('.board-card').forEach(card => { card.href = '/pages/services/offboarding-detail.html'; });
+    // Offboardings raised by staff (Services › New request) join the Notified column
+    (function () {
+      const items = StaffRequests.list('offboarding');
+      if (!items.length) return;
+      const col = [...document.querySelectorAll('.board-column')].find(c => c.querySelector('.board-column-title').textContent.trim().startsWith('Notified'));
+      const cards = col.querySelector('.board-cards');
+      const count = col.querySelector('.board-count');
+      count.textContent = Number(count.textContent) + items.length;
+      items.forEach(r => {
+        const client = WH_CLIENTS.find(c => c.id === r.client);
+        cards.insertAdjacentHTML('afterbegin', `<a class="board-card" href="/pages/services/offboarding-detail.html">
+          <div class="card-top"><span class="card-id">${r.id}</span></div>
+          <div class="card-client">${escapeHtml(client ? client.name : r.client)}</div>
+          <div class="card-recipient">${escapeHtml(r.off.employee)} · <span class="flag">${WH_COUNTRIES[r.cc][0]}</span></div>
+          <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
+          <div class="card-bottom"><span>Last day ${escapeHtml(r.off.lastDay)}</span><span class="card-avatar">${escapeHtml(r.owner[0])}</span></div>
+        </a>`);
+      });
+    })();
   </script>
   <script src="/scripts/main.js"></script>
 </body>

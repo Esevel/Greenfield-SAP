@@ -505,3 +505,37 @@
 .paired-action {
   width: 100%;
 }
+
+
+/* Add asset panel */
+.aa-drop {
+  display: block;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-xl);
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.aa-drop:hover {
+  border-color: var(--color-primary);
+}
+
+.asset-add-success {
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #15803d;
+  border-radius: var(--border-radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+/* Asset action dialogs */
+.aad-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+}

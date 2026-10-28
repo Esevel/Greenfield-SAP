@@ -29,15 +29,15 @@
         <div class="inventory-summary integrations-summary">
           <div class="summary-tile">
             <div class="summary-tile-label">Connected</div>
-            <div class="summary-tile-value">7</div>
+            <div class="summary-tile-value">10</div>
           </div>
           <div class="summary-tile summary-tile-ok">
             <div class="summary-tile-label">Healthy</div>
-            <div class="summary-tile-value">4</div>
+            <div class="summary-tile-value">6</div>
           </div>
           <div class="summary-tile summary-tile-degraded">
             <div class="summary-tile-label">Degraded</div>
-            <div class="summary-tile-value">2</div>
+            <div class="summary-tile-value">3</div>
           </div>
           <div class="summary-tile summary-tile-breached">
             <div class="summary-tile-label">Failing</div>
@@ -68,6 +68,7 @@
                 <a href="#" class="dropdown-menu-item">All types</a>
                 <a href="#" class="dropdown-menu-item">HRIS/IdP</a>
                 <a href="#" class="dropdown-menu-item">ITSM/ITAM</a>
+                <a href="#" class="dropdown-menu-item">Directory/MDM</a>
               </div>
             </div>
             <div class="dropdown">
@@ -111,6 +112,39 @@
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-jumpcloud">JC</span>JumpCloud</div></td>
+                <td><span class="tag tag-mdm">Directory/MDM</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">22m ago</td>
+                <td class="num">612</td>
+                <td class="num">0</td>
+                <td class="text-muted">Devices 16 · users 144</td>
+                <td><div class="owner-cell"><span class="card-avatar">K</span>Karen</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">MW</div><span>MediaWorks</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-gworkspace">GW</span>Google Workspace</div></td>
+                <td><span class="tag tag-mdm">Directory/MDM</span></td>
+                <td><span class="integration-status integration-healthy">Healthy</span></td>
+                <td class="text-muted">1h ago · manual run <button type="button" class="btn-text" data-run-sync>Run sync now</button></td>
+                <td class="num">63</td>
+                <td class="num">0</td>
+                <td class="text-muted">Directory 63 · Esevel 63</td>
+                <td><div class="owner-cell"><span class="card-avatar">J</span>Justin</div></td>
+              </tr>
+              <tr>
+                <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
+                <td><div class="system-cell"><span class="system-logo logo-intune">IN</span>Microsoft Intune</div></td>
+                <td><span class="tag tag-mdm">Directory/MDM</span></td>
+                <td><span class="integration-status integration-degraded">Degraded</span></td>
+                <td class="text-muted">6h ago</td>
+                <td class="num">395</td>
+                <td class="num errors-count">4</td>
+                <td><span class="drift">Intune 399 · Esevel 397</span><span class="drift-gap">2 missing</span></td>
+                <td><div class="owner-cell"><span class="card-avatar">K</span>Karen</div></td>
+              </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div></td>
                 <td><div class="system-cell"><span class="system-logo logo-servicenow">SN</span>ServiceNow</div></td>
@@ -215,6 +249,11 @@
     document.querySelectorAll('.integrations-table tbody tr').forEach(row => {
       row.addEventListener('click', () => { window.location.href = '/pages/integrations/detail.html'; });
     });
+    // Manual directory sync run (prototype: updates the cell in place)
+    document.querySelectorAll('[data-run-sync]').forEach(btn => btn.addEventListener('click', e => {
+      e.stopPropagation();
+      btn.closest('td').innerHTML = 'Just now · manual run <span class="text-muted">✓ Sync complete</span>';
+    }));
   </script>
   <script src="/scripts/main.js"></script>
 </body>

@@ -154,6 +154,15 @@ window.RoleAccess = (() => {
     return !!user?.roles.some(roleId => ROLES.some(role => role.id === roleId && role.kind === 'super-admin'));
   }
 
+  // Creating onboarding/offboarding requests on a client's behalf: Customer Success and IT roles,
+  // plus Head of Operations and Super Admins.
+  const LIFECYCLE_CREATE_ROLES = ['customer_success_manager', 'customer_success_member', 'it_manager', 'it_member', 'head_operations'];
+  function canCreateLifecycle(userId = currentUserId(), state = readState()) {
+    if (isSuperAdmin(userId, state)) return true;
+    const user = userById(userId, state);
+    return !!user?.roles.some(roleId => LIFECYCLE_CREATE_ROLES.includes(roleId));
+  }
+
   function routeModule(path = window.location.pathname) {
     const routes = [
       ['/pages/settings/access-control.html', 'access-control'],
@@ -201,5 +210,5 @@ window.RoleAccess = (() => {
     document.body.appendChild(notice);
   }
 
-  return { MODULES, FUNCTION_GROUPS, ROLES, seedUsers, CAPABILITY_MODULE, STORAGE_KEY, USER_KEY, readState, saveState, currentUserId, userById, modulesForUser, canAccess, isSuperAdmin, routeModule, applyNavigation, guardCurrentPage };
+  return { MODULES, FUNCTION_GROUPS, ROLES, seedUsers, CAPABILITY_MODULE, STORAGE_KEY, USER_KEY, readState, saveState, currentUserId, userById, modulesForUser, canAccess, isSuperAdmin, canCreateLifecycle, routeModule, applyNavigation, guardCurrentPage };
 })();

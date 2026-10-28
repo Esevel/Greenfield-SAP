@@ -47,11 +47,103 @@
             <div class="form-group">
               <span class="form-label">Request type</span>
               <div class="segmented-control" id="reqType">
+                <button type="button" class="segment-button" data-type="onboarding" data-lifecycle hidden>Onboarding</button>
+                <button type="button" class="segment-button" data-type="offboarding" data-lifecycle hidden>Offboarding</button>
                 <button type="button" class="segment-button" data-type="redeployment">Redeployment</button>
                 <button type="button" class="segment-button" data-type="storage">Storage</button>
                 <button type="button" class="segment-button" data-type="disposal">Disposal</button>
+                <button type="button" class="segment-button" data-type="resale">Resale</button>
+                <button type="button" class="segment-button" data-type="loaner">Loaner</button>
+                <button type="button" class="segment-button" data-type="setup">Device setup</button>
               </div>
               <div class="input-helper" id="typeHelp"></div>
+            </div>
+            
+            <!-- Onboarding: new hire, package and delivery -->
+            <div id="onboardingFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="onbEmployee">Employee <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="onbEmployee" placeholder="Full name">
+                  <div class="form-error" id="onbEmployeeError" hidden>Enter the employee's name.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="onbRole">Role / job title</label>
+                  <input type="text" class="form-input" id="onbRole" placeholder="e.g. Backend Engineer">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="onbStart">Start date <span class="required">*</span></label>
+                  <input type="date" class="form-input" id="onbStart">
+                  <div class="form-error" id="onbStartError" hidden>Pick a start date.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="onbCountry">Country</label>
+                  <select class="form-select" id="onbCountry"></select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="onbPkg">Device package</label>
+                <select class="form-select" id="onbPkg"></select>
+                <div class="input-helper">Pre-selects the package's devices below. Adjust individual lines as needed.</div>
+              </div>
+              <div class="form-group">
+                <span class="form-label">Devices <span class="required">*</span></span>
+                <div class="multi-checks" id="onbDevices"></div>
+                <div class="form-error" id="onbDeviceError" hidden>Select at least one device.</div>
+              </div>
+              <fieldset class="form-group source-group">
+                <legend class="form-label">Delivery route</legend>
+                <div class="radio-row">
+                  <label class="check-option"><input type="radio" name="onbRoute" value="hub" checked> Via Esevel hub <span class="text-muted" id="onbHubNote"></span></label>
+                  <label class="check-option"><input type="radio" name="onbRoute" value="direct"> Vendor ships direct to employee</label>
+                </div>
+              </fieldset>
+              <fieldset class="form-group source-group" id="onbMdmBlock" hidden>
+                <legend class="form-label">MDM enrolment <span class="text-muted" id="onbMdmNote"></span></legend>
+                <div class="radio-row">
+                  <label class="check-option"><input type="radio" name="onbMdm" value="manual" checked> Esevel installs the agent before dispatch</label>
+                  <label class="check-option"><input type="radio" name="onbMdm" value="self"> Employee self-install (guide emailed)</label>
+                </div>
+                <div class="input-helper" id="onbMdmHelp"></div>
+              </fieldset>
+              <div class="form-group">
+                <label class="form-label" for="onbAddress">Delivery address <span class="required">*</span></label>
+                <input type="text" class="form-input" id="onbAddress" placeholder="Street, city, postcode">
+                <div class="form-error" id="onbAddressError" hidden>Enter the delivery address.</div>
+              </div>
+            </div>
+            
+            <!-- Offboarding: leaver, retrieval and disposition -->
+            <div id="offboardingFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="offEmployee">Employee (leaver) <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="offEmployee" placeholder="Full name">
+                  <div class="form-error" id="offEmployeeError" hidden>Enter the leaver's name.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offLastDay">Last day <span class="required">*</span></label>
+                  <input type="date" class="form-input" id="offLastDay">
+                  <div class="form-error" id="offLastDayError" hidden>Pick the last day.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offCountry">Country</label>
+                  <select class="form-select" id="offCountry"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offDisposition">After retrieval</label>
+                  <select class="form-select" id="offDisposition">
+                    <option value="store" selected>Store at hub</option>
+                    <option value="redeploy">Hold for redeployment</option>
+                    <option value="dispose">Wipe and dispose</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="offAddress">Collection address <span class="required">*</span></label>
+                <input type="text" class="form-input" id="offAddress" placeholder="Where the courier collects the devices">
+                <div class="form-error" id="offAddressError" hidden>Enter the collection address.</div>
+              </div>
             </div>
             
             <!-- Redeployment: where it's going and where it comes from -->
@@ -78,14 +170,88 @@
               </fieldset>
             </div>
             
-            <div class="form-group">
-              <label class="form-label" for="assetSearch">Assets <span class="required">*</span></label>
+            <div class="form-group" id="assetBlock">
+              <label class="form-label" for="assetSearch" id="assetLabel">Assets <span class="required">*</span></label>
               <div class="selected-assets" id="selectedAssets"></div>
               <div class="asset-picker">
                 <input type="text" class="form-input" id="assetSearch" placeholder="Search by model, serial or location..." autocomplete="off">
                 <div class="asset-results" id="assetResults" hidden></div>
               </div>
               <div class="form-error" id="assetError" hidden>Add at least one asset.</div>
+            </div>
+            
+            <!-- Resale: laptops only; estimate → offer → erasure + payout -->
+            <div id="resaleFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="rsPayee">Payout to (billing entity contact) <span class="required">*</span></label>
+                  <input class="form-input" id="rsPayee" placeholder="finance@client.com">
+                  <div class="form-error" id="rsPayeeError" hidden>Who receives the resale offer and payout?</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="rsCondition">Condition notes</label>
+                  <input class="form-input" id="rsCondition" placeholder="e.g. 2022, 16GB RAM, minor scratches, battery 85%">
+                </div>
+              </div>
+              <div class="readonly-note">Resale steps: partner estimates value from the device details → you confirm with the client → physical assessment → final offer → on acceptance the device is wiped (report + certificate shared) and the vendor pays the client directly. Declined offers are returned; logistics fees are billed to the client at month end. <strong>Laptops and MacBooks only</strong> — peripherals are case by case.</div>
+            </div>
+            
+            <!-- Loaner: a hub device lent while the employee's device is away -->
+            <div id="loanerFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="loRecipient">Employee <span class="required">*</span></label>
+                  <input class="form-input" id="loRecipient" placeholder="Who needs the loaner">
+                  <div class="form-error" id="loRecipientError" hidden>Who gets the loaner?</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="loCountry">Country</label>
+                  <select class="form-select" id="loCountry"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="loUntil">Needed until <span class="label-optional">(optional)</span></label>
+                  <input type="date" class="form-input" id="loUntil">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="loReason">Reason</label>
+                  <select class="form-select" id="loReason">
+                    <option selected>Device in repair</option>
+                    <option>New-hire device delayed</option>
+                    <option>Short-term contractor</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="readonly-note">The loaner ships from the client's assigned hub, subject to stock. It's returned and refurbished when the employee's own device is back.</div>
+            </div>
+            
+            <!-- Device setup: on-site or remote setup of a device already with the user -->
+            <div id="setupFields" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="suRecipient">Employee <span class="required">*</span></label>
+                  <input class="form-input" id="suRecipient" placeholder="Whose device gets set up">
+                  <div class="form-error" id="suRecipientError" hidden>Whose device is being set up?</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="suKind">Setup type</label>
+                  <select class="form-select" id="suKind">
+                    <option selected>Remote session</option>
+                    <option>On-site visit</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <span class="form-label">Tasks</span>
+                <div class="multi-checks" id="suTasks">
+                  <label class="check-option"><input type="checkbox" checked> OS setup &amp; user account</label>
+                  <label class="check-option"><input type="checkbox" checked> Standard applications</label>
+                  <label class="check-option"><input type="checkbox"> MDM agent install</label>
+                  <label class="check-option"><input type="checkbox"> Data migration</label>
+                  <label class="check-option"><input type="checkbox"> Peripheral setup</label>
+                </div>
+              </div>
+              <div class="readonly-note">Available on Support and Complete plans. Billed per the client's device setup fee.</div>
             </div>
             
             <!-- Storage / Disposal: destination comes from the assigned hub -->
@@ -129,6 +295,11 @@
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
   <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/supply-data.js"></script>
+  <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/people-data.js"></script>
+  <script src="/scripts/mdm-data.js"></script>
+  <script src="/scripts/staff-requests.js"></script>
   <script src="/scripts/raise-request.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

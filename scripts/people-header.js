@@ -8,9 +8,15 @@ function renderPeopleHeader() {
     ['joiners', 'Joiners', '/pages/people/joiners.html', openJoiners().length],
     ['leavers', 'Leavers', '/pages/people/leavers.html', openLeavers().length]
   ];
+  // Staff with the lifecycle-create permission can raise onboarding/offboarding from the matching tab
+  const lifecycleAction = { joiners: ['onboarding', 'New onboarding'], leavers: ['offboarding', 'New offboarding'] }[el.dataset.view];
+  const canLifecycle = !!(window.RoleAccess && RoleAccess.canCreateLifecycle());
   el.innerHTML = `
     <div class="page-header">
-      <h1 class="page-title">People</h1>
+      <div class="flex-between">
+        <h1 class="page-title">People</h1>
+        ${lifecycleAction && canLifecycle ? `<div class="header-actions"><a href="/pages/services/new.html?type=${lifecycleAction[0]}" class="btn btn-primary">${lifecycleAction[1]}</a></div>` : ''}
+      </div>
       <p class="page-description">Client employees who receive Esevel devices. Synced from each client's HRIS or added by the client.</p>
     </div>
     <nav class="tab-strip">

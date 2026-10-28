@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/styles/catalogue.css">
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
+  <link rel="stylesheet" href="/styles/stock.css">
+  <link rel="stylesheet" href="/styles/sla.css">
 </head>
 <body>
   <div class="app-container">
@@ -21,14 +23,16 @@
           <div class="flex-between">
             <div>
               <h1 class="page-title">Asset console</h1>
-              <p class="page-description">Every deployed and stored device across clients and countries</p>
+              <p class="page-description">Every deployed and stored device across clients and countries, including MDM enrolment for Secure and Complete plans</p>
             </div>
             <div class="flex gap-md">
               <button class="btn btn-secondary">Export</button>
-              <button class="btn btn-primary">Add asset</button>
+              <button class="btn btn-primary" id="addAssetBtn">Add asset</button>
             </div>
           </div>
         </div>
+        
+        <div class="inventory-summary stock-summary" id="assetTiles"></div>
         
         <div class="asset-toolbar">
           <div class="search-bar">
@@ -38,13 +42,14 @@
           
           <div class="filter-chips">
             <div class="dropdown">
-              <button class="dropdown-toggle filter-chip">Client <span class="filter-chip-caret">▼</span></button>
-              <div class="dropdown-menu">
-                <a href="#" class="dropdown-menu-item">All clients</a>
-                <a href="#" class="dropdown-menu-item">Acme Tech</a>
-                <a href="#" class="dropdown-menu-item">TechGlobal Inc</a>
-                <a href="#" class="dropdown-menu-item">Digital Solutions</a>
-                <a href="#" class="dropdown-menu-item">FinanceExperts</a>
+              <button class="dropdown-toggle filter-chip" id="clientFilterChip">Client <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu" id="clientFilterMenu">
+                <a href="#" class="dropdown-menu-item" data-client="">All clients</a>
+                <a href="#" class="dropdown-menu-item" data-client="Acme Tech">Acme Tech</a>
+                <a href="#" class="dropdown-menu-item" data-client="TechGlobal Inc">TechGlobal Inc</a>
+                <a href="#" class="dropdown-menu-item" data-client="MediaWorks">MediaWorks</a>
+                <a href="#" class="dropdown-menu-item" data-client="Digital Solutions">Digital Solutions</a>
+                <a href="#" class="dropdown-menu-item" data-client="FinanceExperts">FinanceExperts</a>
               </div>
             </div>
             
@@ -80,6 +85,16 @@
                 <a href="#" class="dropdown-menu-item">In repair</a>
                 <a href="#" class="dropdown-menu-item">In transit</a>
                 <a href="#" class="dropdown-menu-item">Retired</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button class="dropdown-toggle filter-chip" id="mdmFilterChip">MDM <span class="filter-chip-caret">▼</span></button>
+              <div class="dropdown-menu" id="mdmFilterMenu">
+                <a href="#" class="dropdown-menu-item" data-mdm="">All devices</a>
+                <a href="#" class="dropdown-menu-item" data-mdm="verified">Verified</a>
+                <a href="#" class="dropdown-menu-item" data-mdm="pipeline">In enrolment pipeline</a>
+                <a href="#" class="dropdown-menu-item" data-mdm="unmanaged">Not MDM-managed</a>
               </div>
             </div>
             
@@ -155,6 +170,26 @@
                 <td><span class="asset-tag">Engineering</span></td>
                 <td><span class="asset-loc loc-employee">With employee</span></td>
                 <td class="source-label">Esevel purchase</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="model-cell">
+                    <div class="model-thumbnail"><div class="thumbnail-placeholder" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">💻</div></div>
+                    <div class="model-info">
+                      <div class="model-name">MacBook Air 13" M2</div>
+                      <div class="asset-serial">C02YT4477K</div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div><div class="asset-sub"><span class="flag">🇸🇬</span> Singapore</div></td>
+                <td>Laptops</td>
+                <td><span class="badge badge-success">Deployed</span></td>
+                <td>B (Good)</td>
+                <td><span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to Jan 2027</span><div class="asset-sub">1.8 years</div></td>
+                <td>Mei Hua Ong</td>
+                <td><span class="asset-tag">Finance</span></td>
+                <td><span class="asset-loc loc-employee">With employee</span></td>
+                <td class="source-label">Client-added (bulk CSV)</td>
               </tr>
               <tr>
                 <td>
@@ -305,8 +340,98 @@
     </main>
   </div>
   
+  <div class="side-panel" id="aaPanel" role="dialog" aria-modal="true" aria-labelledby="aaTitle">
+    <div class="side-panel-header">
+      <div>
+        <h3 class="side-panel-title" id="aaTitle">Add asset</h3>
+        <div class="device-panel-meta">Adds to the client's inventory for record keeping. Deployed computers at MDM clients appear in enrolment after the agent reports in.</div>
+      </div>
+      <button class="side-panel-close" id="aaClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="segmented-control" id="aaMode">
+        <button type="button" class="segment-button active" data-mode="single">Single asset</button>
+        <button type="button" class="segment-button" data-mode="bulk">Bulk upload (CSV)</button>
+      </div>
+      
+      <form id="aaForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="aaClient">Client <span class="required">*</span></label>
+          <select class="form-select" id="aaClient"></select>
+          <div class="form-error" id="aaClientError" hidden>Select a client.</div>
+          <div class="input-helper" id="aaMdmNote"></div>
+        </div>
+        
+        <div id="aaSingleFields">
+          <div class="form-group">
+            <span class="form-label">Type</span>
+            <div class="radio-row">
+              <label class="check-option"><input type="radio" name="aaType" value="Laptops" checked> Laptop</label>
+              <label class="check-option"><input type="radio" name="aaType" value="Monitors"> Monitor</label>
+              <label class="check-option"><input type="radio" name="aaType" value="Peripherals"> Peripheral</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aaModel">Model <span class="required">*</span></label>
+            <select class="form-select" id="aaModel"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aaSerial">Serial number <span class="required">*</span></label>
+            <input class="form-input" id="aaSerial" placeholder="e.g. C02XK4M9MD6T" autocomplete="off">
+            <div class="form-error" id="aaSerialError" hidden></div>
+            <div class="input-helper">Serial numbers can't be edited after creation — contact Customer Support to correct one.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aaGrade">Grade</label>
+            <select class="form-select" id="aaGrade">
+              <option>A (New)</option>
+              <option selected>B (Good)</option>
+              <option>C (Fair)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="aaWarranty">Warranty until <span class="label-optional">(optional)</span></label>
+            <input type="month" class="form-input" id="aaWarranty">
+          </div>
+          <div class="form-group">
+            <span class="form-label">Location</span>
+            <div class="radio-row">
+              <label class="check-option"><input type="radio" name="aaLoc" value="employee" checked> With employee</label>
+              <label class="check-option"><input type="radio" name="aaLoc" value="site"> Client site</label>
+              <label class="check-option"><input type="radio" name="aaLoc" value="hub"> Esevel hub</label>
+            </div>
+          </div>
+          <div class="form-group" id="aaAssigneeGroup">
+            <label class="form-label" for="aaAssignee">Assigned to <span class="required">*</span></label>
+            <input class="form-input" id="aaAssignee" placeholder="Employee name">
+            <div class="form-error" id="aaAssigneeError" hidden>Who holds this device?</div>
+          </div>
+        </div>
+        
+        <div id="aaBulkFields" hidden>
+          <div class="form-group">
+            <span class="form-label">CSV file</span>
+            <label class="aa-drop" id="aaDrop" for="aaFile">
+              <input type="file" id="aaFile" accept=".csv" hidden>
+              <span id="aaDropText">Drop a .csv here or <span class="link-sm">browse</span></span>
+            </label>
+            <div class="form-error" id="aaFileError" hidden>Choose a .csv file.</div>
+            <div class="input-helper"><a href="#" class="link-sm" id="aaSample">Download the sample CSV</a> · columns: serial, model, category, client, location, assignee, warranty. Serials already in the console are skipped.</div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="side-panel-footer">
+      <button type="button" class="btn btn-secondary" id="aaCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="aaSubmit">Add asset</button>
+    </div>
+  </div>
+  <div class="side-panel-overlay" id="aaOverlay"></div>
+  
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/hub-data.js"></script>
+  <script src="/scripts/mdm-data.js"></script>
   <script src="/scripts/assets-list.js"></script>
   <script src="/scripts/main.js"></script>
 </body>

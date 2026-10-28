@@ -63,6 +63,14 @@
 .logo-jira { background-color: #2684ff; }
 .logo-bamboo { background-color: #73c41d; }
 .logo-entra { background-color: #0078d4; }
+.logo-jumpcloud { background-color: #14a19b; }
+.logo-gworkspace { background-color: #34a853; }
+.logo-intune { background-color: #5c2d91; }
+
+.tag-mdm {
+  background-color: rgba(20, 161, 155, 0.1);
+  color: #0f766e;
+}
 
 .tag-hris {
   background-color: rgba(168, 85, 247, 0.1);

@@ -63,7 +63,7 @@ const PEOPLE = [
     assets: [{ type: 'laptop', name: 'MacBook Pro 14" M3', serial: 'C02XK4020F' }] },
   { id: 'p22', name: 'Olivia Hart', email: 'olivia.hart@financeexperts.co.uk', phone: '+44 20 7946 0555', address: '25 Bank St, London E14 5JP', client: 'finance', cc: 'GB', role: 'Financial Analyst', dept: 'Finance', state: 'active', start: '2025-11-03', source: 'HRIS (Entra ID)',
     assets: [{ type: 'laptop', name: 'MacBook Pro 14" M3', serial: 'C02XK4130G' }, { type: 'peripheral', name: 'Dell UltraSharp U2723QE', serial: 'CN-0H8W2K-4141E' }] },
-  { id: 'p23', name: 'Nathan Ong', email: 'nathan.ong@cloudsystems.com', phone: '+1 415 555 0102', address: '500 Howard St, San Francisco, CA 94105', client: 'cloud', cc: 'US', role: 'SRE', dept: 'Engineering', state: 'active', start: '2023-03-20', source: 'HRIS (Okta)',
+  { id: 'p23', name: 'Nathan Ong', email: 'nathan.ong@cloudsystems.com', phone: '+1 415 555 0102', address: '500 Howard St, San Francisco, CA 94105', client: 'cloud', cc: 'US', role: 'SRE', dept: 'Engineering', state: 'active', start: '2023-03-20', source: 'HRIS (Okta)', managed: false,
     assets: [{ type: 'laptop', name: 'Dell XPS 15', serial: '8HJ23560D' }, { type: 'peripheral', name: 'Dell UltraSharp U2723QE', serial: 'CN-0H8W2K-3571A' }] },
   { id: 'p24', name: 'Mei Lin Tan', email: 'meilin.tan@mediaworks.com', phone: '+65 9120 4455', address: '3 Fusionopolis Way, #09-10, Singapore 138633', client: 'mediaworks', cc: 'SG', role: 'Content Producer', dept: 'Content', state: 'active', start: '2025-10-20', source: 'HRIS (Okta)',
     assets: [{ type: 'laptop', name: 'MacBook Pro 14" M3', serial: 'C02XK4300H' }, { type: 'peripheral', name: 'Dell UltraSharp U2723QE', serial: 'CN-0H8W2K-4311C' }] }
@@ -90,6 +90,12 @@ PEOPLE.forEach(p => p.assets.forEach(a => {
   sarah.assets[0].since = '2026-10-14';
 })();
 const ASSET_ICON = { laptop: '💻', peripheral: '🖱' };
+
+// Managed vs unmanaged (help center: Team › Managed/unmanaged employees): managed employees have
+// "user management" enabled — their account and devices are under the client's MDM (Secure/Complete plans).
+// Unmanaged employees are record-keeping only. A person can opt out with managed: false (e.g. contractors).
+const MANAGED_PLAN_CLIENTS = ['acme', 'techglobal', 'mediaworks', 'northwind', 'cloud'];
+const peopleManaged = p => (typeof CLIENT_MDM !== 'undefined' ? !!CLIENT_MDM[p.client] : MANAGED_PLAN_CLIENTS.includes(p.client)) && p.managed !== false;
 
 const personById = id => PEOPLE.find(p => p.id === id);
 const peopleClientName = id => WH_CLIENTS.find(c => c.id === id).name;

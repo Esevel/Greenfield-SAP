@@ -15,7 +15,7 @@ const SUPPORT_STAGES = [
 ];
 const SUPPORT_STAGE_LABEL = Object.fromEntries(SUPPORT_STAGES);
 const SUPPORT_PRIORITIES = ['Urgent', 'High', 'Normal', 'Low'];
-const SUPPORT_CATEGORIES = ['Hardware', 'Software', 'Network / VPN', 'Accounts & access', 'Peripherals', 'Request', 'Other'];
+const SUPPORT_CATEGORIES = ['Hardware', 'Software', 'Network / VPN', 'Accounts & access', 'Device management / MDM', 'Peripherals', 'Request', 'Other'];
 const SUPPORT_SOURCES = ['Platform', 'Email', 'ITSM', 'Phone'];
 const SUPPORT_AGENTS = ['Qonit', 'Marcus', 'Jia Ling', 'Aisha'];
 // Priority tightens the contract targets: Urgent halves them, Low doubles resolution

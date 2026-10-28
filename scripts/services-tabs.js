@@ -14,9 +14,10 @@ const SERVICE_TABS = [
   const el = document.getElementById('servicesHeader');
   if (!el) return;
   const active = el.dataset.active;
-  // Live counts where the page has tracker data loaded
+  // Live counts where the page has tracker data loaded; staff-created offboardings add to the static count
   const live = typeof TRACKER_ITEMS !== 'undefined' ? { onboarding: TRACKER_ITEMS.filter(i => i.onb).length } : {};
-  const typeParam = { redeployments: 'redeployment', storage: 'storage', disposal: 'disposal' }[active];
+  if (window.StaffRequests) live.offboarding = 19 + StaffRequests.list('offboarding').length;
+  const typeParam = { onboarding: 'onboarding', offboarding: 'offboarding', redeployments: 'redeployment', storage: 'storage', disposal: 'disposal' }[active];
   el.innerHTML = `<div class="page-header module-header">
       <div class="flex-between">
         <h1 class="page-title">Services</h1>

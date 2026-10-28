@@ -31,6 +31,7 @@
             <label class="filter-select"><span>Client</span><select id="fClient"></select></label>
             <label class="filter-select"><span>Country</span><select id="fCountry"></select></label>
             <label class="filter-select"><span>Status</span><select id="fState"></select></label>
+            <label class="filter-select"><span>Management</span><select id="fManaged"><option value="">All</option><option value="yes">Managed</option><option value="no">Unmanaged</option></select></label>
           </div>
         </div>
         
@@ -44,6 +45,7 @@
                 <th>Department</th>
                 <th>Country</th>
                 <th>Devices</th>
+                <th>Management</th>
                 <th>Status</th>
                 <th>Source</th>
               </tr>
@@ -62,6 +64,7 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/stock-data.js"></script>
+  <script src="/scripts/mdm-data.js"></script>
   <script src="/scripts/people-data.js"></script>
   <script src="/scripts/people-list.js"></script>
   <script src="/scripts/people-header.js"></script>
@@ -84,7 +87,8 @@
         const rows = PEOPLE.filter(p => peopleMatchesSearch(p, q)
           && (!$('fClient').value || p.client === $('fClient').value)
           && (!$('fCountry').value || p.cc === $('fCountry').value)
-          && (!$('fState').value || p.state === $('fState').value))
+          && (!$('fState').value || p.state === $('fState').value)
+          && (!$('fManaged').value || peopleManaged(p) === ($('fManaged').value === 'yes')))
           .sort((a, b) => a.name.localeCompare(b.name));
         const pagination = peoplePageSlice(rows, page);
         page = pagination.page;
@@ -95,9 +99,12 @@
             <td>${escapeHtml(p.dept)}</td>
             <td><span class="flag">${WH_COUNTRIES[p.cc][0]}</span> ${WH_COUNTRIES[p.cc][1]}</td>
             <td>${assetIconsHtml(p.assets)}</td>
+            <td>${peopleManaged(p)
+              ? '<span class="badge badge-success badge-sm">Managed</span>'
+              : `<span class="badge badge-neutral badge-sm">Unmanaged</span><div class="stock-sub">${p.managed === false ? 'Opted out' : 'Plan has no user management'}</div>`}</td>
             <td>${stateCell(p)}</td>
             <td class="text-muted">${escapeHtml(p.source)}</td>
-          </tr>`).join('') || '<tr><td colspan="8" class="text-muted sla-empty">No people match</td></tr>';
+          </tr>`).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No people match</td></tr>';
         $('dCount').textContent = `${rows.length} matching people of ${PEOPLE.length} total`;
         renderPeoplePagination($('dPagination'), pagination, nextPage => { page = nextPage; render(); });
       }
@@ -105,7 +112,7 @@
       const go = row => { window.location.href = `/pages/people/person.html?id=${row.dataset.id}`; };
       $('dRows').addEventListener('click', e => { const r = e.target.closest('tr[data-id]'); if (r) go(r); });
       $('dRows').addEventListener('keydown', e => { const r = e.target.closest('tr[data-id]'); if (r && e.key === 'Enter') go(r); });
-      ['fClient', 'fCountry', 'fState'].forEach(id => $(id).addEventListener('change', () => { page = 1; render(); }));
+      ['fClient', 'fCountry', 'fState', 'fManaged'].forEach(id => $(id).addEventListener('change', () => { page = 1; render(); }));
       $('dSearch').addEventListener('input', () => { page = 1; render(); });
       render();
     })();

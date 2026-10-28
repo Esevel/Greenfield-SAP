@@ -83,6 +83,11 @@ const TRACKER_ITEMS = [
     onb: { employee: 'Hannah Lee', role: 'Sales Manager', startDate: '2026-10-20', pkg: 'Sales Standard', address: '3 Temasek Ave, #18-00, Singapore 039190', devices: ['MacBook Air 13" M2', 'Jabra Evolve2 65'] } }
 ];
 
+// Requests raised by staff (Services › New request) join the seeded data for this browser
+try {
+  const staffRequests = JSON.parse(localStorage.getItem('sap-staff-requests-v1') || '[]');
+  TRACKER_ITEMS.push(...staffRequests.filter(r => (r.type === 'onboarding' || r.type === 'offboarding') && !TRACKER_ITEMS.some(i => i.id === r.id)));
+} catch { /* malformed prototype data is ignored */ }
 TRACKER_ITEMS.filter(i => i.onb).forEach(i => { i.href = `/pages/services/onboarding-detail.html?id=${i.id}`; });
 // Open purchase orders join the cross-service view when the Orders module is loaded (orders-data.js + orders-engine.js)
 if (typeof orderTrackerItems === 'function') TRACKER_ITEMS.push(...orderTrackerItems());
