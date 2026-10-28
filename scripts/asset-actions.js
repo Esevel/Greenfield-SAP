@@ -11,8 +11,9 @@ function initAssetActions() {
   if (!canAct) return;
   const editBtn = host.querySelector('.btn-primary');
   if (editBtn) editBtn.remove();
+  // Not .dropdown-toggle: navigation.js's initDropdowns would attach a second toggle listener and cancel ours
   host.insertAdjacentHTML('beforeend', `<div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" id="aaActions">Actions ▾</button>
+      <button class="btn btn-primary" id="aaActions">Actions ▾</button>
       <div class="dropdown-menu dropdown-menu-right">
         <a href="#" class="dropdown-menu-item" data-act="reassign">Re-assign to another employee</a>
         <a href="#" class="dropdown-menu-item" data-act="ownership">Change ownership (entity)</a>
