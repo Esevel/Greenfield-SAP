@@ -233,15 +233,53 @@ function renderOrderDetail(root, id, opts = {}) {
     if (hb && hb.childElementCount) hb.innerHTML = crumbs;
     else if (!document.querySelector('.breadcrumbs-custom')) document.querySelector('.page-content').insertAdjacentHTML('afterbegin', `<nav class="breadcrumbs-custom">${crumbs}</nav>`);
   }
+  const orderedByFirst = escapeHtml(o.orderedBy.split(' ')[0]);
+  const emailSection = `<section class="card mb-lg order-email-section">
+    <div class="card-header">
+      <h3 class="card-title">Email conversation</h3>
+      <span class="channel-tag channel-itsm">Freshdesk</span>
+    </div>
+    <div class="card-body">
+      <div class="email-empty-state">
+        <p>No email conversation started for this order yet.</p>
+        <button type="button" class="btn btn-secondary" data-email-start>Start conversation</button>
+      </div>
+      <div class="fd-composer-wrap" hidden>
+        <div class="thread fd-thread"></div>
+        <form class="composer fd-composer" novalidate>
+          <div class="segmented-control segmented-sm" role="group" aria-label="Message type">
+            <button type="button" class="segment-button active" data-email-mode="reply">Reply to ${orderedByFirst}</button>
+            <button type="button" class="segment-button" data-email-mode="internal">Internal note</button>
+          </div>
+          <div class="composer-cc fd-cc-row">
+            <span class="cc-label">CC</span>
+            <input type="text" class="form-input fd-cc-input" placeholder="Add email addresses, comma-separated" aria-label="CC recipients">
+          </div>
+          <textarea class="form-textarea fd-reply-text" rows="3" placeholder="Write to ${orderedByFirst}\u2026" aria-label="Reply"></textarea>
+          <div class="composer-actions">
+            <span class="readonly-note fd-composer-note">Reply will be sent via Freshdesk.</span>
+            <span class="composer-buttons">
+              <button type="submit" class="btn btn-primary btn-sm">Send</button>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>`;
+
   root.innerHTML = `
     ${header}${banners}${progress}
     <div class="edit-layout">
       <div class="edit-form-column">
         <section class="card mb-lg"><div class="card-header"><h3 class="card-title">Stages</h3><span class="text-muted">${s.paused ? 'Clock paused' : s.cur ? `Current: ${s.cur.m.label}` : ''}</span></div><div class="card-body"><ol class="stage-list">${stages}</ol></div></section>
         ${tabbed}
+        ${emailSection}
       </div>
       <div class="edit-sidebar-column">${details}${pricingSummary}${bizPanel}</div>
     </div>`;
+  if (typeof initEmailConversation === 'function') {
+    initEmailConversation(root.querySelector('.order-email-section'), orderedByFirst);
+  }
 
   /* ---------- Events ---------- */
   const act = async (name, el) => {

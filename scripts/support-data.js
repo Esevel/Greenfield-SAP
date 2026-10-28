@@ -36,10 +36,10 @@ const SUPPORT_SEED = [
     thread: [['Nathan Ong', 'requester', '2026-10-15T16:00', 'A few keys on my MacBook keyboard stick.'], ['Aisha', 'agent', '2026-10-15T17:10', 'Sorry to hear that. Can you send a short video? We may raise a repair.']] },
   { id: 'SUP-5521', client: 'acme', cc: 'SG', subject: 'VPN drops every 20 minutes', requester: 'Priya Raman', email: 'priya.raman@acmetech.com', priority: 'High', category: 'Network / VPN', source: 'Platform', stage: 'progress', owner: 'Qonit', opened: '2026-10-16T09:12', firstResponse: '2026-10-16T09:47', device: 'MacBook Pro 14" M3 · C02XK4M9MD6T', serial: 'C02XK4M9MD6T',
     thread: [
-      ['Priya Raman', 'requester', '2026-10-16T09:12', 'My VPN (GlobalProtect) disconnects roughly every 20 minutes and I have to log in again. Started after Monday’s macOS update.'],
-      ['Jia Ling', 'internal', '2026-10-16T09:40', 'Two other Acme users on macOS 15.1 reported the same. Likely the GlobalProtect 6.2 profile. Assigning to Qonit.'],
-      ['Qonit', 'agent', '2026-10-16T09:47', 'Hi Priya, we’ve seen this on the latest macOS update and are pushing a new VPN profile to your laptop now.'],
-      ['Qonit', 'internal', '2026-10-16T12:20', 'Profile reissued via Jamf. If it still drops, escalate to Acme network team about the 20-min idle timeout.']
+      { who: 'Priya Raman', kind: 'requester', at: '2026-10-16T09:12', text: 'My VPN (GlobalProtect) disconnects roughly every 20 minutes and I have to log in again. Started after Monday’s macOS update. Attaching the VPN log from this morning.', attachments: [{ name: 'vpn-log-priya-oct16.pdf', size: '44 KB' }] },
+      { who: 'Jia Ling', kind: 'internal', at: '2026-10-16T09:40', text: 'Two other Acme users on macOS 15.1 reported the same. Likely the GlobalProtect 6.2 profile. Assigning to Qonit.' },
+      { who: 'Qonit', kind: 'agent', at: '2026-10-16T09:47', text: 'Hi Priya, we’ve seen this on the latest macOS update and are pushing a new VPN profile to your laptop now. Please allow up to 15 minutes for the profile to apply.', cc: 'it-helpdesk@acmetech.com' },
+      { who: 'Qonit', kind: 'internal', at: '2026-10-16T12:20', text: 'Profile reissued via Jamf. If it still drops, escalate to Acme network team about the 20-min idle timeout.' }
     ] },
   { id: 'SUP-5517', client: 'techglobal', cc: 'US', subject: 'Screen flicker on external display', requester: 'Anna Schmidt', email: 'anna.schmidt@techglobal.com', priority: 'Normal', category: 'Peripherals', source: 'ITSM', ref: 'INC0054', stage: 'progress', owner: 'Marcus', opened: '2026-10-15T09:00', firstResponse: '2026-10-15T09:30',
     thread: [['Anna Schmidt', 'requester', '2026-10-15T09:00', 'My Dell monitor flickers every few seconds over USB-C.'], ['Marcus', 'agent', '2026-10-15T09:30', 'Let’s try a different cable first; one is on its way to you.']] },
@@ -52,7 +52,11 @@ const SUPPORT_SEED = [
   { id: 'SUP-5506', client: 'mediaworks', cc: 'SG', subject: 'Access to shared drive', requester: 'Aisha Rahman', email: 'aisha.rahman@mediaworks.com', priority: 'Low', category: 'Accounts & access', source: 'Email', stage: 'waiting', owner: 'Marcus', opened: '2026-10-13T14:00', firstResponse: '2026-10-13T15:00', waitingSince: '2026-10-14T09:00', pausedMins: 0,
     thread: [['Aisha Rahman', 'requester', '2026-10-13T14:00', 'Please give me access to the Finance shared drive.'], ['Marcus', 'agent', '2026-10-14T09:00', 'This needs your manager’s approval. Could you forward it to us?']] },
   { id: 'SUP-5501', client: 'digital', cc: 'GB', subject: 'New mouse not pairing', requester: 'George Patel', email: 'george.patel@digitalsolutions.com.au', priority: 'Low', category: 'Peripherals', source: 'Platform', stage: 'resolved', owner: 'Aisha', opened: '2026-10-14T09:00', firstResponse: '2026-10-14T09:20', resolvedAt: '2026-10-14T11:00',
-    thread: [['George Patel', 'requester', '2026-10-14T09:00', 'MX Master won’t pair.'], ['Aisha', 'agent', '2026-10-14T09:20', 'Use the Logi Bolt receiver in the box; pairing steps attached.'], ['George Patel', 'requester', '2026-10-14T10:50', 'Works now, thanks!']] },
+    thread: [
+      { who: 'George Patel', kind: 'requester', at: '2026-10-14T09:00', text: 'MX Master won’t pair. I’ve tried holding the button for 3 seconds but it still doesn’t show up on Bluetooth.' },
+      { who: 'Aisha', kind: 'agent', at: '2026-10-14T09:20', text: 'Use the Logi Bolt receiver in the box — that’s the dedicated USB dongle, not Bluetooth. Pairing steps are in the attached guide.', cc: 'it-support@digitalsolutions.com.au', attachments: [{ name: 'logi-bolt-pairing-guide.pdf', size: '120 KB' }] },
+      { who: 'George Patel', kind: 'requester', at: '2026-10-14T10:50', text: 'Works now, thanks!' }
+    ] },
   { id: 'SUP-5498', client: 'northwind', cc: 'US', subject: 'Zoom audio echo', requester: 'James Whitfield', email: 'james.whitfield@northwind.health', priority: 'Normal', category: 'Software', source: 'Platform', stage: 'resolved', owner: 'Qonit', opened: '2026-10-13T13:00', firstResponse: '2026-10-13T13:40', resolvedAt: '2026-10-13T18:00',
     thread: [['James Whitfield', 'requester', '2026-10-13T13:00', 'People hear an echo when I talk.'], ['Qonit', 'agent', '2026-10-13T13:40', 'Turned on echo cancellation in your Zoom profile; please test.']] }
 ];
@@ -130,8 +134,14 @@ function supportAudit(t, text) { t.audit.push({ at: supportIso(), who: supportUs
 /* ---------- Actions ---------- */
 
 function supportReply(t, text, internal) {
+  return supportReplyWithCc(t, text, internal, '');
+}
+
+function supportReplyWithCc(t, text, internal, cc) {
   if (!text.trim()) throw new Error('Write a message first.');
-  t.thread.push({ who: supportUser(), kind: internal ? 'internal' : 'agent', at: supportIso(), text: text.trim() });
+  const msg = { who: supportUser(), kind: internal ? 'internal' : 'agent', at: supportIso(), text: text.trim() };
+  if (!internal && cc) msg.cc = cc;
+  t.thread.push(msg);
   if (!internal && !t.firstResponse) { t.firstResponse = supportIso(); supportAudit(t, 'First response sent'); }
   if (!internal && ['submitted', 'triage'].includes(t.stage)) supportSetStage(t, 'progress', true);
   if (!t.owner) t.owner = supportUser().split(' ')[0];

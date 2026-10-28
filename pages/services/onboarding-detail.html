@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/styles/vendors.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/sla.css">
+  <link rel="stylesheet" href="/styles/tracker.css">
 </head>
 <body>
   <div class="app-container">
@@ -70,6 +71,33 @@
                   <div class="kit-dispatch" id="onbDispatch" hidden></div>
                 </div>
               </section>
+              <section class="card mb-lg" id="fdSection">
+                <div class="card-header">
+                  <h3 class="card-title">Email conversation</h3>
+                  <span class="channel-tag channel-itsm">Freshdesk · #28451</span>
+                </div>
+                <div class="card-body">
+                  <div class="thread fd-thread" id="fdThread"></div>
+                  <form class="composer fd-composer" id="fdComposer" novalidate>
+                    <div class="segmented-control segmented-sm" role="group" aria-label="Message type">
+                      <button type="button" class="segment-button active" data-email-mode="reply">Reply to Ravi</button>
+                      <button type="button" class="segment-button" data-email-mode="internal">Internal note</button>
+                    </div>
+                    <div class="composer-cc fd-cc-row">
+                      <span class="cc-label">CC</span>
+                      <input type="text" class="form-input fd-cc-input" placeholder="Add email addresses, comma-separated" aria-label="CC recipients">
+                    </div>
+                    <textarea class="form-textarea fd-reply-text" rows="3" placeholder="Write a reply to Ravi…" aria-label="Reply"></textarea>
+                    <div class="composer-actions">
+                      <span class="readonly-note fd-composer-note">Reply will be sent via Freshdesk to the client admin.</span>
+                      <span class="composer-buttons">
+                        <button type="submit" class="btn btn-primary btn-sm">Send reply</button>
+                      </span>
+                    </div>
+                  </form>
+                </div>
+              </section>
+
               <section class="card mb-lg" data-tracker-audit-card>
                 <div class="card-header"><h3 class="card-title">Audit trail</h3></div>
                 <div class="card-body"><div class="timeline" data-tracker-audit></div></div>
@@ -124,6 +152,7 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/email-conversation.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
@@ -131,5 +160,25 @@
   <script src="/scripts/tracker-onboarding.js"></script>
   <script src="/scripts/request-handover.js"></script>
   <script src="/scripts/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const thread = document.getElementById('fdThread');
+      const section = document.getElementById('fdSection');
+      const messages = [
+        { name: 'Ravi Anand', email: 'ravi.anand@mediaworks.io', cc: 'hr@mediaworks.io', kind: 'client', at: '22 Oct, 09:14',
+          text: 'Hi team, could you confirm the delivery address for Arjun? We recently moved offices and the address on file may be outdated. Also sending our new office guide as reference.' ,
+          attachments: [{ name: 'mediaworks-office-guide.pdf', size: '1.2 MB' }] },
+        { name: 'Qonit', email: 'qonit@esevel.com', cc: '', kind: 'esevel', at: '22 Oct, 11:32',
+          text: 'Hi Ravi, thanks for flagging! Could you share the updated full address including floor and unit? We’ll confirm with FedEx before dispatch.' },
+        { name: 'Ravi Anand', email: 'ravi.anand@mediaworks.io', cc: 'arjun.mehta@mediaworks.io', kind: 'client', at: '22 Oct, 14:05',
+          text: 'The new address is 80 Robinson Road, #12-01, Singapore 068898. Please CC Arjun on the delivery confirmation — his email is arjun.mehta@mediaworks.io.',
+          attachments: [{ name: 'onboarding-checklist-arjun.pdf', size: '84 KB' }] },
+        { name: 'Qonit', email: '', cc: '', kind: 'internal', at: '22 Oct, 14:30',
+          text: 'Address updated in the system. FedEx notified of the change. Will CC Arjun on the dispatch confirmation as requested.' },
+      ];
+      messages.forEach(m => thread.appendChild(fdMessage(m)));
+      initEmailConversation(section, 'Ravi');
+    });
+  </script>
 </body>
 </html>
