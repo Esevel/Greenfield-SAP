@@ -155,6 +155,33 @@
                 </div>
               </div>
             </section>
+
+            <section class="card mb-lg" id="fdSection">
+              <div class="card-header">
+                <h3 class="card-title">Email conversation</h3>
+                <span class="channel-tag channel-itsm">Freshdesk · #39012</span>
+              </div>
+              <div class="card-body">
+                <div class="thread fd-thread" id="fdThread"></div>
+                <form class="composer fd-composer" id="fdComposer" novalidate>
+                  <div class="segmented-control segmented-sm" role="group" aria-label="Message type">
+                    <button type="button" class="segment-button active" data-email-mode="reply">Reply to Ravi</button>
+                    <button type="button" class="segment-button" data-email-mode="internal">Internal note</button>
+                  </div>
+                  <div class="composer-cc fd-cc-row">
+                    <span class="cc-label">CC</span>
+                    <input type="text" class="form-input fd-cc-input" placeholder="Add email addresses, comma-separated" aria-label="CC recipients">
+                  </div>
+                  <textarea class="form-textarea fd-reply-text" rows="3" placeholder="Write a reply to Ravi…" aria-label="Reply"></textarea>
+                  <div class="composer-actions">
+                    <span class="readonly-note fd-composer-note">Reply will be sent via Freshdesk to the client admin.</span>
+                    <span class="composer-buttons">
+                      <button type="submit" class="btn btn-primary btn-sm">Send reply</button>
+                    </span>
+                  </div>
+                </form>
+              </div>
+            </section>
           </div>
           
           <div class="edit-sidebar-column">
@@ -198,11 +225,34 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
+  <script src="/scripts/email-conversation.js"></script>
   <script src="/scripts/request-handover.js"></script>
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
   <script src="/scripts/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const thread = document.getElementById('fdThread');
+      const section = document.getElementById('fdSection');
+      const messages = [
+        { name: 'Ravi Shah', email: 'ravi.shah@digitalsolutions.com', cc: 'it@digitalsolutions.com', kind: 'client', at: '10 Oct, 18:02',
+          text: 'Hi, just to confirm \u2014 Tom\u2019s last day is 10 Oct. He\u2019ll leave the devices with building reception at 1 Canada Square. Attaching the signed asset return form.',
+          attachments: [{ name: 'asset-return-form-TF.pdf', size: '210 KB' }] },
+        { name: 'Qonit', email: 'qonit@esevel.com', cc: '', kind: 'esevel', at: '11 Oct, 09:45',
+          text: 'Hi Ravi, thanks for the heads-up. We\u2019ve booked a DHL Express pickup for 13 Oct, 09:00\u201313:00 from 1 Canada Square, building reception. Tom will receive a confirmation email with tracking details shortly.',
+          attachments: [{ name: 'dhl-pickup-confirmation.pdf', size: '88 KB' }] },
+        { name: 'Ravi Shah', email: 'ravi.shah@digitalsolutions.com', cc: 'ops@digitalsolutions.com', kind: 'client', at: '13 Oct, 15:30',
+          text: 'DHL didn\u2019t show up today. Reception confirmed no courier arrived in the morning window. Can you rebook as soon as possible?' },
+        { name: 'Qonit', email: '', cc: '', kind: 'internal', at: '13 Oct, 16:50',
+          text: 'Opened DHL case #DHL-88213. CSM Alex Hansen to follow up. Second missed pickup \u2014 escalating internally.' },
+        { name: 'Qonit', email: 'qonit@esevel.com', cc: '', kind: 'esevel', at: '13 Oct, 17:10',
+          text: 'Apologies for the missed pickup \u2014 we\u2019ve escalated to DHL and rebooked for 14 Oct, 09:00\u201313:00. We\u2019re monitoring closely and will update you if anything changes.' },
+      ];
+      messages.forEach(m => thread.appendChild(fdMessage(m)));
+      initEmailConversation(section, 'Ravi');
+    });
+  </script>
 </body>
 </html>

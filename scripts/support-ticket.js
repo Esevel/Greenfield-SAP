@@ -4,7 +4,7 @@
 (function initSupportTicket() {
   const root = document.getElementById('tkRoot');
   const id = new URLSearchParams(location.search).get('id') || 'SUP-5521';
-  const ui = { mode: 'reply', hideInternal: false, draft: '' };
+  const ui = { mode: 'reply', hideInternal: false, draft: '', draftCc: '', expanded: false };
 
   function toast(text, error) {
     let el = document.getElementById('spToast');
@@ -43,10 +43,35 @@
 
     const avatar = n => escapeHtml(n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase());
     const tag = m => (m.kind === 'requester' ? '<span class="activity-tag">Requester</span>' : m.kind === 'internal' ? '<span class="activity-tag tag-internal">Internal note</span>' : '<span class="activity-tag">Esevel Support</span>');
-    const thread = t.thread.filter(m => !ui.hideInternal || m.kind !== 'internal').map(m => `<div class="message${m.kind === 'internal' ? ' message-internal' : ''}">
+
+    const agentEmail = name => `${name.toLowerCase().replace(/ /g, '.')}@esevel.com`;
+    const allVisible = t.thread.filter(m => !ui.hideInternal || m.kind !== 'internal');
+    const collapseCount = !ui.expanded && allVisible.length > 2 ? allVisible.length - 2 : 0;
+    const showMsgs = allVisible.slice(collapseCount);
+    const expandBtn = collapseCount
+      ? `<button type="button" class="thread-earlier-btn" data-act="expand-thread">Show ${collapseCount} earlier message${collapseCount === 1 ? '' : 's'}</button>`
+      : '';
+    const thread = expandBtn + showMsgs.map(m => {
+      const msgEmail = m.kind !== 'internal'
+        ? (m.email || (m.kind === 'requester' ? t.email : agentEmail(m.who)))
+        : '';
+      const msgCc = m.cc || '';
+      const metaHtml = (msgEmail || msgCc)
+        ? `<div class="message-meta">${escapeHtml(msgEmail)}${msgCc ? ` &middot; CC: ${escapeHtml(msgCc)}` : ''}</div>`
+        : '';
+      const attachHtml = (m.attachments || []).map(a =>
+        `<a href="data:application/pdf;base64,${FD_BLANK_PDF}" download="${escapeHtml(a.name)}" class="attachment-chip">📎 ${escapeHtml(a.name)} <span class="attachment-size">${escapeHtml(a.size)}</span></a>`
+      ).join('');
+      return `<div class="message${m.kind === 'internal' ? ' message-internal' : ''}">
         <div class="activity-avatar note-avatar${m.kind === 'requester' ? ' msg-avatar-client' : ''}">${avatar(m.who)}</div>
-        <div class="message-body"><div class="activity-header"><strong>${escapeHtml(m.who)}</strong>${tag(m)}<span class="activity-time">${fmtSupportTs(m.at)}</span></div><div class="message-text">${escapeHtml(m.text)}</div></div>
-      </div>`).join('');
+        <div class="message-body">
+          <div class="activity-header"><strong>${escapeHtml(m.who)}</strong>${tag(m)}<span class="activity-time">${fmtSupportTs(m.at)}</span></div>
+          ${metaHtml}
+          <div class="message-text">${escapeHtml(m.text)}</div>
+          ${attachHtml ? `<div class="message-attachments">${attachHtml}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
     const internal = ui.mode === 'internal';
     const opt = (v, cur, l = v) => `<option value="${escapeHtml(v)}"${v === cur ? ' selected' : ''}>${escapeHtml(l)}</option>`;
     const clockCls = c => (c.met ? (c.health === 'met' ? 'clock-met' : 'clock-breached') : c.paused ? 'clock-paused' : c.health === 'breached' ? 'clock-breached' : c.health === 'risk' ? 'clock-risk' : '');
@@ -77,6 +102,7 @@
                   <button type="button" class="segment-button${internal ? '' : ' active'}" data-mode="reply">Reply to ${escapeHtml(t.requester.split(' ')[0])}</button>
                   <button type="button" class="segment-button${internal ? ' active' : ''}" data-mode="internal">Internal note</button>
                 </div>
+                ${internal ? '' : `<div class="composer-cc"><span class="cc-label">CC</span><input type="text" class="form-input fd-cc-input" id="tkCc" value="${escapeHtml(ui.draftCc)}" placeholder="Add email addresses, comma-separated" aria-label="CC recipients"></div>`}
                 <textarea class="form-textarea" id="tkText" rows="3" placeholder="${internal ? 'Note for the Esevel team…' : `Write a reply to ${escapeHtml(t.requester.split(' ')[0])}…`}">${escapeHtml(ui.draft)}</textarea>
                 <div class="composer-actions">
                   <span class="readonly-note">${internal ? 'Only visible to Esevel staff.' : `Visible to ${escapeHtml(t.requester)} and the client admin.${t.firstResponse ? '' : ' Sending stops the first-response clock.'}`}</span>
@@ -115,20 +141,22 @@
   root.addEventListener('click', e => {
     const t = supportById(id);
     const m = e.target.closest('[data-mode]');
-    if (m) { ui.draft = document.getElementById('tkText')?.value || ''; ui.mode = m.dataset.mode; render(); document.getElementById('tkText').focus(); return; }
+    if (m) { ui.draft = document.getElementById('tkText')?.value || ''; ui.draftCc = document.getElementById('tkCc')?.value || ''; ui.mode = m.dataset.mode; render(); document.getElementById('tkText').focus(); return; }
     const a = e.target.closest('[data-act]');
     if (a) {
       const act = a.dataset.act;
+      if (act === 'expand-thread') { ui.expanded = true; render(); return; }
       if (act === 'take') return run(() => supportAssign(t, supportUser().split(' ')[0]));
       if (act === 'resolve') return run(() => supportSetStage(t, 'resolved'));
-      if (act === 'reopen') return run(() => supportSetStage(t, 'progress'));
+      if (act === 'reopen') { ui.expanded = false; return run(() => supportSetStage(t, 'progress')); }
       if (act === 'wait') return run(() => `${supportSetStage(t, 'waiting')} Resolution clock paused.`);
       if (act === 'resume') return run(() => `${supportSetStage(t, 'progress')} Resolution clock running.`);
     }
     const sw = e.target.closest('[data-send="wait"]');
     if (sw) {
       const text = document.getElementById('tkText').value;
-      return run(() => { const msg = supportReply(t, text, false); supportSetStage(t, 'waiting'); ui.draft = ''; return `${msg} Waiting on client.`; });
+      const cc = document.getElementById('tkCc')?.value.trim() || '';
+      return run(() => { const msg = supportReplyWithCc(t, text, false, cc); supportSetStage(t, 'waiting'); ui.draft = ''; ui.draftCc = ''; return `${msg} Waiting on client.`; });
     }
   });
   root.addEventListener('submit', e => {
@@ -136,7 +164,8 @@
     e.preventDefault();
     const t = supportById(id);
     const text = document.getElementById('tkText').value;
-    run(() => { const msg = supportReply(t, text, ui.mode === 'internal'); ui.draft = ''; return msg; });
+    const cc = document.getElementById('tkCc')?.value.trim() || '';
+    run(() => { const msg = supportReplyWithCc(t, text, ui.mode === 'internal', cc); ui.draft = ''; ui.draftCc = ''; ui.expanded = true; return msg; });
   });
   root.addEventListener('change', e => {
     const t = supportById(id);

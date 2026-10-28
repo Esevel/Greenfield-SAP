@@ -569,6 +569,28 @@
   border-color: var(--color-success);
 }
 
+/* "Show N earlier messages" expand button */
+.thread-earlier-btn {
+  display: block;
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-md);
+  background: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.thread-earlier-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
 /* Support conversation */
 .thread {
   display: flex;
@@ -639,6 +661,78 @@
 
 .composer-actions .readonly-note {
   margin-top: 0;
+}
+
+/* Email address and CC line shown beneath message author */
+.message-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+/* Attachment chips inside messages */
+.message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.attachment-chip:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.attachment-size {
+  color: var(--color-text-muted);
+}
+
+/* CC row inside the composer */
+.composer-cc {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.composer-cc .cc-label {
+  flex-shrink: 0;
+  min-width: 22px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.composer-cc .form-input {
+  flex: 1;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: var(--font-size-sm);
+}
+
+/* Empty state for orders with no conversation yet */
+.email-empty-state {
+  padding: var(--space-xl) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.email-empty-state p {
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-sm);
 }
 
 .sla-clocks-lg {
