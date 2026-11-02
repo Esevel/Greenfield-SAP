@@ -247,10 +247,12 @@ window.DashboardWidgets = (() => {
   // Summary cards: up to 6, picked by priority (p, lowest first) across all of a person's roles, then shown in list order.
   // delta = [direction, good: true | false | null (neutral), text]. Rates and averages compare Q4 to date with Q3;
   // running totals compare with the same days of Q3. spark = last 13 weeks, current week last. History is illustrative.
-  const CARDS_MAX = 6;
+  const OPS_GROUP = user => ['kirthinni', 'siti', 'vinh', 'natasa', 'yosefin'].includes(user.id);
+  const CARDS_MAX = user => OPS_GROUP(user) ? 7 : 6;
   const HEAD = { minLevel: 'head', p: 0 };
   const IT_MEMBER = user => user.levelIn('it_euc') === 'member';
   const FINANCE = { requires: 'finance_reporting', p: 0 };
+  const OPS_FINANCE = { p: 0, when: OPS_GROUP };
   const outstanding = COMMERCIAL.money.find(m => m.label === 'Outstanding invoices');
   const unbilled = COMMERCIAL.money.find(m => m.label === 'Unbilled charges');
   const SPARK = {
@@ -282,6 +284,15 @@ window.DashboardWidgets = (() => {
       note: outstanding.sub, link: outstanding.link },
     { ...HEAD, label: 'Work orders within SLA', value: '91.6%', delta: ['down', false, '1.8 pts vs Q3'],
       note: '11 open breached · 25 at risk', link: '/pages/attention/queue.html' },
+
+    // Ops group Q4 to date summary cards
+    { ...OPS_FINANCE, label: 'Total products', value: '293', note: '352 order IDs', link: '/pages/orders/list.html' },
+    { ...OPS_FINANCE, label: 'Total revenue', value: '≈ SGD 16,288,890.89', note: '31 POs need prepayment', link: '/pages/billing/ledger.html' },
+    { ...OPS_FINANCE, label: 'Total cost', value: '≈ SGD 14,655,901.47', note: 'Fulfillment cost', link: '/pages/orders/list.html' },
+    { ...OPS_FINANCE, label: 'Net margin', value: '≈ SGD 1,632,989.42', note: 'Profit sum', link: '/pages/billing/ledger.html' },
+    { ...OPS_FINANCE, label: 'Margin %', value: '10.0%', note: 'Overall ratio', link: '/pages/billing/ledger.html' },
+    { ...OPS_FINANCE, label: 'SLA met rate', value: '70.9%', note: '217 met / 89 breached', link: '/pages/attention/queue.html' },
+    { ...OPS_FINANCE, label: 'In-progress', value: '18', note: '311 completed', link: '/pages/orders/list.html' },
 
     // Finance
     { p: 1, requires: 'finance_reporting', label: 'Unbilled charges', value: sgd(toSGD(unbilled.amounts)),
@@ -504,6 +515,7 @@ window.DashboardWidgets = (() => {
     { section: 'operations', requires: 'stock', category: 'UPCOMING', title: '68 devices stored 90+ days', description: 'Review with clients: redeploy or dispose', link: '/pages/stock/fees.html' },
 
     // Procurement
+    { section: 'procurement', when: OPS_GROUP, category: 'PENDING_APPROVAL', title: '31 POs need prepayment', description: 'Orders awaiting payment before vendor placement', link: '/pages/orders/board.html?status=attention' },
     { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at hub 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/orders/order.html?id=ORD-30398' },
     { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ONB-1188: vendor backorder on the 14" model', description: 'FinanceExperts · confirm the 16" substitute with the client', link: '/pages/services/onboarding.html' },
     { section: 'procurement', requires: 'purchase_orders', category: 'NEEDS_ATTENTION', title: '2 joiners need devices ordered this week', description: 'No stock in the client hub · Priya Nair (Acme Tech, 26 Oct) · Daniel Okafor (TechGlobal, 28 Oct)', link: '/pages/people/joiners.html' },
@@ -688,11 +700,12 @@ window.DashboardWidgets = (() => {
   }
 
   function summaryCards(user) {
+    const maxCards = typeof CARDS_MAX === 'function' ? CARDS_MAX(user) : CARDS_MAX;
     const cards = CARDS
       .map((c, i) => ({ c, i }))
       .filter(({ c }) => isVisible(c, user))
       .sort((a, b) => a.c.p - b.c.p || a.i - b.i)
-      .slice(0, CARDS_MAX)
+      .slice(0, maxCards)
       .sort((a, b) => a.i - b.i)
       .map(({ c }) => c);
     if (!cards.length) return '';
@@ -789,6 +802,7 @@ window.DashboardWidgets = (() => {
     update();
   }
 
+  /*
   function areaCards(metrics, user) {
     const groups = Object.keys(SECTION_LINKS)
       .map(id => ({ id, items: metrics.filter(m => m.section === id) }))
@@ -816,6 +830,7 @@ window.DashboardWidgets = (() => {
         </div>
       </section>`;
   }
+  */
 
   // compact: smaller canvas, labels only on the current month
   function revenueChart({ compact = false } = {}) {
@@ -891,10 +906,11 @@ window.DashboardWidgets = (() => {
     return `
       <section class="dash-panel fin-panel">
         <header class="dash-panel-header">
-          <h2>Revenue & margin</h2>
+          <h2>Finance</h2>
           <span class="dash-panel-meta">Internal · SGD equivalent at ${FX_MONTH_END.date} rates</span>
           <a href="/pages/billing/ledger.html" class="dash-link">Open ledger</a>
         </header>
+        <!--
         <div class="fin-body">
           <div class="fin-main">
             <div class="fin-headline">
@@ -911,6 +927,7 @@ window.DashboardWidgets = (() => {
           </div>
 
           <div class="fin-side">
+        -->
             <div class="fin-block">
               <h3>Owed to us</h3>
               <div class="fin-big">${sgd(owed)}</div>
@@ -935,6 +952,7 @@ window.DashboardWidgets = (() => {
               <p class="fin-note">Unbilled + invoiced, converted to SGD. Clients are billed in their own currency.</p>
             </div>
 
+            <!--
             ${marginBars()}
 
             <div class="fin-block fin-mini-row">
@@ -943,6 +961,7 @@ window.DashboardWidgets = (() => {
             </div>
           </div>
         </div>
+        -->
       </section>`;
   }
 
@@ -1038,15 +1057,14 @@ window.DashboardWidgets = (() => {
           <div class="cov-map-wrap">
             <div class="cov-map" id="cov-map" data-selected="${first.cc}" role="group" aria-label="Countries we provision in, coloured by coverage"></div>
             <div class="cov-legend">
-              <span><i data-state="ok"></i>All services, 2+ vendors</span>
-              <span><i data-state="single"></i>Single-vendor risk</span>
-              <span><i data-state="warn"></i>1 service missing</span>
-              <span><i data-state="bad"></i>2+ services missing</span>
-              <span><i data-state="none"></i>Not provisioned</span>
+              <span><i data-state="ok"></i>Covered</span>
+              <span><i data-state="single"></i>Single vendor</span>
+              <span><i data-state="warn"></i>Gap</span>
             </div>
           </div>
           <div class="cov-detail" id="cov-detail">${coverageDetail(first)}</div>
         </div>
+        <!--
         <div class="cov-list">
           <div class="cov-toolbar">
             <input type="search" class="form-input cov-search" placeholder="Search ${COUNTRY_COVERAGE.length} countries" aria-label="Search countries">
@@ -1055,6 +1073,7 @@ window.DashboardWidgets = (() => {
           </div>
           <div class="cov-table-wrap">${coverageTable(false, '')}</div>
         </div>
+        -->
       </section>`;
   }
 
@@ -1146,10 +1165,12 @@ window.DashboardWidgets = (() => {
     it_euc: 'IT EUC', people: 'Customer Success', integrations: 'IT EUC'
   };
 
+  /*
   const COMMENTARY = [
     'Revenue is up 9% on the same days of Q3 at ≈ SGD 48.2K, with margin up 1.2 pts to 21.4%. Work order SLA slipped 1.8 pts to 91.6%, driven by onboarding (4 breached) and a customs hold on an Acme Tech order.',
     'Watch: DHL Express integration is failing in the UK, CloudSystems is billing on an expired contract, and 3 invoices are overdue.'
   ];
+  */
 
   // personId opens "view as" that lead
   const TEAMS = [
@@ -1207,6 +1228,7 @@ window.DashboardWidgets = (() => {
       </section>`;
   }
 
+  /*
   function clientHealth() {
     const rows = [...CLIENT_HEALTH].sort((a, b) => b.risk - a.risk).slice(0, CLIENTS_SHOWN);
     return `
@@ -1233,6 +1255,7 @@ window.DashboardWidgets = (() => {
         </table>
       </section>`;
   }
+  */
 
   function headRevenuePanel() {
     const owed = toSGD(COMMERCIAL.money[0].amounts) + toSGD(COMMERCIAL.money[1].amounts);
@@ -1407,6 +1430,7 @@ window.DashboardWidgets = (() => {
       </section>`;
   }
 
+  /*
   function contractsPanel(user) {
     const lead = user.can(null, CS_LEAD);
     // Leads see what needs attention; account managers see the full renewal calendar for their clients
@@ -1484,6 +1508,7 @@ window.DashboardWidgets = (() => {
         </div>
       </section>`;
   }
+  */
 
   // ---- Procurement view ----
   const FLAGS = new Proxy({}, { get: (_, cc) => flagOf(String(cc)) });
@@ -2146,6 +2171,31 @@ window.DashboardWidgets = (() => {
       </section>`;
   }
 
+  function csWorkQueue(user) {
+    const breached = SLA.overdue.filter(o => user.canSeeRecord('sla', { client: o.client })).slice(0, 5);
+    const atRisk = SLA.types.filter(t => t.risk > 0).slice(0, 3);
+    return `
+      <section class="dash-panel proc-wait-panel">
+        <header class="dash-panel-header">
+          <h2>Blocked or at risk</h2>
+          <span class="dash-panel-meta">${breached.length} breached · ${atRisk.reduce((n, t) => n + t.risk, 0)} at risk</span>
+          <a href="/pages/attention/queue.html" class="dash-link">Tracker</a>
+        </header>
+        <ul class="proc-wait">
+          ${breached.map(o => `
+            <li><a href="${o.link}" data-state="bad">
+              <span class="sla-overdue-top"><span class="sla-overdue-id">${o.id}</span><span class="proc-wait-status">${o.late} overdue</span></span>
+              <span class="sla-overdue-sub">${o.client} · ${o.milestone}${o.blocker ? ` · ${o.blocker}` : ''}</span>
+            </a></li>`).join('')}
+          ${SAMPLE.supportAtRisk.filter(s => user.canSeeRecord('support', { clientTier: s.clientTier })).map(s => `
+            <li><a href="/pages/support/board.html" data-state="warn">
+              <span class="sla-overdue-top"><span class="sla-overdue-id">${s.id}</span><span class="proc-wait-status">${s.text}</span></span>
+              <span class="sla-overdue-sub">${s.client}</span>
+            </a></li>`).join('')}
+        </ul>
+      </section>`;
+  }
+
   function renderIT(root, user) {
     root.innerHTML = `
       ${summaryCards(user)}
@@ -2179,50 +2229,159 @@ window.DashboardWidgets = (() => {
     }));
   }
 
-  function render(root, user) {
-    if (user.isHead) {
-      renderHead(root, user);
-      return;
-    }
-    if (csView(user)) {
-      renderCS(root, user);
-      return;
-    }
-    if (procView(user)) {
-      renderProcurement(root, user);
-      return;
-    }
-    if (itLeadView(user)) {
-      renderITLead(root, user);
-      return;
-    }
-    if (itView(user)) {
-      renderIT(root, user);
-      return;
-    }
-    if (towerView(user)) {
-      renderTower(root, user);
-      return;
-    }
-    if (isVisible(PANELS.coverage, user)) {
-      renderPartnerships(root, user);
-      return;
-    }
-    const wide = isVisible(PANELS.financeWide, user);
-    const aside = !wide && isVisible(PANELS.commercial, user) ? commercialPanel(user) : '';
+  const LAYOUTS = {
+    matthew: user => [summaryCards(user), omsPipelinePanel(), teamTiles()],
+    yuying: user => [summaryCards(user), omsPipelinePanel(), teamTiles()],
+    samnan: user => [summaryCards(user), omsPipelinePanel(), teamTiles()],
+    nalene: user => [summaryCards(user), csWorkQueue(user), portfolioPanel(user)],
+    thiva: user => [summaryCards(user), csWorkQueue(user), portfolioPanel(user)],
+    kirthinni: user => [summaryCards(user), omsPipelinePanel(), vendorWaitPanel(), coveragePanel()],
+    siti: user => [summaryCards(user), omsPipelinePanel(), vendorWaitPanel(), coveragePanel()],
+    vinh: user => [summaryCards(user), omsPipelinePanel(), vendorWaitPanel(), coveragePanel()],
+    natasa: user => [summaryCards(user), omsPipelinePanel(), vendorWaitPanel(), coveragePanel()],
+    yosefin: user => [summaryCards(user), omsPipelinePanel(), vendorWaitPanel(), coveragePanel()],
+    karen: user => [summaryCards(user), supportQueuePanel()],
+    justin: user => [summaryCards(user), omsPipelinePanel(), supportQueuePanel()],
+    roehl: user => [summaryCards(user), supportQueuePanel()],
+    cassandra: user => [summaryCards(user), omsPipelinePanel(), supportQueuePanel()],
+    jerome: user => [summaryCards(user), omsPipelinePanel(), supportQueuePanel()],
+    jericho: user => [summaryCards(user), omsPipelinePanel(), supportQueuePanel()],
+    pooja: user => [summaryCards(user), financePanel()]
+  };
 
+  function render(root, user) {
+    const layout = LAYOUTS[user.id];
+    if (layout) {
+      const components = layout(user);
+      root.innerHTML = `
+        ${components[0]}
+        <div class="dash-grid dash-grid-single">
+          ${actionsPanel(actionsFor(user), user)}
+        </div>
+        ${components.slice(1).join('')}`;
+      bindActions(root.querySelector('#dash-actions'));
+      if (user.id === 'kirthinni' || user.id === 'siti' || user.id === 'vinh' || user.id === 'natasa' || user.id === 'yosefin') {
+        bindCoverage(root.querySelector('.cov-panel'));
+      }
+      return;
+    }
     root.innerHTML = `
       ${summaryCards(user)}
-      ${wide ? financePanel() : ''}
-      ${isVisible(PANELS.sla, user) ? slaPanel() : ''}
-      <div class="dash-grid ${aside ? '' : 'dash-grid-single'}">
+      <div class="dash-grid dash-grid-single">
         ${actionsPanel(actionsFor(user), user)}
-        ${aside ? `<aside class="dash-aside">${aside}</aside>` : ''}
-      </div>
-      ${wide ? '' : areaCards(metricsFor(user), user)}`;
-
+      </div>`;
     bindActions(root.querySelector('#dash-actions'));
   }
+
+  // Commented out old render functions - kept for reference
+  /*
+  function renderHead(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      ${headSlaPanel()}
+      <div class="dash-commentary">
+        ${COMMENTARY.map(p => `<p>${p}</p>`).join('')}
+      </div>
+      <div class="dash-grid dash-grid-2col">
+        ${actionsPanel(actionsFor(user).filter(isEscalation), user, {
+          title: 'Escalations',
+          footer: `<p class="dash-footnote">${actionsFor(user).length - actionsFor(user).filter(isEscalation).length} more actions handled by your team leads.</p>`
+        })}
+        ${headRevenuePanel()}
+      </div>
+      ${teamTiles()}
+      ${clientHealth()}`;
+    bindActions(root.querySelector('#dash-actions'));
+    root.querySelectorAll('.team-tile').forEach(tile => {
+      if (tile.dataset.person) {
+        tile.addEventListener('click', () => {
+          const switcher = document.querySelector('.role-switcher');
+          if (switcher) switcher.value = tile.dataset.person;
+          window.location.reload();
+        });
+      }
+    });
+  }
+
+  function renderCS(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      <div class="dash-grid ${user.can(null, CS_LEAD) ? 'dash-grid-stretch' : ''}">
+        ${actionsPanel(actionsFor(user), user)}
+        ${contractsPanel(user)}
+      </div>
+      ${portfolioPanel(user)}
+      ${user.can(null, CS_LEAD) ? myTeamPanel(user) : peoplePanel(user)}`;
+    bindActions(root.querySelector('#dash-actions'));
+    root.querySelectorAll('.cs-view-as').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const switcher = document.querySelector('.role-switcher');
+        if (switcher) switcher.value = btn.dataset.person;
+        window.location.reload();
+      });
+    });
+  }
+
+  function renderProcurement(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      <div class="dash-grid dash-grid-stretch">
+        ${actionsPanel(actionsFor(user), user)}
+        ${vendorWaitPanel()}
+      </div>
+      ${mySuppliersPanel()}`;
+    bindActions(root.querySelector('#dash-actions'));
+  }
+
+  function renderTower(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      ${omsPipelinePanel()}
+      <div class="dash-grid dash-grid-stretch">
+        ${actionsPanel(actionsFor(user), user)}
+        ${partnerSyncPanel()}
+      </div>
+      ${priorityOrdersPanel()}`;
+    bindActions(root.querySelector('#dash-actions'));
+  }
+
+  function renderITLead(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      ${itSlaPanel()}
+      <div class="dash-grid dash-grid-stretch">
+        ${actionsPanel(actionsFor(user), user)}
+        ${itTrendPanel()}
+      </div>
+      ${itCategoryPanel()}`;
+    bindActions(root.querySelector('#dash-actions'));
+  }
+
+  function renderIT(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      <div class="dash-grid dash-grid-stretch">
+        ${supportQueuePanel()}
+        ${repairsPanel()}
+      </div>
+      <div class="dash-grid dash-grid-stretch">
+        ${actionsPanel(actionsFor(user), user)}
+        ${deviceWorkPanel()}
+      </div>`;
+    bindActions(root.querySelector('#dash-actions'));
+  }
+
+  function renderPartnerships(root, user) {
+    root.innerHTML = `
+      ${summaryCards(user)}
+      <div class="dash-grid dash-grid-single">
+        ${actionsPanel(actionsFor(user), user)}
+      </div>
+      ${coveragePanel()}`;
+    bindActions(root.querySelector('#dash-actions'));
+    bindCoverage(root.querySelector('.cov-panel'));
+  }
+  */
 
   return { PANELS, CARDS, METRICS, ACTIONS, metricsFor, actionsFor, isVisible, render };
 })();
