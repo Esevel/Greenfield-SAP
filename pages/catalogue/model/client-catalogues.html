@@ -20,7 +20,7 @@
         
         <div class="toolbar-with-description">
           <div class="toolbar-description">
-            <p>Contract-adjusted price and marketplace availability for this model.</p>
+            <p>Client offers are configured per country, model configuration and volume tier. Only configurations with a priced local vendor listing can be offered.</p>
           </div>
           <div class="toolbar-actions">
             <button type="button" class="btn btn-primary" id="addClientCatalogue">Add client catalogue</button>
@@ -33,12 +33,13 @@
           </div>
         </div>
         
-        <div class="table-container">
-          <table class="table">
+        <div class="table-container client-catalogue-table-container">
+          <table class="table client-catalogue-table">
             <thead>
               <tr>
                 <th>Client</th>
                 <th>Country</th>
+                <th>Configuration</th>
                 <th>Billing entity and invoice currency</th>
                 <th>Vendor cost</th>
                 <th>Retail price</th>
@@ -63,10 +64,11 @@
         <button type="button" class="modal-close" data-client-catalogue-close aria-label="Close">×</button>
       </div>
       <div class="modal-body">
-        <p>Choose the catalogue scope and confirm its price details. Vendor cost is populated from the country listing.</p>
+        <p>Choose a client, country, exact model configuration and volume tier. Price details come from that configuration’s country listing.</p>
         <div class="form-grid">
           <div class="form-group"><label class="form-label" for="newCatalogueClient">Client</label><select class="form-select" id="newCatalogueClient" required></select></div>
           <div class="form-group"><label class="form-label" for="newCatalogueCountry">Country</label><select class="form-select" id="newCatalogueCountry" required></select></div>
+          <div class="form-group"><label class="form-label" for="newCatalogueConfiguration">Configuration</label><select class="form-select" id="newCatalogueConfiguration" required></select></div>
           <div class="form-group form-group-span-2"><label class="form-label" for="newCatalogueTier">Volume tier</label><select class="form-select" id="newCatalogueTier" required></select></div>
           <div class="form-group"><label class="form-label" for="newCatalogueBilling">Billing entity and invoice currency</label><input class="form-input" id="newCatalogueBilling" readonly></div>
           <div class="form-group"><label class="form-label" for="newCatalogueCost">Vendor cost</label><input class="form-input" id="newCatalogueCost" readonly></div>

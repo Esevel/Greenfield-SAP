@@ -64,6 +64,7 @@
   const PRODUCT_FIELD_KEYS = new Set(['vendor', 'productName', 'leadTime', 'buyingPrice', 'taxPercent', 'deliveryFees', 'unitPriceIncTax', 'targetMarkup', 'priceAfterMarkup', 'mrpLocal', 'unitPriceUsd', 'landedCostUnitUsd', 'marginUsd', 'actualMarkupUsd', 'mrpUsd', 'mrpVarianceLocal', 'mrpVarianceUsd']);
   const SAMPLE_SEED_KEY = 'sap-order-quotations-samples-v1';
   const MULTI_LINE_SAMPLE_KEY = 'sap-order-quotations-multi-samples-v2';
+  const QUOTABLE_MODEL_NAMES = Object.keys(MODEL_VENDOR_LISTINGS || {});
 
   function calculateProduct(line, fxRate, fxBuffer) {
     const qty = Math.max(1, number(line.quantity));
@@ -345,13 +346,120 @@
   }
 
   function blankProduct(taxPercent) {
-    return { productName: '', vendor: '', quantity: 1, buyingPrice: '', taxPercent: taxPercent ?? 0, deliveryFees: 0, targetMarkup: 0, mrpLocal: '', leadTime: '' };
+    return { catalogueOfferKey: '', productName: '', vendor: '', quantity: 1, buyingPrice: '', taxPercent: taxPercent ?? 0, deliveryFees: 0, targetMarkup: 0, mrpLocal: '', leadTime: '' };
+  }
+
+  function catalogueOfferKey(offer) {
+    return JSON.stringify([offer.client, offer.country, offer.configurationId, offer.tier]);
+  }
+
+  function availableCatalogueOffers() {
+    const client = WH_CLIENTS.find(entry => entry.name === value('client'));
+    const country = value('country');
+    if (!client || !country) return [];
+    return CLIENT_MODEL_CATALOGUE.filter(offer => offer.client === client.id && offer.country === country && offer.offered)
+      .map(offer => {
+        const model = QUOTABLE_MODEL_NAMES.find(name => modelConfiguration(name, offer.configurationId));
+        if (!model) return null;
+        const configuration = modelConfiguration(model, offer.configurationId);
+        const listing = modelCountryListing(model, country, offer.configurationId);
+        const price = modelClientPrice(client.id, model, country, offer.tier, offer.configurationId);
+        if (!listing || !Number.isFinite(listing.cost) || !price) return null;
+        const offerPrice = Number.isFinite(offer.contractPrice)
+          ? offer.contractPrice
+          : price.localPrice;
+        const adjustment = Number.isFinite(offer.adjustment)
+          ? offer.adjustment
+          : price.hasContractPrice
+            ? price.adjustment
+            : (offerPrice / listing.cost - 1) * 100;
+        return { ...offer, model, configuration, listing, price, offerPrice, adjustment };
+      })
+      .filter(Boolean);
+  }
+
+  function offerOptionMarkup(selectedKey) {
+    const offers = availableCatalogueOffers();
+    return `<option value="">Choose a client catalogue offer…</option>${offers.map(offer => {
+      const key = catalogueOfferKey(offer);
+      const spec = `${offer.configuration.specifications.memory} / ${offer.configuration.specifications.storage.replace(' SSD', '')}`;
+      const label = `${offer.model} · ${spec} · ${VOLUME_TIERS[offer.tier]}`;
+      return `<option value="${html(key)}" ${key === selectedKey ? 'selected' : ''}>${html(label)}</option>`;
+    }).join('')}`;
+  }
+
+  function offerReferenceMarkup(selectedKey) {
+    const offer = availableCatalogueOffers().find(candidate => catalogueOfferKey(candidate) === selectedKey);
+    if (!offer) return '<span>Select an offer to prefill the product and vendor inputs.</span>';
+    return `<span>Catalogue price reference: <strong>${html(offer.listing.currency)} ${money(offer.offerPrice)}</strong> · ${html(offer.configuration.specifications.memory)} / ${html(offer.configuration.specifications.storage.replace(' SSD', ''))}. Quote pricing then applies tax, delivery, procurement markup and FX buffer.</span>`;
+  }
+
+  function applyCatalogueOffer(lineElement) {
+    const selectedKey = lineElement.querySelector('[data-product-field="catalogueOfferKey"]').value;
+    const reference = lineElement.querySelector('[data-catalogue-reference]');
+    if (!selectedKey) {
+      if (reference) reference.innerHTML = offerReferenceMarkup('');
+      return;
+    }
+    const offer = availableCatalogueOffers().find(candidate => catalogueOfferKey(candidate) === selectedKey);
+    if (!offer) return;
+    const supplier = Object.entries(SUPPLY_SUPPLIERS).find(([, candidate]) => candidate.name === offer.listing.vendor);
+    const currency = offer.listing.currency;
+    const taxPercent = getTaxRateForCountry(value('country'), value('client'));
+    const quantity = Math.max(1, number(lineElement.querySelector('[data-product-field="quantity"]').value) || 1);
+    const deliveryEach = number(lineElement.querySelector('[data-product-field="deliveryFees"]').value) / quantity;
+    const unitCostIncTax = (offer.listing.cost + deliveryEach) * (1 + taxPercent / 100);
+    const targetMarkup = unitCostIncTax > 0
+      ? Math.max(0, (offer.offerPrice / unitCostIncTax - 1) * 100)
+      : offer.adjustment;
+    const assign = (field, fieldValue) => {
+      const input = lineElement.querySelector(`[data-product-field="${field}"]`);
+      if (input) input.value = String(fieldValue ?? '');
+    };
+
+    assign('productName', `${offer.model} · ${offer.configuration.specifications.memory} / ${offer.configuration.specifications.storage.replace(' SSD', '')}`);
+    assign('vendor', supplier?.[0] || '');
+    assign('buyingPrice', offer.listing.cost);
+    assign('taxPercent', taxPercent);
+    assign('targetMarkup', targetMarkup.toFixed(2));
+    assign('mrpLocal', offer.listing.retail);
+    assign('leadTime', offer.listing.leadTime || '');
+    if ($('qt-currency')) $('qt-currency').value = currency;
+    const offerKeyInput = lineElement.querySelector('[data-product-field="catalogueOfferKey"]');
+    const referencePriceInput = lineElement.querySelector('[data-product-field="catalogueReferencePrice"]');
+    const referenceCurrencyInput = lineElement.querySelector('[data-product-field="catalogueReferenceCurrency"]');
+    if (offerKeyInput) offerKeyInput.value = selectedKey;
+    if (referencePriceInput) referencePriceInput.value = String(offer.offerPrice);
+    if (referenceCurrencyInput) referenceCurrencyInput.value = currency;
+    if (reference) reference.innerHTML = offerReferenceMarkup(selectedKey);
+  }
+
+  function refreshCatalogueOfferOptions(lines = readProductInputs()) {
+    document.querySelectorAll('.qt-product-line').forEach((row, index) => {
+      const select = row.querySelector('[data-product-field="catalogueOfferKey"]');
+      if (!select) return;
+      const selectedKey = lines[index]?.catalogueOfferKey || '';
+      select.innerHTML = offerOptionMarkup(selectedKey);
+      if (selectedKey && ![...select.options].some(option => option.value === selectedKey)) {
+        select.value = '';
+        lines[index].catalogueOfferKey = '';
+        lines[index].catalogueReferencePrice = '';
+        lines[index].catalogueReferenceCurrency = '';
+        row.querySelector('[data-product-field="catalogueReferencePrice"]').value = '';
+        row.querySelector('[data-product-field="catalogueReferenceCurrency"]').value = '';
+        row.querySelector('[data-catalogue-reference]').textContent = 'This catalogue offer is not available for the selected client and country. Existing product values are retained for manual editing.';
+      }
+    });
   }
 
   function productLineMarkup(lines = [blankProduct()]) {
     return lines.map((line, index) => `<article class="qt-product-line" data-product-line="${index}">
       <div class="qt-product-line-head"><strong>Product ${index + 1}</strong>${lines.length > 1 ? `<button type="button" class="qt-product-remove" data-remove-product="${index}" aria-label="Remove product ${index + 1}">Remove</button>` : ''}</div>
+      <input type="hidden" data-product-field="catalogueReferencePrice" value="${html(line.catalogueReferencePrice ?? '')}">
+      <input type="hidden" data-product-field="catalogueReferenceCurrency" value="${html(line.catalogueReferenceCurrency ?? '')}">
       <div class="qt-product-input-grid">
+        <label class="qt-field qt-product-name"><span>Client catalogue offer</span><select data-product-field="catalogueOfferKey">${offerOptionMarkup(line.catalogueOfferKey || '')}</select></label>
+        <div class="qt-catalogue-reference" data-catalogue-reference>${offerReferenceMarkup(line.catalogueOfferKey || '')}</div>
         <label class="qt-field qt-product-name"><span>Product Name <b>*</b></span><input data-product-field="productName" value="${html(line.productName)}" required placeholder="Enter product or model"></label>
         <label class="qt-field"><span>Vendor <b>*</b></span><select data-product-field="vendor" required><option value="">Choose…</option>${vendors.map(option => `<option value="${html(option.value)}" ${option.value === line.vendor ? 'selected' : ''}>${html(option.label)}</option>`).join('')}</select></label>
         <label class="qt-field"><span>Quantity <b>*</b></span><input data-product-field="quantity" type="number" min="1" step="1" required value="${html(line.quantity ?? 1)}"></label>
@@ -381,11 +489,17 @@
     $('qtFields').innerHTML = groups.map(group => {
       const groupFields = fields.filter(field => field.group === group && !PRODUCT_FIELD_KEYS.has(field.key));
       if (!groupFields.length) return '';
-      return `<fieldset class="qt-field-group"><legend>${html(group)}</legend><div class="qt-fields-grid">${groupFields.map(field => `<label class="qt-field${field.type === 'textarea' ? ' qt-field-wide' : ''}${field.computed ? ' qt-field-computed' : ''}" for="qt-${field.key}"><span>${html(field.label)}${field.required ? ' <b>*</b>' : ''}${field.computed ? '<small>Auto</small>' : ''}</span>${inputMarkup(field)}</label>`).join('')}</div>${group === 'Product & vendor' ? productEditor : ''}</fieldset>`;
+      return `<fieldset class="qt-field-group"><legend>${html(group)}</legend><div class="qt-fields-grid">${groupFields.map(field => `<label class="qt-field${field.type === 'textarea' ? ' qt-field-wide' : ''}${field.computed ? ' qt-field-computed' : ''}" for="qt-${field.key}"><span>${html(field.label)}${field.required ? ' <b>*</b>' : ''}${field.computed ? '<small>Auto</small>' : ''}</span>${inputMarkup(field)}${field.key === 'fxBuffer' ? '<small class="qt-field-source" id="qtFxBufferSource"></small>' : ''}</label>`).join('')}</div>${group === 'Product & vendor' ? productEditor : ''}</fieldset>`;
     }).join('') + '<section class="qt-live-breakdown" id="qtLiveBreakdown" aria-live="polite"></section>';
     $('qtProductLines').innerHTML = productLineMarkup();
     $('qtForm').addEventListener('input', updateCalculations);
     $('qtForm').addEventListener('change', updateCalculations);
+    $('qtForm').addEventListener('change', event => {
+      const offerSelect = event.target.closest('[data-product-field="catalogueOfferKey"]');
+      if (!offerSelect) return;
+      applyCatalogueOffer(offerSelect.closest('.qt-product-line'));
+      updateCalculations();
+    });
     $('qtForm').addEventListener('click', event => {
       if (event.target.closest('#qtAddProduct')) {
         const current = readProductInputs();
@@ -419,8 +533,16 @@
     if (fxBufferInput && (lastClient === '' || number(fxBufferInput.value) === getFxBufferForClient(lastClient))) {
       fxBufferInput.value = String(getFxBufferForClient(client));
     }
+    const fxSettings = loadFxSettings();
+    const fxBufferSource = $('qtFxBufferSource');
+    if (fxBufferSource) {
+      fxBufferSource.textContent = client && fxSettings.clients[client]?.fxBuffer != null
+        ? `Using ${client}-specific FX buffer from quotation settings.`
+        : 'Using the general quotation FX buffer.';
+    }
     // Auto-fill tax rate on product lines when country or client changes
     if (country !== lastCountry || client !== lastClient) {
+      refreshCatalogueOfferOptions();
       const oldTax = getTaxRateForCountry(lastCountry, lastClient);
       const newTax = getTaxRateForCountry(country, client);
       document.querySelectorAll('.qt-product-line [data-product-field="taxPercent"]').forEach(input => {
@@ -528,6 +650,7 @@
       <div><small>Delivery · line total</small><strong>${html(record.currency)} ${money(line.deliveryFees)}</strong></div>
       <div><small>Unit inc. tax</small><strong>${html(record.currency)} ${money(line.unitPriceIncTax)}</strong></div>
       <div><small>Target proc. markup</small><strong>${money(line.targetMarkup)}%</strong></div>
+      ${Number.isFinite(Number(line.catalogueReferencePrice)) && line.catalogueReferenceCurrency ? `<div><small>Client catalogue reference · local</small><strong>${html(line.catalogueReferenceCurrency)} ${money(line.catalogueReferencePrice)}</strong></div>` : ''}
       <div><small>Price after markup</small><strong>${html(record.currency)} ${money(line.priceAfterMarkup)} / unit</strong></div>
       <div><small>FX rate · buffer</small><strong>${money(record.fxRate)} · ${money(record.fxBuffer)}%</strong></div>
       <div><small>Unit price after FX</small><strong>USD ${money(line.unitPriceUsd)}</strong></div>

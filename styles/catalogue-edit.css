@@ -364,6 +364,15 @@
   font-size: var(--font-size-sm);
 }
 
+.client-catalogue-table-container {
+  overflow-x: auto;
+}
+
+.client-catalogue-table {
+  min-width: 1180px;
+  font-size: var(--font-size-sm);
+}
+
 .country-listings-table tbody tr {
   cursor: pointer;
 }

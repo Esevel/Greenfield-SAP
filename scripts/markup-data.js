@@ -82,13 +82,15 @@ const modelCountryListing = (model, country, configurationId) => modelConfigurat
 const modelCountries = (model, configurationId) => Object.keys(modelConfiguration(model, configurationId)?.countries || {});
 
 const CLIENT_MODEL_CATALOGUE = [
-  { client: 'acme', country: 'SG', tier: 't2', offered: true, hidden: false },
-  { client: 'techglobal', country: 'US', tier: 't1', offered: true, hidden: false },
-  { client: 'techglobal', country: 'SG', tier: 't1', offered: true, hidden: false },
-  { client: 'digital', country: 'GB', tier: 't1', offered: true, hidden: false },
-  { client: 'finance', country: 'GB', tier: 't1', offered: true, hidden: true },
-  { client: 'mediaworks', country: 'SG', tier: 't3', offered: true, hidden: false },
-  { client: 'cloud', country: 'US', tier: 't1', offered: false, hidden: false }
+  { client: 'acme', country: 'SG', tier: 't2', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: false },
+  { client: 'acme', country: 'SG', tier: 't2', configurationId: 'mbp14-m3-16gb-1tb', offered: true, hidden: false, adjustment: 8 },
+  { client: 'acme', country: 'SG', tier: 't2', configurationId: 'mbp14-m3-24gb-1tb', offered: true, hidden: false, adjustment: 8 },
+  { client: 'techglobal', country: 'US', tier: 't1', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: false },
+  { client: 'techglobal', country: 'SG', tier: 't1', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: false },
+  { client: 'digital', country: 'GB', tier: 't1', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: false },
+  { client: 'finance', country: 'GB', tier: 't1', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: true },
+  { client: 'mediaworks', country: 'SG', tier: 't3', configurationId: 'mbp14-m3-16gb-512gb', offered: true, hidden: false },
+  { client: 'cloud', country: 'US', tier: 't1', configurationId: 'mbp14-m3-16gb-512gb', offered: false, hidden: false }
 ];
 
 // Version in force today for a category × tier, and any scheduled one after it
