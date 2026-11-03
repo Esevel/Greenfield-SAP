@@ -261,6 +261,7 @@ function orderBuild(seed, rng) {
     id: seed.id, type: seed.type, client: seed.client, entity: ent.id, cc: seed.cc, vendor: seed.vendor, priority: seed.priority || 'Normal',
     channel: seed.channel || 'Platform', route: seed.route || 'hub', currency: cur, recipient: rName, person: rPerson || '',
     orderedBy: ORDER_CLIENT_ADMIN[seed.client], owner: seed.owner || ORDER_OWNERS[Math.floor(rng() * ORDER_OWNERS.length)],
+    primaryOwner: seed.primaryOwner || seed.owner || '', secondaryOwner: seed.secondaryOwner || '',
     ticket: seed.ticket || '', po: seed.po || '', costCentre: seed.costCentre || '', blocker: seed.blocker || '',
     approvalRequired: !!seed.approval, approval: seed.approval || '', paymentHold: !!seed.hold,
     quotationRef: seed.quotationRef || '', atQuotation: !!seed.atQuotation,
@@ -377,6 +378,11 @@ function orderAudit(o, text, who = orderUser()) {
 }
 
 // Pending approval or a payment hold blocks stage progress
+function orderOwnerAssignmentBlock(o) {
+  if (!ownerReady(o)) return ownerProgressBlock(o);
+  return '';
+}
+
 function orderBlockedReason(o) {
   if (orderIsCancelled(o)) return 'This order is cancelled.';
   if (orderPendingApproval(o)) return 'Waiting for approval. Approve the order before processing it.';
@@ -395,7 +401,7 @@ function orderAutoResume(o) {
 
 // Mark the current stage done (at a given time, default now). Returns a message, or throws with the reason.
 function orderMarkDone(o, at = orderNowIso(), opts = {}) {
-  const block = orderBlockedReason(o);
+  const block = orderBlockedReason(o) || orderOwnerAssignmentBlock(o);
   if (block) throw new Error(block);
   const s = orderSla(o);
   if (!s.cur) throw new Error('All stages are already done.');
@@ -417,7 +423,7 @@ function orderMarkDone(o, at = orderNowIso(), opts = {}) {
 }
 
 function orderSkip(o, reason) {
-  const block = orderBlockedReason(o);
+  const block = orderBlockedReason(o) || orderOwnerAssignmentBlock(o);
   if (block) throw new Error(block);
   const s = orderSla(o);
   if (!s.cur) throw new Error('Nothing to skip.');
@@ -493,6 +499,8 @@ function orderResume(o, reason) {
 }
 
 function orderApprove(o) {
+  const block = orderOwnerAssignmentBlock(o);
+  if (block) throw new Error(block);
   o.approval = 'approved';
   orderAudit(o, 'Order approved');
   saveOrders();
@@ -555,6 +563,8 @@ window.orderConvertFromQuotation = function orderConvertFromQuotation(quote) {
 // Move an order out of the Quotation pre-stage and into the first SLA stage (Submitted to vendor)
 function orderMoveFromQuotation(o) {
   if (!o.atQuotation) throw new Error('This order is not in the Quotation stage.');
+  const block = orderOwnerAssignmentBlock(o);
+  if (block) throw new Error(block);
   o.atQuotation = false;
   orderAudit(o, 'Moved from Quotation to Submitted to vendor');
   saveOrders();
@@ -616,7 +626,7 @@ function orderTrackerItems() {
     return {
       id: o.id, client: o.client, type: o.type, cc: o.cc, start: o.createdAt, done: [], order: o,
       stage: orderPendingApproval(o) ? 'Pending approval' : o.paymentHold ? 'Payment hold' : orderIsPaused(o) ? 'SLA paused' : orderCurrentStage(o),
-      owner: [initials, o.owner], blocker: o.blocker || (o.paymentHold ? 'Payment hold' : orderPendingApproval(o) ? 'Waiting for client approval' : ''),
+      owner: [initials, o.owner], secondaryOwner: o.secondaryOwner || '', blocker: o.blocker || (o.paymentHold ? 'Payment hold' : orderPendingApproval(o) ? 'Waiting for client approval' : ''),
       note: lastNote ? [lastNote.who, lastNote.text] : ['—', 'No notes yet'], href: `/pages/orders/order.html?id=${o.id}`
     };
   });

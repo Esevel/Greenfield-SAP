@@ -15,7 +15,7 @@
     $('spRows').innerHTML = rows.map(({ t, s }) => {
       const [pc, pt] = SUPPORT_HEALTH_PILL[s.health];
       const last = t.thread[t.thread.length - 1];
-      return `<tr data-href="/pages/support/ticket.html?id=${t.id}" tabindex="0">
+      return `<tr${t.id === 'SUP-5538' ? ' data-href="/pages/support/ticket.html?id=SUP-5538" tabindex="0" role="link"' : ' class="record-static"'}>
         <td class="card-id">${t.id}${t.ref ? `<div class="stock-sub">${escapeHtml(t.ref)}</div>` : ''}</td>
         <td><strong>${escapeHtml(t.subject)}</strong><div class="stock-sub">${escapeHtml(t.requester)} · ${escapeHtml(t.category)}</div></td>
         <td>${escapeHtml(supportClient(t).name)}<div class="stock-sub">${supportFlag(t.cc)} ${t.cc}</div></td>

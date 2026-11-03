@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const f = orderFiltersLoad();
   const selected = new Set();
-  const openOrder = id => { location.href = `/pages/orders/order.html?id=${id}`; };
+  const openOrder = id => { if (id === 'ORD-30158') location.href = `/pages/orders/order.html?id=${id}`; };
 
   renderOrderHeader('board', () => ORDERS.filter(o => orderMatches(o, f)));
   $('obFilters').innerHTML = orderFilterBarHtml(f);
@@ -31,7 +31,7 @@
     const st = orderState(o);
     const [pillCls, pillText] = ORDER_HEALTH_PILL[s.health];
     const canQuick = !orderBlockedReason(o) && s.cur && st !== 'paused';
-    return `<div class="board-card order-card${o.blocker || st === 'hold' ? ' blocked' : ''}${selected.has(o.id) ? ' selected' : ''}" data-id="${o.id}" tabindex="0">
+    return `<div class="board-card order-card${o.id === 'ORD-30158' ? '' : ' record-static'}${o.blocker || st === 'hold' ? ' blocked' : ''}${selected.has(o.id) ? ' selected' : ''}" data-id="${o.id}"${o.id === 'ORD-30158' ? ' tabindex="0" role="link"' : ''}>
       <div class="card-top"><label class="order-check" title="Select"><input type="checkbox" data-sel="${o.id}" ${selected.has(o.id) ? 'checked' : ''} ${canQuick ? '' : 'disabled'} aria-label="Select ${o.id}"></label><span class="card-id">${o.id}</span>${orderPriorityTag(o.priority)}</div>
       <div class="card-subject">${escapeHtml(orderClient(o.client).name)}</div>
       <div class="card-recipient">${escapeHtml(o.recipient)} · ${orderFlag(o.cc)} · ${escapeHtml(orderVendorName(o.vendor))}</div>
@@ -39,7 +39,7 @@
       ${orderFlagsHtml(o)}
       ${st === 'cancelled' ? `<div class="card-client">Cancelled · ${escapeHtml(o.cancelled.reason)}</div>` : st === 'complete' ? `<div class="card-client">Delivered ${fmtOrderTs(o.deliveredAt)}</div>` : o.atQuotation ? `<div class="card-client qt-ref-tag">Quotation ${escapeHtml(o.quotationRef)}</div>` : orderRunwayHtml(o)}
       <div class="card-tags">${o.route !== 'hub' ? `<span class="route-tag">${SLA_ROUTES[o.route].short}</span>` : ''}${o.type !== 'regular' ? `<span class="tag-package">${slaType(o.type).name}</span>` : ''}${!o.atQuotation && s.cur ? `<span class="sla-pill ${pillCls}">${pillText}</span>` : ''}</div>
-      <div class="card-bottom"><span>${escapeHtml(o.owner)}</span>${o.atQuotation ? `<button type="button" class="btn-quick" data-move-quotation="${o.id}" title="Move to Submitted to vendor">→ Start workflow</button>` : canQuick ? `<button type="button" class="btn-quick" data-quick="${o.id}" title="Mark ${escapeHtml(s.cur.m.label)} done now">✓ ${escapeHtml(s.cur.m.label)}</button>` : st === 'paused' ? `<button type="button" class="btn-quick" data-resume="${o.id}">▶ Resume</button>` : st === 'pending' ? `<button type="button" class="btn-quick" data-approve="${o.id}">Approve</button>` : ''}</div>
+      <div class="card-bottom"><span>${ownerAssignmentSummary(o)}</span>${o.atQuotation ? `<button type="button" class="btn-quick" data-move-quotation="${o.id}" title="Move to Submitted to vendor">→ Start workflow</button>` : canQuick ? `<button type="button" class="btn-quick" data-quick="${o.id}" title="Mark ${escapeHtml(s.cur.m.label)} done now">✓ ${escapeHtml(s.cur.m.label)}</button>` : st === 'paused' ? `<button type="button" class="btn-quick" data-resume="${o.id}">▶ Resume</button>` : st === 'pending' ? `<button type="button" class="btn-quick" data-approve="${o.id}">Approve</button>` : ''}</div>
     </div>`;
   }
 
@@ -94,10 +94,10 @@
     if (a) { orderTry(() => orderApprove(orderById(a.dataset.approve)), render); return; }
     const mq = e.target.closest('[data-move-quotation]');
     if (mq) { orderTry(() => orderMoveFromQuotation(orderById(mq.dataset.moveQuotation)), render); return; }
-    const card = e.target.closest('.order-card');
+    const card = e.target.closest('.order-card:not(.record-static)');
     if (card) openOrder(card.dataset.id);
   });
-  $('obBoard').addEventListener('keydown', e => { const card = e.target.closest('.order-card'); if (card && e.key === 'Enter' && e.target === card) openOrder(card.dataset.id); });
+  $('obBoard').addEventListener('keydown', e => { const card = e.target.closest('.order-card:not(.record-static)'); if (card && e.key === 'Enter' && e.target === card) openOrder(card.dataset.id); });
 
   $('obBulkDone').addEventListener('click', () => {
     const list = [...selected].map(orderById);
@@ -119,5 +119,5 @@
 
   // Links from other pages (e.g. quotations) may still use ?open= — redirect to the order page
   const openParam = new URLSearchParams(location.search).get('open');
-  if (openParam && orderById(openParam)) { openOrder(openParam); } else { render(); }
+  if (openParam === 'ORD-30158' && orderById(openParam)) { openOrder(openParam); } else { render(); }
 })();

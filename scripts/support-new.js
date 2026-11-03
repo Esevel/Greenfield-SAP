@@ -5,7 +5,7 @@
   const root = document.getElementById('ntRoot');
   const clients = WH_CLIENTS.filter(c => typeof CONTRACTS === 'undefined' || !CONTRACTS[c.id] || CONTRACTS[c.id].status !== 'onboarding');
   const params = new URLSearchParams(location.search);
-  const d = { client: params.get('client') || clients[0].id, cc: '', person: '', requester: '', email: '', subject: '', description: '', priority: 'Normal', category: 'Hardware', source: 'Phone', ref: '', owner: '', errors: {} };
+  const d = { client: params.get('client') || clients[0].id, cc: '', person: '', requester: '', email: '', subject: '', description: '', priority: 'Normal', category: 'Hardware', source: 'Phone', ref: '', owner: '', secondaryOwner: '', errors: {} };
   const people = () => (typeof PEOPLE !== 'undefined' ? PEOPLE.filter(p => p.client === d.client && p.state !== 'left') : []);
   const countries = () => Object.keys(HUB_ASSIGNMENTS[d.client] || {}).filter(cc => SLA_DEFAULTS.support[cc]);
   const fix = () => { if (!countries().includes(d.cc)) d.cc = countries()[0] || 'SG'; };
@@ -30,7 +30,8 @@
           <div class="form-group"><label class="form-label" for="ntCategory">Category</label><select class="form-select" id="ntCategory" data-k="category">${SUPPORT_CATEGORIES.map(c => opt(c, c, d.category)).join('')}</select></div>
           <div class="form-group"><label class="form-label" for="ntSource">Received via</label><select class="form-select" id="ntSource" data-k="source">${SUPPORT_SOURCES.map(s => opt(s, s, d.source)).join('')}</select></div>
           <div class="form-group"><label class="form-label" for="ntRef">External reference</label><input class="form-input" id="ntRef" data-k="ref" value="${escapeHtml(d.ref)}" placeholder="e.g. INC0071"></div>
-          <div class="form-group"><label class="form-label" for="ntOwner">Owner</label><select class="form-select" id="ntOwner" data-k="owner">${opt('', 'Unassigned (goes to triage)', d.owner)}${SUPPORT_AGENTS.map(a => opt(a, a, d.owner)).join('')}</select></div>
+          <div class="form-group"><label class="form-label" for="ntOwner">Primary owner</label><select class="form-select" id="ntOwner" data-k="owner">${opt('', 'Unassigned (goes to triage)', d.owner)}${SUPPORT_AGENTS.map(a => opt(a, a, d.owner)).join('')}</select></div>
+          <div class="form-group"><label class="form-label" for="ntBackup">Secondary owner (backup)</label><select class="form-select" id="ntBackup" data-k="secondaryOwner">${opt('', 'Choose a team member…', d.secondaryOwner)}${SUPPORT_AGENTS.map(a => opt(a, a, d.secondaryOwner)).join('')}</select>${err('secondaryOwner')}</div>
         </div>
       </div>
       <div class="cn-footer"><a href="/pages/support/board.html" class="btn-text">Cancel</a><button type="submit" class="btn btn-primary">Create ticket</button></div>
@@ -61,6 +62,7 @@
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email.trim())) d.errors.email = 'Enter a valid email.';
     if (!d.subject.trim()) d.errors.subject = 'Add a short subject.';
     if (!d.description.trim()) d.errors.description = 'Describe the problem.';
+    if (d.owner && d.secondaryOwner && d.owner === d.secondaryOwner) d.errors.secondaryOwner = 'Choose someone different from the primary owner.';
     if (Object.keys(d.errors).length) { render(); root.querySelector('.form-error').closest('.form-group').scrollIntoView({ block: 'center' }); return; }
     const t = supportCreate(d);
     location.href = `/pages/support/ticket.html?id=${t.id}&created=1`;

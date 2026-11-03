@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/owner-assignments.css">
   <link rel="stylesheet" href="/styles/stock.css">
   <link rel="stylesheet" href="/styles/sla.css">
   <link rel="stylesheet" href="/styles/billing.css">
@@ -138,9 +139,7 @@
               <div class="card-header"><h3 class="card-title">Assigned</h3></div>
               <div class="card-body">
                 <div class="info-grid">
-                  <div class="info-row"><span class="info-label">Owner</span>
-                    <span class="owner-picker"><span class="card-avatar">JL</span><select class="form-select owner-dropdown" aria-label="Owner"><option>Qonit</option><option>Marcus</option><option selected>Jia Ling</option><option>Aisha</option><option>Ben</option></select></span>
-                  </div>
+                  <div class="info-row owner-assignment-row"><span class="info-label">Assignment</span><span class="info-value"><div data-tracker-owner-panel></div></span></div>
                   <div class="info-row"><span class="info-label">Technician</span><span class="info-value">Kelvin Tan · Dell</span></div>
                   <div class="info-row"><span class="info-label">Client admin</span><span class="info-value">Ravi Shah</span></div>
                 </div>
@@ -173,6 +172,7 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/owner-assignments.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
   <script src="/scripts/billing-data.js"></script>
   <script src="/scripts/subscription-data.js"></script>

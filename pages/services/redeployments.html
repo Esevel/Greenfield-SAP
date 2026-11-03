@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/support.css">
+  <style>
+    .board-card.record-static { cursor: default; }
+    .board-card.record-static:hover { border-color: var(--color-border); }
+    .board-card.record-static.blocked:hover { border-left-color: var(--color-error); }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -33,7 +38,7 @@
               <span class="board-avg">From employees and client sites</span>
             </div>
             <div class="board-cards">
-              <div class="board-card blocked">
+              <div class="board-card record-static blocked">
                 <div class="card-top"><span class="card-id">RED-0318</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">Dell XPS 15 → Marcus Bell</div>
                 <div class="card-client">TechGlobal Inc</div>
@@ -43,7 +48,7 @@
                 <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
                 <div class="card-bottom"><span>To US East Warehouse</span><span class="card-avatar">JL</span></div>
               </div>
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0315</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
                 <div class="card-subject">MacBook Pro 14" + keyboard → Wei Jie Lim</div>
                 <div class="card-client">Acme Tech</div>
@@ -52,7 +57,7 @@
                 <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
                 <div class="card-bottom"><span>To Singapore Warehouse</span><span class="card-avatar">Q</span></div>
               </div>
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0313</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">MacBook Pro 14" → Kenji Sato</div>
                 <div class="card-client">Acme Tech</div>
@@ -70,7 +75,7 @@
               <span class="board-avg">Avg 1.1 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0311</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">MacBook Air 13" → Siti Rahman</div>
                 <div class="card-client">MediaWorks</div>
@@ -79,7 +84,7 @@
                 <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-risk">At risk</span></div>
                 <div class="card-bottom"><span>QC bench tomorrow</span><span class="card-avatar">AI</span></div>
               </div>
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0316</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
                 <div class="card-subject">Dell XPS 15 → Ryan Cooper</div>
                 <div class="card-client">Acme Tech</div>
@@ -96,7 +101,7 @@
               <span class="board-avg">Avg 0.3 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0314</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">Dell UltraSharp U2723QE → Ava Brooks</div>
                 <div class="card-client">CloudSystems</div>
@@ -113,7 +118,7 @@
               <span class="board-avg">Avg 1.9 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">RED-0310</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">MacBook Pro 14" → Grace Lee</div>
                 <div class="card-client">MediaWorks</div>

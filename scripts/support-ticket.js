@@ -29,7 +29,8 @@
 
     // One primary action for where the ticket is
     let primary = '';
-    if (!t.owner) primary = '<button type="button" class="btn btn-primary" data-act="take">Assign to me</button>';
+    if (!ownerPrimary(t)) primary = '<button type="button" class="btn btn-primary" data-act="take">Assign to me</button>';
+    else if (!ownerReady(t)) primary = '<button type="button" class="btn btn-primary" data-act="owners">Assign backup</button>';
     else if (t.stage === 'waiting') primary = '<button type="button" class="btn btn-primary" data-act="resume">Client replied · resume</button>';
     else if (t.stage === 'resolved') primary = '<button type="button" class="btn btn-secondary" data-act="reopen">Reopen</button>';
     else primary = '<button type="button" class="btn btn-primary" data-act="resolve">Resolve</button>';
@@ -78,7 +79,7 @@
     const clockVal = c => (c.met ? `${c.health === 'met' ? '✓ Met' : '✕ Missed'} · ${fmtMins(c.used)}` : c.paused ? `⏸ Paused · ${fmtMins(c.left)} left` : c.left < 0 ? `${fmtMins(c.left)} overdue` : `${fmtMins(c.left)} left`);
     const completedStages = t.stage === 'resolved' ? SUPPORT_STAGES.length : Math.max(0, stageIdx);
     const stageProgress = Math.round(completedStages / SUPPORT_STAGES.length * 100);
-    const blocker = !t.owner ? 'Unassigned' : t.stage === 'waiting' ? 'Waiting on client response · resolution clock paused' : '';
+    const blocker = !ownerReady(t) ? 'Primary and backup owners required before work can progress' : t.stage === 'waiting' ? 'Waiting on client response · resolution clock paused' : '';
     const blockerHtml = blocker ? `<div class="service-sla-blocker" role="status"><strong>⛔ Blocker: ${escapeHtml(blocker)}</strong></div>` : '';
     const slaHref = `/pages/sla-config/${s.custom ? `exceptions.html?client=${t.client}&type=support&country=${t.cc}` : `standard.html?country=${t.cc}`}`;
     const liveDue = s.live.met
@@ -148,7 +149,7 @@
         </div>
         <div class="edit-sidebar-column">
           <div class="card mb-lg"><div class="card-header"><h3 class="card-title">Details</h3></div><div class="card-body"><div class="info-grid">
-            <div class="info-row"><span class="info-label">Owner</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-field="owner" aria-label="Owner">${opt('', t.owner, 'Unassigned')}${SUPPORT_AGENTS.map(a => opt(a, t.owner)).join('')}</select></span></div>
+            <div class="info-row owner-assignment-row"><span class="info-label">Assignment</span><span class="info-value">${ownerAssignmentFieldsHtml(t, 'support', t.id)}</span></div>
             <div class="info-row"><span class="info-label">Priority</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-field="priority" aria-label="Priority">${SUPPORT_PRIORITIES.map(p => opt(p, t.priority)).join('')}</select></span></div>
             <div class="info-row"><span class="info-label">Category</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-field="category" aria-label="Category">${SUPPORT_CATEGORIES.map(c => opt(c, t.category)).join('')}</select></span></div>
             <div class="info-row"><span class="info-label">Requester</span><span class="info-value">${escapeHtml(t.requester)}<div class="stock-sub">${escapeHtml(t.email)}</div></span></div>
@@ -173,11 +174,22 @@
     if (a) {
       const act = a.dataset.act;
       if (act === 'expand-thread') { ui.expanded = true; render(); return; }
-      if (act === 'take') return run(() => supportAssign(t, supportUser().split(' ')[0]));
+      if (act === 'owners') { root.querySelector('[data-owner-assignment]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      if (act === 'take') return run(() => supportAssign(t, supportAgentName()));
       if (act === 'resolve') return run(() => supportSetStage(t, 'resolved'));
       if (act === 'reopen') { ui.expanded = false; return run(() => supportSetStage(t, 'progress')); }
       if (act === 'wait') return run(() => `${supportSetStage(t, 'waiting')} Resolution clock paused.`);
       if (act === 'resume') return run(() => `${supportSetStage(t, 'progress')} Resolution clock running.`);
+    }
+    if (e.target.closest('[data-owner-takeover]')) {
+      return run(() => {
+        const oldPrimary = ownerPrimary(t);
+        const oldSecondary = ownerSecondary(t);
+        ownerTakeover(t);
+        supportAudit(t, `Backup promoted to primary: ${oldSecondary} is now primary; ${oldPrimary} is backup`);
+        saveSupport();
+        return `${oldSecondary} is now primary owner.`;
+      });
     }
     const sw = e.target.closest('[data-send="wait"]');
     if (sw) {
@@ -197,8 +209,14 @@
   root.addEventListener('change', e => {
     const t = supportById(id);
     if (e.target.id === 'tkHide') { ui.hideInternal = e.target.checked; render(); return; }
+    const fields = e.target.closest('[data-owner-assignment]');
+    if (fields && e.target.matches('[data-owner-role]')) {
+      const primary = fields.querySelector('[data-owner-role="primary"]').value;
+      const secondary = fields.querySelector('[data-owner-role="secondary"]').value;
+      run(() => supportAssign(t, primary, secondary));
+      return;
+    }
     const fld = e.target.dataset.field;
-    if (fld === 'owner') run(() => supportAssign(t, e.target.value));
     if (fld === 'priority') run(() => supportSetPriority(t, e.target.value));
     if (fld === 'category') run(() => { t.category = e.target.value; supportAudit(t, `Category: ${t.category}`); saveSupport(); return 'Category updated.'; });
   });

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/vendors.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/owner-assignments.css">
   <link rel="stylesheet" href="/styles/sla.css">
 </head>
 <body>
@@ -194,9 +195,7 @@
               <div class="card-header"><h3 class="card-title">Assigned</h3></div>
               <div class="card-body">
                 <div class="info-grid">
-                  <div class="info-row"><span class="info-label">Owner</span>
-                    <span class="owner-picker"><span class="card-avatar">Q</span><select class="form-select owner-dropdown" aria-label="Owner"><option selected>Qonit</option><option>Marcus</option><option>Jia Ling</option><option>Aisha</option><option>Ben</option></select></span>
-                  </div>
+                  <div class="info-row owner-assignment-row"><span class="info-label">Assignment</span><span class="info-value"><div data-tracker-owner-panel></div></span></div>
                   <div class="info-row"><span class="info-label">Stage owner</span><span class="info-value"><span class="owner-tag owner-courier">Courier</span></span></div>
                   <div class="info-row"><span class="info-label">Courier</span><span class="info-value"><a href="/pages/vendors/list.html" class="link-sm">DHL Express</a></span></div>
                   <div class="info-row"><span class="info-label">Client admin</span><span class="info-value">Ravi Shah</span></div>
@@ -230,6 +229,7 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/owner-assignments.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
   <script src="/scripts/main.js"></script>
   <script>

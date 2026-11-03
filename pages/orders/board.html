@@ -12,6 +12,13 @@
   <link rel="stylesheet" href="/styles/sla.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/orders.css">
+  <link rel="stylesheet" href="/styles/owner-assignments.css">
+  <style>
+    .board-card.record-static { cursor: default; }
+    .board-card.record-static:hover { border-color: var(--color-border); }
+    .board-card.record-static.blocked:hover { border-left-color: var(--color-error); }
+    .order-card.record-static.selected:hover { border-color: var(--color-primary); }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -60,6 +67,7 @@
   <script src="/scripts/ledger-data.js"></script>
   <script src="/scripts/invoice-data.js"></script>
   <script src="/scripts/billing-engine.js"></script>
+  <script src="/scripts/owner-assignments.js"></script>
   <script src="/scripts/orders-data.js"></script>
   <script src="/scripts/orders-engine.js"></script>
   <script src="/scripts/orders-ui.js"></script>

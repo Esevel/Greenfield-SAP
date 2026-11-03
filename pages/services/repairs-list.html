@@ -10,6 +10,12 @@
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/support.css">
+  <style>
+    .repairs-table tbody tr:not([data-href]) { cursor: default; }
+    .repairs-table tbody tr:not([data-href]):hover { background: none; }
+    .repairs-table span.tracking-link:hover { text-decoration: none; cursor: default; }
+    .repairs-table tr:not([data-href]) .model-name:hover { color: var(--color-text-primary); }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -84,7 +90,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="row-at-risk">
+              <tr class="row-at-risk" data-href="/pages/services/work-order.html?wo=REP-0871" tabindex="0" role="link">
                 <td class="card-id">REP-0871</td>
                 <td>TechGlobal Inc</td>
                 <td><div class="model-name">Dell XPS 15</div><div class="asset-serial">8HJ2KL9</div></td>
@@ -102,7 +108,7 @@
                 <td><div class="model-name">MacBook Pro 14" M3</div><div class="asset-serial">C02XK4W5MD6T</div></td>
                 <td>Keyboard keys unresponsive</td>
                 <td>iFix Kuala Lumpur</td>
-                <td>Courier X<a href="#" class="tracking-link">Track CX-77104 ↗</a></td>
+                <td>Courier X<span class="tracking-link">Track CX-77104 ↗</span></td>
                 <td class="date-late">15 Oct · 1 day late</td>
                 <td><span class="sla-pill sla-risk">At risk</span></td>
                 <td><span class="alert-sent" data-tooltip="Technician and client admin notified">🔔 Alert sent</span></td>
@@ -114,7 +120,7 @@
                 <td><div class="model-name">Lenovo ThinkPad X1 Carbon</div><div class="asset-serial">PF3QW8ZN</div></td>
                 <td>Loose lid hinge, screen flicker</td>
                 <td>FixPoint London</td>
-                <td>Courier X<a href="#" class="tracking-link">Track CX-77089 ↗</a></td>
+                <td>Courier X<span class="tracking-link">Track CX-77089 ↗</span></td>
                 <td>19 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -126,7 +132,7 @@
                 <td><div class="model-name">MacBook Air 13" M2</div><div class="asset-serial">FVFHG2LMQ6L4</div></td>
                 <td>Battery not holding charge</td>
                 <td>Apple AASP Sydney</td>
-                <td>DHL Express<a href="#" class="tracking-link">Track 4821 1102 84 ↗</a></td>
+                <td>DHL Express<span class="tracking-link">Track 4821 1102 84 ↗</span></td>
                 <td>17 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -138,7 +144,7 @@
                 <td><div class="model-name">Dell UltraSharp U2723QE</div><div class="asset-serial">CN-0H8W2K-74512</div></td>
                 <td>Dead pixels, backlight bleed</td>
                 <td>TechCare New Jersey</td>
-                <td>FedEx<a href="#" class="tracking-link">Track 7790 2214 6608 ↗</a></td>
+                <td>FedEx<span class="tracking-link">Track 7790 2214 6608 ↗</span></td>
                 <td>22 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -150,7 +156,7 @@
                 <td><div class="model-name">MacBook Pro 14" M3</div><div class="asset-serial">C02XK4P7MD6T</div></td>
                 <td>Cracked display</td>
                 <td>iFix Kuala Lumpur</td>
-                <td>Courier X<a href="#" class="tracking-link">Track CX-77162 ↗</a></td>
+                <td>Courier X<span class="tracking-link">Track CX-77162 ↗</span></td>
                 <td>23 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -162,7 +168,7 @@
                 <td><div class="model-name">Logitech MX Master 3S</div><div class="asset-serial">2241LZ0A9C11</div></td>
                 <td>Scroll wheel sensor fault</td>
                 <td>Dell Service Centre Singapore</td>
-                <td>DHL Express<a href="#" class="tracking-link">Track 4821 0988 12 ↗</a></td>
+                <td>DHL Express<span class="tracking-link">Track 4821 0988 12 ↗</span></td>
                 <td>18 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -174,7 +180,7 @@
                 <td><div class="model-name">Jabra Evolve2 65</div><div class="asset-serial">JB65-0093407</div></td>
                 <td>Mic not detected</td>
                 <td>FixPoint London</td>
-                <td>Courier X<a href="#" class="tracking-link">Track CX-77170 ↗</a></td>
+                <td>Courier X<span class="tracking-link">Track CX-77170 ↗</span></td>
                 <td>24 Oct</td>
                 <td><span class="sla-pill sla-ok">On track</span></td>
                 <td class="text-muted">—</td>
@@ -193,14 +199,16 @@
   <script src="/scripts/components.js"></script>
   <script src="/scripts/services-tabs.js"></script>
   <script>
-    // Single prototype work order page for all repairs; tracking links don't trigger the row
-    document.querySelectorAll('.repairs-table tbody tr').forEach(row => {
+    document.querySelectorAll('.repairs-table tbody tr[data-href]').forEach(row => {
       row.addEventListener('click', e => {
         if (e.target.closest('a')) return;
-        window.location.href = '/pages/services/work-order.html';
+        window.location.href = row.dataset.href;
+      });
+      row.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.target === row) window.location.href = row.dataset.href;
       });
     });
-    document.querySelectorAll('.tracking-link').forEach(link => link.addEventListener('click', e => e.preventDefault()));
+    document.querySelectorAll('a.tracking-link').forEach(link => link.addEventListener('click', e => e.preventDefault()));
   </script>
   <script src="/scripts/main.js"></script>
 </body>

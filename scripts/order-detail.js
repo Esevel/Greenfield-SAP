@@ -193,7 +193,7 @@ function renderOrderDetail(root, id, opts = {}) {
     <div class="info-row"><span class="info-label">Created</span><span class="info-value">${fmtOrderTs(o.createdAt)}</span></div>
     <div class="info-row"><span class="info-label">Expected delivery</span><span class="info-value">${fmtOrderDate(o.expected)}</span></div>
     ${o.costCentre ? `<div class="info-row"><span class="info-label">Cost centre</span><span class="info-value">${escapeHtml(o.costCentre)}</span></div>` : ''}
-    <div class="info-row"><span class="info-label">Owner</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-owner aria-label="Owner">${ORDER_OWNERS.map(n => `<option${n === o.owner ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span></div>
+    <div class="info-row owner-assignment-row"><span class="info-label">Assignment</span><span class="info-value">${ownerAssignmentFieldsHtml(o, 'order', o.id)}</span></div>
     <div class="info-row"><span class="info-label">Approval</span><span class="info-value">${o.approvalRequired ? { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }[o.approval] : 'Not required'}</span></div>
     ${o.quotationRef ? `<div class="info-row"><span class="info-label">Quotation</span><span class="info-value"><a href="/pages/orders/quotations.html" class="link-sm order-qt-link" title="Open quotation ${escapeHtml(o.quotationRef)}">${escapeHtml(o.quotationRef)} ↗</a></span></div>` : ''}
   </div></div></div>`;
@@ -377,15 +377,30 @@ function renderOrderDetail(root, id, opts = {}) {
     orderTry(() => orderAddNote(o, form.dataset.note, form.querySelector('select').value, form.querySelector('input').value), changed);
   };
   root.onchange = e => {
-    if (e.target.matches('[data-owner]')) {
-      const old = o.owner;
-      o.owner = e.target.value;
-      orderAudit(o, `Owner changed: ${old} → ${o.owner}`);
+    if (!e.target.matches('[data-owner-role]')) return;
+    const fields = e.target.closest('[data-owner-assignment]');
+    const primary = fields.querySelector('[data-owner-role="primary"]').value;
+    const secondary = fields.querySelector('[data-owner-role="secondary"]').value;
+    orderTry(() => {
+      const oldPrimary = ownerPrimary(o) || 'Unassigned';
+      const oldSecondary = ownerSecondary(o) || 'Unassigned';
+      ownerSet(o, primary, secondary);
+      orderAudit(o, `Assignment updated: primary ${oldPrimary} → ${primary || 'Unassigned'}; backup ${oldSecondary} → ${secondary || 'Unassigned'}`);
       saveOrders();
-      orderToast(`Owner set to ${o.owner}.`);
-      changed();
-    }
+      return 'Owner assignment saved.';
+    }, changed);
   };
+  root.addEventListener('click', e => {
+    if (!e.target.closest('[data-owner-takeover]')) return;
+    orderTry(() => {
+      const oldPrimary = ownerPrimary(o);
+      const oldSecondary = ownerSecondary(o);
+      ownerTakeover(o);
+      orderAudit(o, `Backup promoted to primary: ${oldSecondary} is now primary; ${oldPrimary} is backup`);
+      saveOrders();
+      return `${oldSecondary} is now primary owner.`;
+    }, changed);
+  });
 }
 
 /* ---------- Edit order (tabs: Order details · Recipient · Pricing) ---------- */

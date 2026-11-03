@@ -29,7 +29,8 @@ function onbCardHtml(i) {
   const [pillCls, pillText] = HEALTH_PILL[s.health];
   const days = onbDaysToStart(i);
   const startLabel = days < 0 ? `Started ${onbFmtDay(i.onb.startDate)}` : `Starts ${onbFmtDay(i.onb.startDate)}`;
-  return `<a class="board-card${i.blocker ? ' blocked' : ''}" href="${i.href}">
+  const clickable = i.id === 'ONB-1194';
+  return `<${clickable ? 'a' : 'div'} class="board-card${clickable ? '' : ' record-static'}${i.blocker ? ' blocked' : ''}"${clickable ? ' href="/pages/services/onboarding-detail.html?id=ONB-1194"' : ''}>
     <div class="card-top"><span class="card-id">${i.id}</span></div>
     <div class="card-subject">${escapeHtml(i.onb.employee)}</div>
     <div class="card-client">${escapeHtml(onbClient(i).name)}</div>
@@ -38,8 +39,8 @@ function onbCardHtml(i) {
     ${onbStartsSoon(i, s) ? `<span class="due-soon">Start date in ${days} day${days === 1 ? '' : 's'}</span>` : ''}
     ${linesSummaryHtml(s)}
     <div class="card-tags"><span class="tag-package">${escapeHtml(i.onb.pkg)}</span>${routeTagHtml(s)}<span class="sla-pill ${pillCls}">${pillText}</span></div>
-    <div class="card-bottom"><span>${escapeHtml(i.stage)}</span><span class="card-avatar">${i.owner[0]}</span></div>
-  </a>`;
+    <div class="card-bottom"><span>${escapeHtml(i.stage)}</span>${ownerAssignmentSummary(i)}</div>
+  </${clickable ? 'a' : 'div'}>`;
 }
 
 function renderOnboardingBoard(el) {
@@ -105,11 +106,14 @@ function renderOnboardingDetail() {
     <div><div class="detail-label">Delivery route</div><div class="detail-value">${SLA_ROUTES[s.route].label} <span class="text-muted">· chosen at checkout</span></div></div>
     <div><div class="detail-label">Delivery address</div><div class="detail-value${i.onb.address ? '' : ' onb-missing'}">${i.onb.address ? escapeHtml(i.onb.address) : 'Missing · requested from client'}</div></div>
     <div><div class="detail-label">Current status</div><div class="detail-value" data-tracker-current-status>${escapeHtml(s.cur ? s.cur.m.label : 'Complete')}</div></div>
-    <div><div class="detail-label">Raised</div><div class="detail-value">${new Date(i.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · Workday new-hire sync</div></div>`;
+    <div><div class="detail-label">Raised</div><div class="detail-value">${new Date(i.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · Workday new-hire sync</div></div>
+    ${i.onb.mdm ? `<div><div class="detail-label">MDM</div><div class="detail-value">${escapeHtml(i.onb.mdm)}</div></div>` : ''}
+    ${i.onb.setup ? `<div><div class="detail-label">Setup</div><div class="detail-value">${escapeHtml(i.onb.setup)}</div></div>` : ''}`;
+  $('onbClientAdmin').textContent = { acme: 'Ravi Shah', techglobal: 'Sarah Kim' }[i.client] || `${client.name} IT admin`;
 
   const [devCls, devText] = onbDeviceStatus(s);
   const lineFor = d => (i.lines || []).find(l => l.item === d);
-  const inProcurement = s.cur.m.key === 'procured' && i.lines;
+  const inProcurement = s.cur?.m.key === 'procured' && i.lines;
   $('onbDevices').innerHTML = i.onb.devices.map(d => {
     const l = lineFor(d);
     let status = `<span class="badge badge-sm ${devCls}">${devText}</span>`;
@@ -145,9 +149,7 @@ function renderOnboardingDetail() {
     });
   }
 
-  $('onbOwnerAvatar').textContent = i.owner[0];
-  [...$('onbOwner').options].forEach(o => { o.selected = o.textContent === i.owner[1]; });
-  $('onbClientAdmin').textContent = { acme: 'Ravi Shah', techglobal: 'Sarah Kim' }[i.client] || `${client.name} IT admin`;
+  $('onbAssignment').innerHTML = ownerAssignmentFieldsHtml(i, 'tracker', i.id);
   $('onbNoteFeed').innerHTML = `<div class="handover-item"><div class="card-avatar">${i.owner[0]}</div><div><div class="activity-header"><strong>${i.note[0]}</strong><span class="activity-time">Today</span></div><div class="activity-message">${escapeHtml(i.note[1])}</div></div></div>`;
 
   const card = $('onbSla');

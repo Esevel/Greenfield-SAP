@@ -107,7 +107,10 @@ TRACKER_ITEMS.forEach(item => {
   if (saved) {
     item.milestoneActions = saved.milestoneActions || {};
     if (saved.stage) item.stage = saved.stage;
+    if (Object.prototype.hasOwnProperty.call(saved, 'secondaryOwner')) item.secondaryOwner = saved.secondaryOwner;
+    if (Object.prototype.hasOwnProperty.call(saved, 'primaryOwner') && !item.order) item.owner = [ownerInitials(saved.primaryOwner), saved.primaryOwner];
   }
+  item.secondaryOwner ||= item.order ? item.order.secondaryOwner || '' : '';
 });
 
 const hoursBetween = (a, b) => (new Date(b) - new Date(a)) / 36e5;
@@ -227,7 +230,7 @@ function trackerRowsHtml() {
       <td>${escapeHtml(client.name)}<div class="runway-sub">${WH_COUNTRIES[item.cc][0]} ${item.cc}</div></td>
       <td><span class="type-icon" data-tooltip="${typeName} · ${s.type.name}">${icon}</span></td>
       <td><div class="ms-current">${s.cur ? `<span class="ms-current-step">${s.index + 1}/${s.active.length}</span> ${s.cur.m.label} ${routeTagHtml(s)}` : 'Complete'}</div>${linesSummaryHtml(s)}<div class="runway-sub">${escapeHtml(item.stage)}</div></td>
-      <td><div class="owner-cell"><span class="card-avatar">${item.owner[0]}</span>${item.owner[1]}</div></td>
+      <td><div class="owner-cell">${ownerAssignmentSummary(item)}</div></td>
       <td class="${item.blocker ? 'blocker-text' : 'text-muted'}">${item.blocker ? escapeHtml(item.blocker) : '—'}</td>
       <td>${runwayHtml(s)}</td>
       <td><span class="sla-pill ${pillCls}">${pillText}</span></td>
@@ -396,12 +399,13 @@ function trackerModal() {
 
 function persistTrackerItem(item) {
   const saved = readTrackerStorage(TRACKER_MILESTONE_STORAGE);
-  saved[item.id] = { milestoneActions: item.milestoneActions || {}, stage: item.stage };
+  saved[item.id] = { milestoneActions: item.milestoneActions || {}, stage: item.stage, primaryOwner: ownerPrimary(item), secondaryOwner: ownerSecondary(item) };
   trackerSave(TRACKER_MILESTONE_STORAGE, saved);
 }
 
 function refreshTrackerDetail(item) {
   const s = trackerSla(item);
+  renderTrackerOwnerPanel(item);
   const card = document.querySelector(`[data-sla-item="${item.id}"]`);
   if (card) renderMilestoneCard(card);
   const stepper = document.querySelector('[data-tracker-stepper]');
@@ -424,10 +428,69 @@ function onbFmtTrackerDate(date) {
   return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
+function renderTrackerOwnerPanel(item) {
+  const panel = document.querySelector('[data-tracker-owner-panel], #onbAssignment');
+  if (panel && !item.order) panel.innerHTML = ownerAssignmentFieldsHtml(item, 'tracker', item.id);
+}
+
+function trackerOwnerToast(text, error = false) {
+  let el = document.getElementById('trackerOwnerToast');
+  if (!el) { el = document.createElement('div'); el.id = 'trackerOwnerToast'; el.className = 'order-toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.textContent = text;
+  el.className = `order-toast show${error ? ' order-toast-error' : ''}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), error ? 5000 : 3500);
+}
+
+function initTrackerOwnerAssignments() {
+  if (document.documentElement.dataset.trackerOwnerBindings) return;
+  document.documentElement.dataset.trackerOwnerBindings = 'true';
+  document.addEventListener('change', event => {
+    const field = event.target.closest('[data-owner-assignment^="tracker:"]');
+    if (!field || !event.target.matches('[data-owner-role]')) return;
+    const id = field.dataset.ownerAssignment.slice('tracker:'.length);
+    const item = TRACKER_ITEMS.find(entry => entry.id === id);
+    if (!item || item.order) return;
+    const primary = field.querySelector('[data-owner-role="primary"]').value;
+    const secondary = field.querySelector('[data-owner-role="secondary"]').value;
+    const oldPrimary = ownerPrimary(item) || 'Unassigned';
+    const oldSecondary = ownerSecondary(item) || 'Unassigned';
+    try {
+      ownerSet(item, primary, secondary);
+      persistTrackerItem(item);
+      recordTrackerAudit(item.id, 'Owner assignment updated', `Primary ${oldPrimary} → ${primary || 'Unassigned'}; backup ${oldSecondary} → ${secondary || 'Unassigned'}`);
+      renderTrackerOwnerPanel(item);
+      refreshTrackerDetail(item);
+      trackerOwnerToast('Owner assignment saved.');
+    } catch (error) {
+      renderTrackerOwnerPanel(item);
+      trackerOwnerToast(error.message, true);
+    }
+  });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('[data-owner-takeover]')) return;
+    const field = event.target.closest('[data-owner-assignment^="tracker:"]');
+    if (!field) return;
+    const item = TRACKER_ITEMS.find(entry => entry.id === field.dataset.ownerAssignment.slice('tracker:'.length));
+    if (!item || item.order) return;
+    const oldPrimary = ownerPrimary(item);
+    const oldSecondary = ownerSecondary(item);
+    try {
+      ownerTakeover(item);
+      persistTrackerItem(item);
+      recordTrackerAudit(item.id, 'Backup promoted to primary', `${oldSecondary} is now primary; ${oldPrimary} is backup`);
+      renderTrackerOwnerPanel(item);
+      refreshTrackerDetail(item);
+      trackerOwnerToast(`${oldSecondary} is now primary owner.`);
+    } catch (error) { trackerOwnerToast(error.message, true); }
+  });
+}
+
 function initTrackerDetailActions() {
   const slaEl = document.querySelector('[data-sla-item]');
   const item = slaEl && TRACKER_ITEMS.find(entry => entry.id === slaEl.dataset.slaItem);
   if (!item) return;
+  renderTrackerOwnerPanel(item);
   if (slaEl.dataset.trackerActionsInitialized === 'true') return;
   slaEl.dataset.trackerActionsInitialized = 'true';
   const pageContent = slaEl.closest('.page-content');
@@ -457,6 +520,7 @@ function initTrackerDetailActions() {
   document.querySelectorAll('[data-tracker-milestone-action]').forEach(button => button.addEventListener('click', () => {
     const s = trackerSla(item);
     if (!s.cur) return;
+    if (!ownerReady(item)) { trackerOwnerToast(ownerProgressBlock(item), true); return; }
     const action = button.dataset.trackerMilestoneAction;
     const title = action === 'complete' ? 'Complete current milestone' : 'Skip current milestone';
     const modalForm = overlay.querySelector('form');
@@ -499,5 +563,6 @@ function initTrackerDetailActions() {
   }));
 }
 
+initTrackerOwnerAssignments();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initTrackerDetailActions);
 else initTrackerDetailActions();

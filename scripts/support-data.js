@@ -17,7 +17,7 @@ const SUPPORT_STAGE_LABEL = Object.fromEntries(SUPPORT_STAGES);
 const SUPPORT_PRIORITIES = ['Urgent', 'High', 'Normal', 'Low'];
 const SUPPORT_CATEGORIES = ['Hardware', 'Software', 'Network / VPN', 'Accounts & access', 'Device management / MDM', 'Peripherals', 'Request', 'Other'];
 const SUPPORT_SOURCES = ['Platform', 'Email', 'ITSM', 'Phone'];
-const SUPPORT_AGENTS = ['Qonit', 'Marcus', 'Jia Ling', 'Aisha'];
+const SUPPORT_AGENTS = OWNER_TEAM;
 // Priority tightens the contract targets: Urgent halves them, Low doubles resolution
 const SUPPORT_PRIORITY_FACTOR = { Urgent: [0.5, 0.5], High: [1, 1], Normal: [1, 1], Low: [2, 2] };
 
@@ -70,6 +70,9 @@ const SUPPORT_TICKETS = [];
     t.thread = t.thread.map(m => (Array.isArray(m) ? { who: m[0], kind: m[1], at: m[2], text: m[3] } : m));
     t.audit = t.audit || [{ at: t.opened, who: t.source === 'Platform' ? 'System' : 'Esevel', text: `Ticket opened via ${t.source}` }];
     t.pausedMins = t.pausedMins || 0;
+    t.primaryOwner = t.primaryOwner || t.owner || '';
+    t.secondaryOwner = t.secondaryOwner || '';
+    t.owner = t.primaryOwner;
   });
   SUPPORT_TICKETS.push(...list);
 })();
@@ -78,6 +81,7 @@ const saveSupport = () => sessionStorage.setItem(SUPPORT_KEY, JSON.stringify(SUP
 const supportById = id => SUPPORT_TICKETS.find(t => t.id === id);
 const supportClient = t => WH_CLIENTS.find(c => c.id === t.client) || { name: t.client, logo: '?' };
 const supportUser = () => (window.RBAC ? RBAC.getCurrentUser().name : 'You');
+const supportAgentName = () => SUPPORT_AGENTS.find(name => supportUser() === name || supportUser().startsWith(`${name} `)) || supportUser().split(' ')[0];
 const supportIso = (d = SUPPORT_NOW) => { const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
 const minsBetween = (a, b) => (new Date(b) - new Date(a)) / 6e4;
 
@@ -139,6 +143,7 @@ function supportReply(t, text, internal) {
 
 function supportReplyWithCc(t, text, internal, cc) {
   if (!text.trim()) throw new Error('Write a message first.');
+  if (!internal && ['submitted', 'triage'].includes(t.stage) && !ownerReady(t)) throw new Error(ownerProgressBlock(t));
   const msg = { who: supportUser(), kind: internal ? 'internal' : 'agent', at: supportIso(), text: text.trim() };
   if (!internal && cc) msg.cc = cc;
   t.thread.push(msg);
@@ -151,6 +156,7 @@ function supportReplyWithCc(t, text, internal, cc) {
 
 function supportSetStage(t, stage, silent) {
   if (t.stage === stage) return '';
+  if (!ownerReady(t)) throw new Error(ownerProgressBlock(t));
   const from = t.stage;
   if (from === 'waiting' && t.waitingSince) { t.pausedMins += minsBetween(t.waitingSince, SUPPORT_NOW); t.waitingSince = null; }
   if (stage === 'waiting') t.waitingSince = supportIso();
@@ -162,13 +168,14 @@ function supportSetStage(t, stage, silent) {
   return `${t.id} moved to ${SUPPORT_STAGE_LABEL[stage]}.`;
 }
 
-function supportAssign(t, owner) {
-  const old = t.owner || 'Unassigned';
-  t.owner = owner;
-  supportAudit(t, `Owner: ${old} → ${owner || 'Unassigned'}`);
-  if (t.stage === 'submitted' && owner) t.stage = 'triage';
+function supportAssign(t, primary, secondary = ownerSecondary(t)) {
+  const oldPrimary = ownerPrimary(t) || 'Unassigned';
+  const oldSecondary = ownerSecondary(t) || 'Unassigned';
+  ownerSet(t, primary, secondary);
+  supportAudit(t, `Assignment updated: primary ${oldPrimary} → ${primary || 'Unassigned'}; backup ${oldSecondary} → ${secondary || 'Unassigned'}`);
+  if (t.stage === 'submitted' && primary) t.stage = 'triage';
   saveSupport();
-  return `${t.id} assigned to ${owner || 'nobody'}.`;
+  return `${t.id} owner assignment saved.`;
 }
 
 function supportSetPriority(t, p) {
@@ -181,7 +188,7 @@ function supportSetPriority(t, p) {
 
 function supportCreate(d) {
   const n = Math.max(...SUPPORT_TICKETS.map(t => Number(t.id.split('-')[1]))) + 1;
-  const t = { id: `SUP-${n}`, client: d.client, cc: d.cc, subject: d.subject.trim(), requester: d.requester.trim(), email: d.email.trim(), priority: d.priority, category: d.category, source: d.source, ref: d.ref || '', stage: d.owner ? 'triage' : 'submitted', owner: d.owner || '', opened: supportIso(), device: d.device || '', pausedMins: 0,
+  const t = { id: `SUP-${n}`, client: d.client, cc: d.cc, subject: d.subject.trim(), requester: d.requester.trim(), email: d.email.trim(), priority: d.priority, category: d.category, source: d.source, ref: d.ref || '', stage: d.owner ? 'triage' : 'submitted', owner: d.owner || '', primaryOwner: d.owner || '', secondaryOwner: d.secondaryOwner || '', opened: supportIso(), device: d.device || '', pausedMins: 0,
     thread: [{ who: d.requester.trim(), kind: 'requester', at: supportIso(), text: d.description.trim() }],
     audit: [{ at: supportIso(), who: supportUser(), text: `Ticket raised by Esevel for ${supportClient({ client: d.client }).name} via ${d.source}` }] };
   SUPPORT_TICKETS.unshift(t);
@@ -193,9 +200,9 @@ const supportOpen = () => SUPPORT_TICKETS.filter(t => t.stage !== 'resolved');
 
 // Tickets needing attention in the shape the Needs attention queue uses
 function supportAttentionItems() {
-  return supportOpen().map(t => ({ t, s: supportSla(t) })).filter(({ t, s }) => ['breached', 'risk'].includes(s.health) || (!t.owner && t.stage === 'submitted')).map(({ t, s }) => ({
+  return supportOpen().map(t => ({ t, s: supportSla(t) })).filter(({ t, s }) => ['breached', 'risk'].includes(s.health) || !ownerReady(t)).map(({ t, s }) => ({
     id: t.id, kind: 'support', typeLabel: 'Support', icon: '💬', client: t.client, cc: t.cc, title: t.subject,
-    stage: SUPPORT_STAGE_LABEL[t.stage], owner: t.owner, blocker: !t.owner ? 'Unassigned' : '', health: s.health === 'paused' ? 'ok' : s.health,
+    stage: SUPPORT_STAGE_LABEL[t.stage], owner: ownerPrimary(t), blocker: !ownerReady(t) ? 'Backup needed' : '', health: s.health === 'paused' ? 'ok' : s.health,
     ratio: s.live.ratio, left: s.live.left, timeText: supportClockText(s.live, s.liveName),
     note: (t.thread.filter(m => m.kind !== 'requester').slice(-1)[0] || t.thread[0]), href: `/pages/support/ticket.html?id=${t.id}`
   }));

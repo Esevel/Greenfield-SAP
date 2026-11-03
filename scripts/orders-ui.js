@@ -82,12 +82,13 @@ function orderFilterBarHtml(f) {
     <label class="filter-select"><span>Client</span><select id="ofClient">${opt('', 'All', f.client)}${clients.map(c => opt(c.id, escapeHtml(c.name), f.client)).join('')}</select></label>
     <label class="filter-select"><span>Vendor</span><select id="ofVendor">${opt('', 'All', f.vendor)}${vendors.map(v => opt(v, escapeHtml(orderVendorName(v)), f.vendor)).join('')}</select></label>
     <label class="filter-select"><span>Country</span><select id="ofCountry">${opt('', 'All', f.cc)}${ccs.map(c => opt(c, WH_COUNTRIES[c][1], f.cc)).join('')}</select></label>
+    <label class="filter-select"><span>Owner coverage</span><select id="ofCoverage">${opt('', 'All', f.coverage)}${opt('missing', 'Backup needed', f.coverage)}${opt('ready', 'Both assigned', f.coverage)}</select></label>
     <button type="button" class="btn-text" id="ofReset">Reset</button>
   </div>`;
 }
 
 const ORDER_FILTER_KEY = 'sap-order-filters-v1';
-const orderFiltersDefault = () => ({ q: '', status: 'open', priority: '', client: '', vendor: '', cc: '' });
+const orderFiltersDefault = () => ({ q: '', status: 'open', priority: '', client: '', vendor: '', cc: '', coverage: '' });
 function orderFiltersLoad() {
   const params = new URLSearchParams(location.search);
   let f;
@@ -117,6 +118,8 @@ function orderMatches(o, f) {
   if (f.client && o.client !== f.client) return false;
   if (f.vendor && o.vendor !== f.vendor) return false;
   if (f.cc && o.cc !== f.cc) return false;
+  if (f.coverage === 'missing' && ownerReady(o)) return false;
+  if (f.coverage === 'ready' && !ownerReady(o)) return false;
   if (f.q) {
     const q = f.q.toLowerCase();
     const hay = [o.id, orderClient(o.client).name, o.recipient, o.po, o.ticket, orderVendorName(o.vendor), ...o.products.map(l => l.name)].join(' ').toLowerCase();
@@ -127,7 +130,7 @@ function orderMatches(o, f) {
 
 // Wire a filter bar rendered with orderFilterBarHtml; calls onChange(filters)
 function orderBindFilters(root, f, onChange) {
-  const map = { ofQ: 'q', ofStatus: 'status', ofPriority: 'priority', ofClient: 'client', ofVendor: 'vendor', ofCountry: 'cc' };
+  const map = { ofQ: 'q', ofStatus: 'status', ofPriority: 'priority', ofClient: 'client', ofVendor: 'vendor', ofCountry: 'cc', ofCoverage: 'coverage' };
   root.addEventListener('input', e => { if (map[e.target.id]) { f[map[e.target.id]] = e.target.value; orderFiltersSave(f); onChange(f); } });
   root.addEventListener('change', e => { if (map[e.target.id] && e.target.tagName === 'SELECT') { f[map[e.target.id]] = e.target.value; orderFiltersSave(f); onChange(f); } });
   root.addEventListener('click', e => {

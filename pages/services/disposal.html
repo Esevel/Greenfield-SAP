@@ -10,6 +10,12 @@
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/support.css">
+  <style>
+    .board-card.record-static { cursor: default; }
+    .board-card.record-static:hover { border-color: var(--color-border); }
+    .board-card.record-static.blocked:hover { border-left-color: var(--color-error); }
+    .board-card span.link-sm:hover { text-decoration: none; cursor: default; }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -33,7 +39,7 @@
               <span class="board-avg">Avg 3.1 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">DSP-0211</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">Jabra Evolve2 65 + dock</div>
                 <div class="card-client">Digital Solutions</div>
@@ -51,7 +57,7 @@
               <span class="board-avg">Avg 2.4 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card blocked">
+              <div class="board-card record-static blocked">
                 <div class="card-top"><span class="card-id">DSP-0207</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
                 <div class="card-subject">4 × MacBook Pro 13" (2019)</div>
                 <div class="card-client">FinanceExperts</div>
@@ -60,14 +66,14 @@
                 <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-breached">Breached</span></div>
                 <div class="card-bottom"><span>Re-running wipe</span><span class="card-avatar">AI</span></div>
               </div>
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">DSP-0209</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">Dell Latitude 7420</div>
                 <div class="card-client">TechGlobal Inc</div>
                 <div class="card-recipient">At US East Warehouse · <span class="flag">🇺🇸</span></div>
                 <div class="card-step step-done">✓ Collected 14 Oct</div>
                 <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">On track</span></div>
-                <div class="card-bottom"><a href="/pages/services/work-order.html?wo=DSP-0209" class="link-sm">Open · issue certificate</a><span class="card-avatar">M</span></div>
+                <div class="card-bottom"><span class="link-sm">Open · issue certificate</span><span class="card-avatar">M</span></div>
               </div>
             </div>
           </section>
@@ -78,13 +84,13 @@
               <span class="board-avg">Last 7 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">DSP-0203</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">6 × Logitech MX Keys</div>
                 <div class="card-client">Acme Tech</div>
                 <div class="card-recipient">Singapore Warehouse · <span class="flag">🇸🇬</span></div>
                 <div class="card-tags"><span class="owner-tag owner-ops">Esevel Ops</span><span class="sla-pill sla-ok">Met</span></div>
-                <div class="card-bottom"><a href="#" class="link-sm">Certificate CD-88213</a><span class="card-avatar">Q</span></div>
+                <div class="card-bottom"><span class="link-sm">Certificate CD-88213</span><span class="card-avatar">Q</span></div>
               </div>
             </div>
           </section>

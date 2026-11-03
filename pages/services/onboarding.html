@@ -9,7 +9,13 @@
   <link rel="stylesheet" href="/styles/catalogue-edit.css">
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
+  <link rel="stylesheet" href="/styles/owner-assignments.css">
   <link rel="stylesheet" href="/styles/support.css">
+  <style>
+    .board-card.record-static { cursor: default; }
+    .board-card.record-static:hover { border-color: var(--color-border); }
+    .board-card.record-static.blocked:hover { border-left-color: var(--color-error); }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -38,6 +44,7 @@
   <script src="/scripts/hub-data.js"></script>
   <script src="/scripts/supply-data.js"></script>
   <script src="/scripts/sla-data.js"></script>
+  <script src="/scripts/owner-assignments.js"></script>
   <script src="/scripts/tracker-sla.js"></script>
   <script src="/scripts/services-tabs.js"></script>
   <script src="/scripts/tracker-onboarding.js"></script>

@@ -11,7 +11,7 @@
 
   const d = {
     client: clients.some(c => c.id === params.get('client')) ? params.get('client') : 'acme', cc: '', entity: '', type: 'regular', priority: 'Normal', route: 'hub', vendor: '',
-    recipient: '', person: '', address: '', owner: orderUser().split(' ')[0], ticket: '', po: '', costCentre: '',
+    recipient: '', person: '', address: '', owner: orderUser().split(' ')[0], secondaryOwner: '', ticket: '', po: '', costCentre: '',
     approvalRequired: false, lines: [{ model: 'mbp14', qty: 1 }], fees: [], shippingCost: null, shippingRev: null, errors: {}
   };
 
@@ -90,7 +90,8 @@
           <div class="form-group"><label class="form-label" for="nEntity">Billing entity</label><select class="form-select" id="nEntity">${t.entities.map(e => opt(e.id, `${e.name} · ${e.currency}`, d.entity)).join('')}</select><div class="readonly-note">${escapeHtml(payingEntity(t, d.cc).why)} by default. The order is priced in ${c}.</div></div>
           <div class="form-group"><label class="form-label" for="nType">Order type</label><select class="form-select" id="nType">${ORDER_TYPES.map(x => opt(x, slaType(x).name, d.type)).join('')}</select><div class="readonly-note">${escapeHtml(slaType(d.type).note)}</div></div>
           <div class="form-group"><label class="form-label" for="nPriority">Priority</label><select class="form-select" id="nPriority">${ORDER_PRIORITIES.map(x => opt(x, x, d.priority)).join('')}</select></div>
-          <div class="form-group"><label class="form-label" for="nOwner">Owner</label><select class="form-select" id="nOwner">${[...new Set([d.owner, ...ORDER_OWNERS])].map(x => opt(x, x, d.owner)).join('')}</select></div>
+          <div class="form-group"><label class="form-label" for="nOwner">Primary owner <span class="req">*</span></label><select class="form-select" id="nOwner">${OWNER_TEAM.map(x => opt(x, x, d.owner)).join('')}</select>${err('owner')}</div>
+          <div class="form-group"><label class="form-label" for="nBackup">Secondary owner (backup) <span class="req">*</span></label><select class="form-select" id="nBackup">${opt('', 'Choose a team member…', d.secondaryOwner)}${OWNER_TEAM.map(x => opt(x, x, d.secondaryOwner)).join('')}</select>${err('secondaryOwner')}</div>
         </div></div></section>
 
         <section class="card mb-lg"><div class="card-header"><h3 class="card-title">Recipient and delivery</h3></div><div class="card-body"><div class="order-form-grid">
@@ -170,6 +171,7 @@
     else if (id === 'nType') { d.type = v; d.shippingCost = null; d.shippingRev = null; }
     else if (id === 'nPriority') d.priority = v;
     else if (id === 'nOwner') d.owner = v;
+    else if (id === 'nBackup') d.secondaryOwner = v;
     else if (id === 'nRoute') { d.route = v; d.shippingCost = null; d.shippingRev = null; }
     else if (id === 'nVendor') d.vendor = v;
     else if (id === 'nApproval') d.approvalRequired = el.checked;
@@ -225,6 +227,9 @@
   function create() {
     d.errors = {};
     if (!d.recipient.trim()) d.errors.recipient = 'Enter who receives the order.';
+    if (!d.owner) d.errors.owner = 'Choose a primary owner.';
+    if (!d.secondaryOwner) d.errors.secondaryOwner = 'Choose a backup owner.';
+    else if (d.secondaryOwner === d.owner) d.errors.secondaryOwner = 'Choose someone different from the primary owner.';
     if (d.route !== 'hub' && !d.address.trim()) d.errors.address = 'Enter a delivery address, or route via the warehouse.';
     if (!d.lines.length || d.lines.some(l => !(l.qty >= 1))) d.errors.lines = 'Every item needs a quantity of at least 1.';
     if (Object.keys(d.errors).length) { render(); orderToast('Fix the highlighted fields.', 'error'); root.querySelector('.form-error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
@@ -235,7 +240,7 @@
     const now = orderNowIso();
     const o = {
       ...draft, id, priority: d.priority, channel: 'Manual', vendor: d.vendor, recipient: d.recipient.trim(), person: d.person, orderedBy: `${orderUser()} (for ${ORDER_CLIENT_ADMIN[d.client] || clientAdminFor(CONTRACTS[d.client])})`,
-      owner: d.owner, ticket: d.ticket.trim(), po: d.po.trim(), costCentre: d.costCentre.trim(), blocker: '', approvalRequired: d.approvalRequired || !!(cap && cap.over),
+      owner: d.owner, primaryOwner: d.owner, secondaryOwner: d.secondaryOwner, ticket: d.ticket.trim(), po: d.po.trim(), costCentre: d.costCentre.trim(), blocker: '', approvalRequired: d.approvalRequired || !!(cap && cap.over),
       approval: d.approvalRequired || (cap && cap.over) ? 'pending' : '', paymentHold: false, address: d.route === 'hub' ? '' : d.address.trim(), notes: {}, audit: [], pauses: [], stages: {}, posted: false, createdAt: now
     };
     const s = orderSla(o);

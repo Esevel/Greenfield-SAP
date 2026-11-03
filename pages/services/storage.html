@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="/styles/assets.css">
   <link rel="stylesheet" href="/styles/tracker.css">
   <link rel="stylesheet" href="/styles/support.css">
+  <style>
+    .board-card.record-static { cursor: default; }
+    .board-card.record-static:hover { border-color: var(--color-border); }
+    .board-card.record-static.blocked:hover { border-left-color: var(--color-error); }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -33,7 +38,7 @@
               <span class="board-avg">Avg 2.6 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">STO-0142</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">3 × Dell UltraSharp U2723QE</div>
                 <div class="card-client">CloudSystems</div>
@@ -42,7 +47,7 @@
                 <div class="card-tags"><span class="owner-tag owner-courier">Courier</span><span class="sla-pill sla-ok">On track</span></div>
                 <div class="card-bottom"><span>To US West Warehouse</span><span class="card-avatar">AI</span></div>
               </div>
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">STO-0144</span><span class="raised-by by-esevel">Raised by Esevel for client</span></div>
                 <div class="card-subject">MacBook Pro 14" M3 + charger</div>
                 <div class="card-client">Acme Tech</div>
@@ -60,7 +65,7 @@
               <span class="board-avg">Avg 0.6 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">STO-0139</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">2 × Lenovo ThinkPad X1 Carbon</div>
                 <div class="card-client">Digital Solutions</div>
@@ -78,7 +83,7 @@
               <span class="board-avg">Last 7 days</span>
             </div>
             <div class="board-cards">
-              <div class="board-card">
+              <div class="board-card record-static">
                 <div class="card-top"><span class="card-id">STO-0136</span><span class="raised-by">Raised by client</span></div>
                 <div class="card-subject">MacBook Air 13" M2</div>
                 <div class="card-client">BrightPath Education</div>

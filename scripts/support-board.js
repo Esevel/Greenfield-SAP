@@ -10,15 +10,16 @@
   function cardHtml(t) {
     const s = supportSla(t);
     const [pc, pt] = SUPPORT_HEALTH_PILL[s.health];
-    return `<a class="board-card support-card" href="/pages/support/ticket.html?id=${t.id}">
+    const clickable = t.id === 'SUP-5538';
+    return `<${clickable ? 'a' : 'div'} class="board-card support-card${clickable ? '' : ' record-static'}"${clickable ? ' href="/pages/support/ticket.html?id=SUP-5538"' : ''}>
       <div class="card-top"><span class="card-id">${t.id}</span>${t.ref ? `<span class="ticket-chip">${escapeHtml(t.ref)}</span>` : ''}</div>
       <div class="card-subject">${escapeHtml(t.subject)}</div>
       <div class="card-client">${escapeHtml(supportClient(t).name)}</div>
       <div class="card-recipient">${escapeHtml(t.requester)} · ${supportFlag(t.cc)}</div>
       <div class="card-tags">${supportPriorityTag(t.priority)}<span class="tag-package">${escapeHtml(t.category)}</span><span class="sla-pill ${pc}">${pt}</span></div>
       ${t.stage === 'resolved' ? `<div class="card-client">Resolved ${fmtSupportTs(t.resolvedAt)}</div>` : supportClocksHtml(t, s)}
-      <div class="card-bottom"><span class="${t.owner ? '' : 'text-muted'}">${escapeHtml(t.owner || 'Unassigned')}</span>${t.owner ? `<span class="card-avatar">${escapeHtml(t.owner.slice(0, 2))}</span>` : '<span class="card-avatar card-avatar-empty">?</span>'}</div>
-    </a>`;
+      <div class="card-bottom">${ownerAssignmentSummary(t)}</div>
+    </${clickable ? 'a' : 'div'}>`;
   }
 
   function render() {
