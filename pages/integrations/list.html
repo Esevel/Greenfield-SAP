@@ -108,7 +108,6 @@
                 <th class="num">Records synced (24h)</th>
                 <th class="num">Errors</th>
                 <th>Employee drift</th>
-                <th>Owner</th>
               </tr>
             </thead>
             <tbody>
@@ -121,18 +120,16 @@
                 <td class="num">612</td>
                 <td class="num">0</td>
                 <td class="text-muted">Devices 16 · users 144</td>
-                <td><div class="owner-cell"><span class="card-avatar">K</span>Karen</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">MW</div><span>MediaWorks</span></div></td>
                 <td><div class="system-cell"><span class="system-logo logo-gworkspace">GW</span>Google Workspace</div></td>
                 <td><span class="tag tag-mdm">Directory/MDM</span></td>
                 <td><span class="integration-status integration-healthy">Healthy</span></td>
-                <td class="text-muted">1h ago · manual run <button type="button" class="btn-text" data-run-sync>Run sync now</button></td>
+                <td class="text-muted">1h ago · manual run</td>
                 <td class="num">63</td>
                 <td class="num">0</td>
                 <td class="text-muted">Directory 63 · Esevel 63</td>
-                <td><div class="owner-cell"><span class="card-avatar">J</span>Justin</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
@@ -143,7 +140,6 @@
                 <td class="num">395</td>
                 <td class="num errors-count">4</td>
                 <td><span class="drift">Intune 399 · Esevel 397</span><span class="drift-gap">2 missing</span></td>
-                <td><div class="owner-cell"><span class="card-avatar">K</span>Karen</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div></td>
@@ -154,7 +150,6 @@
                 <td class="num">0</td>
                 <td class="num errors-count">38</td>
                 <td class="text-muted">—</td>
-                <td><div class="owner-cell"><span class="card-avatar">JL</span>Jia Ling</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
@@ -165,7 +160,6 @@
                 <td class="num">1,284</td>
                 <td class="num errors-count">12</td>
                 <td><span class="drift">HRIS 412 · Esevel 410</span><span class="drift-gap">2 missing</span></td>
-                <td><div class="owner-cell"><span class="card-avatar">Q</span>Qonit</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div></td>
@@ -176,7 +170,6 @@
                 <td class="num">642</td>
                 <td class="num errors-count">7</td>
                 <td><span class="drift">IdP 236 · Esevel 239</span><span class="drift-gap">3 extra</span></td>
-                <td><div class="owner-cell"><span class="card-avatar">M</span>Marcus</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">AT</div><span>Acme Tech</span></div></td>
@@ -187,7 +180,6 @@
                 <td class="num">318</td>
                 <td class="num text-muted">0</td>
                 <td class="text-muted">—</td>
-                <td><div class="owner-cell"><span class="card-avatar">M</span>Marcus</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">TG</div><span>TechGlobal Inc</span></div></td>
@@ -198,7 +190,6 @@
                 <td class="num">905</td>
                 <td class="num text-muted">0</td>
                 <td class="text-muted">—</td>
-                <td><div class="owner-cell"><span class="card-avatar">Q</span>Qonit</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">MW</div><span>MediaWorks</span></div></td>
@@ -209,7 +200,6 @@
                 <td class="num">174</td>
                 <td class="num text-muted">0</td>
                 <td><span class="drift">HRIS 158 · Esevel 158</span><span class="drift-ok">✓ In sync</span></td>
-                <td><div class="owner-cell"><span class="card-avatar">AI</span>Aisha</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">DS</div><span>Digital Solutions</span></div></td>
@@ -220,7 +210,6 @@
                 <td class="num">521</td>
                 <td class="num text-muted">0</td>
                 <td><span class="drift">IdP 304 · Esevel 304</span><span class="drift-ok">✓ In sync</span></td>
-                <td><div class="owner-cell"><span class="card-avatar">JL</span>Jia Ling</div></td>
               </tr>
               <tr>
                 <td><div class="client-cell"><div class="client-logo">FE</div><span>FinanceExperts</span></div></td>
@@ -231,7 +220,6 @@
                 <td class="num text-muted">—</td>
                 <td class="num text-muted">—</td>
                 <td class="text-muted">—</td>
-                <td><div class="owner-cell"><span class="card-avatar">AI</span>Aisha</div></td>
               </tr>
             </tbody>
           </table>
@@ -244,17 +232,6 @@
   
   <script src="/scripts/navigation.js"></script>
   <script src="/scripts/components.js"></script>
-  <script>
-    // Single prototype detail page for all integrations
-    document.querySelectorAll('.integrations-table tbody tr').forEach(row => {
-      row.addEventListener('click', () => { window.location.href = '/pages/integrations/detail.html'; });
-    });
-    // Manual directory sync run (prototype: updates the cell in place)
-    document.querySelectorAll('[data-run-sync]').forEach(btn => btn.addEventListener('click', e => {
-      e.stopPropagation();
-      btn.closest('td').innerHTML = 'Just now · manual run <span class="text-muted">✓ Sync complete</span>';
-    }));
-  </script>
   <script src="/scripts/main.js"></script>
 </body>
 </html>

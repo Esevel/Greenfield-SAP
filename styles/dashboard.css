@@ -1616,46 +1616,14 @@ a.contract-pill {
   stroke-width: 0.5;
 }
 
-.cov-world [data-level="ok"] { --c: var(--ok); }
-.cov-world [data-level="single"] { --c: var(--single); }
-.cov-world [data-level="warn"] { --c: var(--warn); }
-.cov-world [data-level="bad"] { --c: var(--bad); }
-
-.cov-world path[data-level] {
-  fill: var(--c);
-  cursor: pointer;
-  outline: none;
-  transition: opacity var(--transition-fast);
-}
-
-.cov-world path[data-level]:hover,
-.cov-world path[data-level]:focus-visible {
-  opacity: 0.8;
-}
-
-.cov-world path.selected {
+.cov-world path[id="GB"] {
+  fill: var(--color-primary);
   stroke: var(--color-text-primary);
   stroke-width: 1.5;
 }
 
-.cov-dot-marker {
-  cursor: pointer;
-  outline: none;
-}
-
-.cov-dot {
-  fill: var(--c);
-  stroke: #fff;
-  stroke-width: 1.5;
-}
-
-.cov-halo {
-  fill: var(--c);
-  opacity: 0.25;
-}
-
-.cov-dot-marker.selected .cov-dot {
-  stroke: var(--color-text-primary);
+.cov-uk-key {
+  --c: var(--color-primary);
 }
 
 .cov-legend {

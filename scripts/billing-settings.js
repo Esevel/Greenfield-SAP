@@ -3,7 +3,8 @@
 
 function initBillingSettings() {
   const $ = id => document.getElementById(id);
-  const tab = ['plans', 'fees', 'tax', 'fx'].includes(new URLSearchParams(location.search).get('tab')) ? new URLSearchParams(location.search).get('tab') : 'plans';
+  const requestedTab = new URLSearchParams(location.search).get('tab');
+  const tab = Array.from(document.querySelectorAll('#bsTabs [data-tab]')).some(a => a.dataset.tab === requestedTab) ? requestedTab : 'fees';
   const clientName = id => WH_CLIENTS.find(c => c.id === id).name;
   const effective = r => `${billingDate(r.from)}${r.to ? ` → ${billingDate(r.to)}` : ' → open'}`;
   const note = t => { $('bsSaved').textContent = `✓ ${t}`; $('bsSaved').hidden = false; };

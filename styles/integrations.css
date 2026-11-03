@@ -30,7 +30,7 @@
 }
 
 .integrations-table tbody tr {
-  cursor: pointer;
+  cursor: default;
 }
 
 .integrations-table tbody tr:hover {

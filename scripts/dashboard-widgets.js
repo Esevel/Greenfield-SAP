@@ -965,9 +965,7 @@ window.DashboardWidgets = (() => {
       </section>`;
   }
 
-  // Same equirectangular projection as assets/world-map.svg (1000 wide, latitude 84 to -58)
   const MAP_URL = '/assets/world-map.svg';
-  const mapXY = ([lon, lat]) => [(lon + 180) * (1000 / 360), (84 - lat) * (1000 / 360)];
   const flagOf = cc => String.fromCodePoint(...[...cc].map(ch => 0x1f1a5 + ch.charCodeAt(0)));
   const LEVEL_LABEL = { ok: 'Covered', single: 'Single vendor', warn: '1 service missing', bad: 'Services missing' };
   const CELL_LABEL = { ok: 'Covered', single: 'One vendor only', gap: 'None' };
@@ -1045,7 +1043,7 @@ window.DashboardWidgets = (() => {
   }
 
   function coveragePanel() {
-    const first = [...COUNTRY_COVERAGE].sort(byRisk)[0];
+    const first = COUNTRY_COVERAGE.find(c => c.cc === 'GB');
     const atRisk = COUNTRY_COVERAGE.filter(c => coverageOf(c).level !== 'ok').length;
     return `
       <section class="dash-panel cov-panel">
@@ -1055,11 +1053,9 @@ window.DashboardWidgets = (() => {
         </header>
         <div class="cov-body">
           <div class="cov-map-wrap">
-            <div class="cov-map" id="cov-map" data-selected="${first.cc}" role="group" aria-label="Countries we provision in, coloured by coverage"></div>
+            <div class="cov-map" id="cov-map" role="img" aria-label="Static world map with the United Kingdom highlighted"></div>
             <div class="cov-legend">
-              <span><i data-state="ok"></i>Covered</span>
-              <span><i data-state="single"></i>Single vendor</span>
-              <span><i data-state="warn"></i>Gap</span>
+              <span><i class="cov-uk-key"></i>United Kingdom</span>
             </div>
           </div>
           <div class="cov-detail" id="cov-detail">${coverageDetail(first)}</div>
@@ -1077,37 +1073,6 @@ window.DashboardWidgets = (() => {
       </section>`;
   }
 
-  // Each provisioned country gets a coloured shape; ones too small for the map's detail get a dot
-  function paintMap(container, selected) {
-    const svg = container.querySelector('svg');
-    if (!svg) return;
-    svg.querySelectorAll('.cov-dot-marker').forEach(n => n.remove());
-    svg.querySelectorAll('path[data-level]').forEach(p => { p.removeAttribute('data-level'); p.classList.remove('selected'); });
-    COUNTRY_COVERAGE.forEach(c => {
-      const level = coverageOf(c).level;
-      const shape = svg.querySelector(`path[id="${c.cc}"]`);
-      if (shape) {
-        shape.dataset.level = level;
-        shape.dataset.country = c.cc;
-        shape.classList.toggle('selected', c.cc === selected);
-        shape.setAttribute('tabindex', '0');
-        shape.setAttribute('role', 'button');
-        shape.setAttribute('aria-label', `${c.name}: ${LEVEL_LABEL[level]}`);
-        return;
-      }
-      const [x, y] = mapXY(c.pos);
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('class', `cov-dot-marker ${c.cc === selected ? 'selected' : ''}`);
-      g.dataset.level = level;
-      g.dataset.country = c.cc;
-      g.setAttribute('tabindex', '0');
-      g.setAttribute('role', 'button');
-      g.setAttribute('aria-label', `${c.name}: ${LEVEL_LABEL[level]}`);
-      g.innerHTML = `<circle class="cov-halo" cx="${x}" cy="${y}" r="9"/><circle class="cov-dot" cx="${x}" cy="${y}" r="4.5"/>`;
-      svg.appendChild(g);
-    });
-  }
-
   async function loadWorldMap(container) {
     if (!worldMapSvg) {
       const res = await fetch(MAP_URL);
@@ -1117,6 +1082,8 @@ window.DashboardWidgets = (() => {
     container.innerHTML = worldMapSvg;
     const svg = container.querySelector('svg');
     svg.setAttribute('class', 'cov-world');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
     svg.removeAttribute('width');
     svg.removeAttribute('height');
   }
@@ -1124,37 +1091,8 @@ window.DashboardWidgets = (() => {
   function bindCoverage(panel) {
     if (!panel) return;
     const map = panel.querySelector('#cov-map');
-    const tableWrap = panel.querySelector('.cov-table-wrap');
-    const search = panel.querySelector('.cov-search');
-    const showAll = panel.querySelector('.cov-show-all');
-    let selected = map.dataset.selected;
-
-    const select = cc => {
-      selected = cc;
-      panel.querySelector('#cov-detail').innerHTML = coverageDetail(COUNTRY_COVERAGE.find(c => c.cc === cc));
-      paintMap(map, selected);
-      tableWrap.querySelectorAll('tr[data-country]').forEach(r => r.classList.toggle('selected', r.dataset.country === cc));
-    };
-    const pick = e => {
-      const el = e.target.closest('[data-country]');
-      if (el) select(el.dataset.country);
-    };
-    const pickKey = e => {
-      if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('[data-country]')) { e.preventDefault(); pick(e); }
-    };
-    const refreshTable = () => {
-      tableWrap.innerHTML = coverageTable(showAll.checked, search.value);
-      tableWrap.querySelectorAll('tr[data-country]').forEach(r => r.classList.toggle('selected', r.dataset.country === selected));
-    };
-
-    [map, tableWrap].forEach(el => { el.addEventListener('click', pick); el.addEventListener('keydown', pickKey); });
-    search.addEventListener('input', refreshTable);
-    showAll.addEventListener('change', refreshTable);
-    refreshTable();
-
     loadWorldMap(map)
-      .then(() => paintMap(map, selected))
-      .catch(() => { map.innerHTML = '<p class="cov-empty">World map unavailable \u00b7 use the list below.</p>'; });
+      .catch(() => { map.innerHTML = '<p class="cov-empty">World map unavailable \u00b7 United Kingdom coverage is shown alongside.</p>'; });
   }
 
   // ---- Head view ----
