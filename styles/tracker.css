@@ -569,6 +569,80 @@
   border-color: var(--color-success);
 }
 
+.service-sla-blocker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.05);
+  border: var(--border-width) solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.service-sla-blocker span {
+  color: var(--color-text-secondary);
+}
+
+.service-sla-progress {
+  margin-bottom: var(--space-lg);
+}
+
+.service-sla-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xs);
+  font-size: var(--font-size-sm);
+}
+
+.service-sla-progress-label span {
+  color: var(--color-text-muted);
+}
+
+.service-sla-progress-bar {
+  height: 7px;
+  overflow: hidden;
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+.service-sla-progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: inherit;
+}
+
+.service-sla-progress-bar span.is-breached {
+  background: var(--color-error);
+}
+
+.service-sla-progress-bar span.is-complete {
+  background: var(--color-success);
+}
+
+.service-sla-timing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-lg) 0;
+}
+
+.service-sla-timing-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+  font-size: var(--font-size-sm);
+}
+
+.service-sla-timing-grid strong {
+  overflow-wrap: anywhere;
+}
+
 /* "Show N earlier messages" expand button */
 .thread-earlier-btn {
   display: block;
@@ -625,6 +699,12 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: var(--line-height-normal);
+}
+
+@media (max-width: 700px) {
+  .service-sla-timing-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .msg-avatar-client {

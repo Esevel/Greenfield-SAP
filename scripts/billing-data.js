@@ -68,8 +68,8 @@ const INVOICE_SPLITS = { entity: 'Billing entity', costCentre: 'Cost centre', co
 // trigger: the milestone whose completion raises the charge (storage accrues daily instead)
 const FEE_EVENTS = [
   { key: 'deployment', label: 'Deployment', unit: 'per device', trigger: 'Delivered', types: ['regular', 'rush', 'bulk', 'preorder', 'deploy', 'onboarding'] },
-  { key: 'retrieval', label: 'Retrieval', unit: 'per device', trigger: 'Received at hub', types: ['offboarding'] },
-  { key: 'storage', label: 'Storage', unit: 'per device per day', trigger: 'Daily, while in an Esevel hub', types: ['storage'] },
+  { key: 'retrieval', label: 'Retrieval', unit: 'per device', trigger: 'Received at warehouse', types: ['offboarding'] },
+  { key: 'storage', label: 'Storage', unit: 'per device per day', trigger: 'Daily, while in an Esevel warehouse', types: ['storage'] },
   { key: 'redeployment', label: 'Redeployment', unit: 'per device', trigger: 'Delivered', types: ['redeployment'] },
   { key: 'repair', label: 'Repair', unit: 'per repair (excl. parts)', trigger: 'Repaired', types: ['repair'] },
   { key: 'disposal', label: 'Disposal', unit: 'per device', trigger: 'Certificate issued', types: ['disposal'] }
@@ -478,4 +478,3 @@ function capInfo(clientId) {
   const pct = t.cap.limit ? (spent / t.cap.limit) * 100 : 0;
   return { cur, limit: t.cap.limit, spent, parts, remaining: t.cap.limit - spent, pct, status: pct > 100 ? 'over' : pct >= 80 ? 'near' : 'healthy', period: t.cap.period, renewal: t.cap.renewal, fxSource: FX_SOURCES[t.fxSource].split(' (')[0] };
 }
-

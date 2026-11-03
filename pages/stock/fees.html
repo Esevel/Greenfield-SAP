@@ -25,7 +25,7 @@
         <div class="asset-toolbar">
           <div class="filter-chips stock-filters">
             <label class="filter-select"><span>Client</span><select id="feClient"></select></label>
-            <label class="filter-select"><span>Hub</span><select id="feHub"></select></label>
+            <label class="filter-select"><span>Warehouse</span><select id="feHub"></select></label>
             <label class="sla-check"><input type="checkbox" id="feAged"> Only with devices stored 90+ days</label>
           </div>
           <button type="button" class="btn btn-secondary btn-sm" id="feExport">Export CSV</button>
@@ -36,7 +36,7 @@
             <thead class="catalogue-table-header">
               <tr>
                 <th>Client</th>
-                <th>Hub</th>
+                <th>Warehouse</th>
                 <th class="num">Devices billed</th>
                 <th class="num">Avg days stored</th>
                 <th class="num">Stored 90+ days</th>
@@ -65,7 +65,7 @@
     (function () {
       const $ = id => document.getElementById(id);
 
-      // One row per client × hub. Client-site stock is never billed, so it doesn't appear here.
+      // One row per client × warehouse. Client-site stock is never billed, so it doesn't appear here.
       const groups = {};
       STOCK_LINES.forEach(l => {
         const loc = stockLoc(l.loc);
@@ -111,9 +111,9 @@
         const devices = rows.reduce((s, g) => s + g.devices, 0);
         const aged = rows.reduce((s, g) => s + g.aged, 0);
         $('feTiles').innerHTML = [
-          tile('Fees / month', sumByCur(rows, 'monthly'), 'Billed per device in Esevel hubs', 'summary-tile-fees'),
+          tile('Fees / month', sumByCur(rows, 'monthly'), 'Billed per device in Esevel warehouses', 'summary-tile-fees'),
           tile('Accrued to date', sumByCur(rows, 'accrued'), 'Since each device\'s intake', 'summary-tile-fees'),
-          tile('Devices billed', devices, `${rows.length} client × hub combinations`),
+          tile('Devices billed', devices, `${rows.length} client × warehouse combinations`),
           tile('Stored 90+ days', aged, 'Review with the client: redeploy or dispose', aged ? 'summary-tile-alert' : '')
         ].join('');
 
@@ -131,7 +131,7 @@
             <td>${sug || '<span class="text-muted">Keep</span>'}</td>
           </tr>`;
         }).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No billed storage matches</td></tr>';
-        $('feCount').textContent = `${rows.length} rows · Daily rate is the hub country's fee in its local currency (standard or contract exception), converted to the paying entity's currency at the contract's FX source; fee / month = 30 days. Client-site stock isn't billed. Click a row for that client's devices.`;
+        $('feCount').textContent = `${rows.length} rows · Daily rate is the warehouse country's fee in its local currency (standard or contract exception), converted to the paying entity's currency at the contract's FX source; fee / month = 30 days. Client-site stock isn't billed. Click a row for that client's devices.`;
       }
 
       const go = row => { window.location.href = row.dataset.href; };
@@ -140,7 +140,7 @@
       ['feClient', 'feHub', 'feAged'].forEach(id => $(id).addEventListener('change', render));
 
       $('feExport').addEventListener('click', () => {
-        const head = ['Client', 'Hub', 'Currency', 'Devices billed', 'Stored 90+ days', 'Rate per day', 'Fee per month', 'Accrued to date'];
+        const head = ['Client', 'Warehouse', 'Currency', 'Devices billed', 'Stored 90+ days', 'Rate per day', 'Fee per month', 'Accrued to date'];
         const lines = filtered().map(g => [stockClient(g.client).name, g.hub.name, g.cur, g.devices, g.aged, g.perDay.toFixed(2), g.monthly.toFixed(2), g.accrued.toFixed(2)]);
         const csv = [head, ...lines].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
         const a = document.createElement('a');

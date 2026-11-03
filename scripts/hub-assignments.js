@@ -18,7 +18,7 @@ function initHubAssignments() {
       ${countries.map(cc => {
         const hubs = activeHubs(cc);
         return `<th><span class="flag">${WH_COUNTRIES[cc][0]}</span> ${WH_COUNTRIES[cc][1]}
-          <div class="assign-col-sub">${hubs.length ? `${hubs.length} hub${hubs.length === 1 ? '' : 's'}` : 'No active hub'}</div></th>`;
+          <div class="assign-col-sub">${hubs.length ? `${hubs.length} warehouse${hubs.length === 1 ? '' : 's'}` : 'No active warehouse'}</div></th>`;
       }).join('')}
     </tr>`;
   }
@@ -31,13 +31,13 @@ function initHubAssignments() {
     const options = [
       `<option value="na" ${value === 'na' ? 'selected' : ''}>Not active</option>`,
       ...hubs.map(h => `<option value="${h.id}" ${value === h.id ? 'selected' : ''}>${escapeHtml(h.name)}</option>`),
-      `<option value="none" ${value === 'none' ? 'selected' : ''}>No hub · client sites</option>`
+      `<option value="none" ${value === 'none' ? 'selected' : ''}>No warehouse · client sites</option>`
     ].join('');
     const siteNote = kind === 'none'
       ? (sites.length ? `${sites.length} client site${sites.length === 1 ? '' : 's'}` : 'No client site listed')
       : '';
     return `<td><div class="assign-cell assign-${kind} ${isDirty(client.id, cc) ? 'dirty' : ''}">
-      <select class="assign-select" data-client="${client.id}" data-country="${cc}" aria-label="${escapeHtml(client.name)} hub in ${WH_COUNTRIES[cc][1]}">${options}</select>
+      <select class="assign-select" data-client="${client.id}" data-country="${cc}" aria-label="${escapeHtml(client.name)} warehouse in ${WH_COUNTRIES[cc][1]}">${options}</select>
       ${siteNote ? `<span class="assign-note ${sites.length ? '' : 'warn'}">${siteNote}</span>` : ''}
     </div></td>`;
   }
@@ -102,11 +102,11 @@ function initHubAssignments() {
     saveNewClients();
     const describe = ([c, cc]) => {
       const v = saved(c.id, cc);
-      const target = v === 'na' ? 'not active' : v === 'none' ? 'no hub (client sites)' : WAREHOUSES.find(w => w.id === v).name;
+      const target = v === 'na' ? 'not active' : v === 'none' ? 'no warehouse (client sites)' : WAREHOUSES.find(w => w.id === v).name;
       return `${c.name} · ${WH_COUNTRIES[cc][1]} → ${target}`;
     };
     $('assignSaved').hidden = false;
-    $('assignSavedText').textContent = `✓ Saved ${list.length} assignment${list.length === 1 ? '' : 's'}: ${list.map(describe).join('; ')}. New deliveries, storage and Deploy timing use the new hub; stock already in the old hub stays until moved.`;
+    $('assignSavedText').textContent = `✓ Saved ${list.length} assignment${list.length === 1 ? '' : 's'}: ${list.map(describe).join('; ')}. New deliveries, storage and Deploy timing use the new warehouse; stock already in the old warehouse stays until moved.`;
     render();
   });
 

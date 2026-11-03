@@ -1,5 +1,195 @@
 /* Catalogue-specific styles */
 
+.add-model-modal {
+  max-width: 560px;
+  max-height: 90vh;
+}
+
+.add-model-modal .modal-title {
+  margin: 0;
+}
+
+.add-model-modal .modal-body {
+  overflow-y: auto;
+}
+
+.add-model-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-xl);
+  padding: 0;
+  list-style: none;
+  counter-reset: model-step;
+}
+
+.add-model-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  counter-increment: model-step;
+}
+
+.add-model-steps li::before {
+  content: counter(model-step);
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  font-weight: var(--font-weight-semibold);
+}
+
+.add-model-steps li.active {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.add-model-steps li.active::before,
+.add-model-steps li.complete::before {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.add-model-step[hidden] {
+  display: none;
+}
+
+.add-model-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.add-model-fields .form-group {
+  min-width: 0;
+}
+
+.add-model-note {
+  margin-top: var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-background);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+}
+
+.add-model-matrix-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin: var(--space-md) 0 var(--space-sm);
+  font-size: var(--font-size-sm);
+}
+
+.add-model-matrix-heading span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.add-model-matrix {
+  max-height: 190px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+}
+
+.add-model-combination-table th,
+.add-model-combination-table td {
+  padding: var(--space-sm) var(--space-md);
+}
+
+.add-model-combination-table input {
+  width: 16px;
+  height: 16px;
+}
+
+.add-model-country-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+}
+
+.add-model-country-list label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.add-model-country-list label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.add-model-country-list input {
+  width: 16px;
+  height: 16px;
+}
+
+.add-model-market-summary {
+  margin-top: var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.add-model-review-list {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.4fr);
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.add-model-review-list dt,
+.add-model-review-list dd {
+  margin: 0;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.add-model-review-list dt {
+  color: var(--color-text-muted);
+}
+
+.add-model-review-list dd {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 560px) {
+  .add-model-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .add-model-steps {
+    gap: 2px;
+  }
+
+  .add-model-steps li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .add-model-country-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Toolbar */
 .catalogue-toolbar {
   display: flex;

@@ -413,7 +413,7 @@ async function orderEditDialog(o, onSaved) {
       <div class="form-group"><label class="form-label">Recipient</label><input class="form-input" id="eoRecipient" value="${escapeHtml(draft.recipient)}"></div>
       <div class="form-group"><label class="form-label">Route</label><select class="form-select" id="eoRoute">${Object.entries(SLA_ROUTES).map(([k, r]) => opt(k, r.label, draft.route)).join('')}</select></div>
       <div class="form-group wide"><label class="form-label">Delivery address</label><textarea class="form-textarea" id="eoAddress" rows="2">${escapeHtml(draft.address)}</textarea></div>
-      <div class="readonly-note wide">Changing the route adds or removes Received at hub and QC &amp; dispatch.</div>
+      <div class="readonly-note wide">Changing the route adds or removes Received at warehouse and QC &amp; dispatch.</div>
     </div></div>
     <div ${tab === 'pricing' ? '' : 'hidden'}>
       <table class="table order-lines"><thead><tr><th>Item</th><th>Qty</th><th class="num">Unit cost (${o.currency})</th><th class="num">Unit revenue</th><th></th></tr></thead><tbody>

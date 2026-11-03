@@ -39,7 +39,7 @@ window.DashboardWidgets = (() => {
       { id: 'DSP-0207', client: 'FinanceExperts', milestone: 'Data wipe', late: '9d 13h', blocker: 'Wipe failed on 1 of 4 drives', link: '/pages/services/disposal.html' },
       { id: 'OFF-2055', client: 'Digital Solutions', milestone: 'Collected', late: '6d 20h', blocker: 'Awaiting courier', link: '/pages/services/offboarding-detail.html' },
       { id: 'RED-0311', client: 'MediaWorks', milestone: 'Repackage', late: '6d 8h', blocker: '', link: '/pages/services/redeployments.html' },
-      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Received at hub', late: '5d 7h', blocker: 'Missing import permit', link: '/pages/orders/order.html?id=ORD-30398' },
+      { id: 'ORD-30398', client: 'Acme Tech', milestone: 'Received at warehouse', late: '5d 7h', blocker: 'Missing import permit', link: '/pages/orders/order.html?id=ORD-30398' },
       { id: 'ONB-1188', client: 'FinanceExperts', milestone: 'Procured', late: '5d 18h', blocker: '1 line ETA after due date', link: '/pages/services/onboarding.html' }
     ]
   };
@@ -72,12 +72,12 @@ window.DashboardWidgets = (() => {
   const PRIORITY_ORDERS = [
     { id: 'ONB-1186', client: 'Acme Tech', cc: 'SG', why: 'Starts today', stage: 'Imaged / Provisioned', owner: 'Qonit', waiting: 'Esevel ops', due: '5d 10h overdue', state: 'bad', link: '/pages/services/onboarding-detail.html?id=ONB-1186' },
     { id: 'ONB-1188', client: 'FinanceExperts', cc: 'GB', why: 'Start date at risk', stage: 'Procured · 1 of 2 lines', owner: 'Jia Ling', waiting: 'Vendor (backorder)', due: '5d 18h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
-    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Received at hub', owner: 'Aisha', waiting: 'Customs broker', due: '5d 7h overdue', state: 'bad', link: '/pages/orders/order.html?id=ORD-30398' },
+    { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Received at warehouse', owner: 'Aisha', waiting: 'Customs broker', due: '5d 7h overdue', state: 'bad', link: '/pages/orders/order.html?id=ORD-30398' },
     { id: 'SUP-5538', client: 'TechGlobal Inc', cc: 'US', why: 'Urgent ticket', stage: 'First response', owner: 'Esevel Ops', waiting: 'Esevel ops', due: '18m left', state: 'warn', link: '/pages/support/board.html' },
     { id: 'ONB-1194', client: 'TechGlobal Inc', cc: 'US', why: 'Starts 3 Nov', stage: 'Initiated', owner: 'Qonit', waiting: 'Client HR', due: '4d 19h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
     { id: 'REP-0871', client: 'TechGlobal Inc', cc: 'SG', why: 'Exec device', stage: 'Repair / loaner sent', owner: 'Jia Ling', waiting: 'Vendor (Dell part)', due: '5d 10h overdue', state: 'bad', link: '/pages/services/work-order.html?wo=REP-0871' },
     { id: 'ONB-1190', client: 'TechGlobal Inc', cc: 'SG', why: 'Starts Mon', stage: 'Dispatched', owner: 'Qonit', waiting: 'Courier pickup', due: '4d 20h overdue', state: 'bad', link: '/pages/services/onboarding.html' },
-    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Hub', due: '4d 21h overdue', state: 'bad', link: '/pages/attention/queue.html' }
+    { id: 'ORD-30455', client: 'Acme Tech', cc: 'SG', why: 'Rush order', stage: 'Prep & reimage', owner: 'Marcus', waiting: 'Warehouse', due: '4d 21h overdue', state: 'bad', link: '/pages/attention/queue.html' }
   ];
 
   // Billing (Ledger, Invoices), Stock · Storage fees, Clients · Procurement caps, repair quotes and client catalogues
@@ -87,7 +87,7 @@ window.DashboardWidgets = (() => {
         amounts: [['AUD', '114.00'], ['GBP', '74.00'], ['MYR', '1,179.00'], ['SGD', '2,779.99'], ['USD', '1,818.61']] },
       { label: 'Outstanding invoices', sub: '7 issued · 3 overdue', link: '/pages/billing/invoices.html',
         amounts: [['AUD', '289.30'], ['MYR', '1,615.68'], ['SGD', '1,625.27'], ['USD', '5,969.01']] },
-      { label: 'Storage fees / month', sub: '139 devices in hubs', link: '/pages/stock/fees.html',
+      { label: 'Storage fees / month', sub: '139 devices in warehouses', link: '/pages/stock/fees.html',
         amounts: [['MYR', '201.00'], ['SGD', '625.50'], ['USD', '1,179.00']] }
     ],
     margins: [
@@ -126,7 +126,7 @@ window.DashboardWidgets = (() => {
   // pos is [lon, lat], used for countries too small to draw at world scale. openWOs is illustrative.
   const SERVICES = [
     { id: 'hardware', label: 'Hardware', want: 2 },
-    { id: 'hub', label: 'Hub', want: 1 },
+    { id: 'hub', label: 'Warehouse', want: 1 },
     { id: 'courier', label: 'Courier', want: 2 },
     { id: 'repair', label: 'Repair', want: 2 },
     { id: 'itad', label: 'Disposal', want: 2 }
@@ -135,24 +135,24 @@ window.DashboardWidgets = (() => {
   const COUNTRY_COVERAGE = [
     { cc: 'SG', name: 'Singapore', region: 'APAC', pos: [103.8, 1.35], openWOs: 41,
       clients: ['Acme Tech', 'TechGlobal Inc', 'MediaWorks', 'FinanceExperts', 'Northwind Health', 'BrightPath Education'],
-      vendors: { hardware: ['Vendor A', 'Ingram Micro'], hub: ['Singapore Hub (Hub SG Logistics)'], courier: ['Courier X', 'DHL Express'],
+      vendors: { hardware: ['Vendor A', 'Ingram Micro'], hub: ['Singapore Warehouse (SG Logistics)'], courier: ['Courier X', 'DHL Express'],
         repair: ['Dell Service Centre Singapore'], itad: [{ name: 'GreenCycle ITAD', status: 'On hold' }] } },
     { cc: 'MY', name: 'Malaysia', region: 'APAC', pos: [101.7, 3.1], openWOs: 12,
       clients: ['Acme Tech', 'TechGlobal Inc', 'MediaWorks', 'BrightPath Education'],
-      vendors: { hardware: ['Vendor A', 'Ingram Micro'], hub: ['Kuala Lumpur Hub (Kerry Logistics)'], courier: ['Courier X', 'DHL Express'],
+      vendors: { hardware: ['Vendor A', 'Ingram Micro'], hub: ['Kuala Lumpur Warehouse (Kerry Logistics)'], courier: ['Courier X', 'DHL Express'],
         repair: ['iFix Kuala Lumpur', { name: 'TechMend Repairs', status: 'Offboarded' }], itad: [] },
-      notes: ['BrightPath Education has no hub assigned here; its stock stays at client sites'] },
+      notes: ['BrightPath Education has no warehouse assigned here; its stock stays at client sites'] },
     { cc: 'AU', name: 'Australia', region: 'APAC', pos: [134, -25], openWOs: 21,
       clients: ['Acme Tech', 'TechGlobal Inc', 'Digital Solutions', 'MediaWorks', 'CloudSystems', 'BrightPath Education'],
-      vendors: { hardware: ['Vendor B', 'Ingram Micro'], hub: ['Sydney Hub (Kerry Logistics)'], courier: ['Courier X', 'DHL Express'],
+      vendors: { hardware: ['Vendor B', 'Ingram Micro'], hub: ['Sydney Warehouse (Kerry Logistics)'], courier: ['Courier X', 'DHL Express'],
         repair: [], itad: [{ name: 'GreenCycle ITAD', status: 'On hold' }] } },
     { cc: 'US', name: 'United States', region: 'Americas', pos: [-98, 39], openWOs: 32,
       clients: ['Acme Tech', 'TechGlobal Inc', 'MediaWorks', 'CloudSystems', 'Northwind Health'],
-      vendors: { hardware: ['Vendor C', 'Ingram Micro'], hub: ['US East Hub', 'US West Hub'], courier: ['FedEx'],
+      vendors: { hardware: ['Vendor C', 'Ingram Micro'], hub: ['US East Warehouse', 'US West Warehouse'], courier: ['FedEx'],
         repair: ['TechCare New Jersey'], itad: [] } },
     { cc: 'GB', name: 'United Kingdom', region: 'EMEA', pos: [-1.5, 52.5], openWOs: 9,
       clients: ['Digital Solutions', 'FinanceExperts'],
-      vendors: { hardware: ['Vendor B'], hub: [{ name: 'London Hub', status: 'Decommissioned Mar 2026' }], courier: ['DHL Express'],
+      vendors: { hardware: ['Vendor B'], hub: [{ name: 'London Warehouse', status: 'Decommissioned Mar 2026' }], courier: ['DHL Express'],
         repair: ['FixPoint London'], itad: [] },
       notes: ['Digital Solutions and FinanceExperts hold UK stock at their own sites'] }
   ];
@@ -403,11 +403,11 @@ window.DashboardWidgets = (() => {
       note: 'Orders, onboarding and redeployments', spark: SPARK.deliveries, link: '/pages/orders/board.html' },
     { p: 2, requires: 'shipments', label: 'Delivered on time', value: '89.3%', delta: ['down', false, '1.2 pts vs Q3'],
       note: 'Against the Delivered milestone', link: '/pages/attention/queue.html' },
-    { p: 3, requires: 'warehouses', label: 'Avg hub prep to dispatch', value: '1.6 days', delta: ['down', true, '0.2 days faster than Q3'],
+    { p: 3, requires: 'warehouses', label: 'Avg warehouse prep to dispatch', value: '1.6 days', delta: ['down', true, '0.2 days faster than Q3'],
       note: 'Target 2 days', link: '/pages/stock/warehouses.html' },
     { p: 4, requires: 'stock', label: 'Stock needing attention', value: '6', tone: 'warn',
       note: '3 restock proposals to send', link: '/pages/stock/list.html' },
-    { p: 5, requires: 'shipments', label: 'Devices to inspect', value: '3', note: '2 more expected at hubs', link: '/pages/stock/receiving.html' },
+    { p: 5, requires: 'shipments', label: 'Devices to inspect', value: '3', note: '2 more expected at warehouses', link: '/pages/stock/receiving.html' },
     { p: 6, requires: 'stock', label: 'Stored 90+ days', value: '68', delta: ['up', false, '9 vs end of Q3'],
       note: 'Review with clients: redeploy or dispose', link: '/pages/stock/fees.html' },
 
@@ -453,7 +453,7 @@ window.DashboardWidgets = (() => {
     { section: 'clients', ...CS_LEAD, label: 'Renewing by Jan 2027', value: '1', link: '/pages/clients/list.html' },
 
     { section: 'operations', requires: 'work_orders', when: user => !isVisible(PANELS.sla, user), label: 'Open work orders', value: '115', note: '11 breached · 25 at risk', tone: 'down', link: '/pages/attention/queue.html' },
-    { section: 'operations', requires: 'stock', label: 'Devices in stock', value: '155', note: '139 in hubs · 129 available', link: '/pages/stock/list.html' },
+    { section: 'operations', requires: 'stock', label: 'Devices in stock', value: '155', note: '139 in warehouses · 129 available', link: '/pages/stock/list.html' },
     { section: 'operations', requires: 'stock', label: 'Stock needing attention', value: '6', note: 'Below threshold, awaiting restock or aged', tone: 'down', link: '/pages/stock/list.html' },
     { section: 'operations', requires: 'shipments', label: 'Receiving', value: '5', note: '3 to inspect · 2 expected', link: '/pages/stock/receiving.html' },
 
@@ -506,19 +506,19 @@ window.DashboardWidgets = (() => {
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'DHL Express updates not reaching the tracker', description: 'Webhook failing · UK collections and deliveries need manual status · OFF-2055 missed a second pickup', link: '/pages/vendors/list.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: '2 delivery proofs with no work order', description: 'FedEx 7712 4459 1187 (Grace Liu) · email scan from J. Whitfield with no tracking number', link: '/pages/services/sync-inbox.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'URGENT', title: 'ORD-30398 stuck at customs', description: 'Acme Tech · broker, vendor and Procurement need a re-issued commercial invoice', link: '/pages/orders/order.html?id=ORD-30398' },
-    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: '2 return receipts to confirm', description: 'OFF-2061 at Singapore Hub · OFF-2055 at Digital Solutions London', link: '/pages/services/sync-inbox.html' },
+    { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: '2 return receipts to confirm', description: 'OFF-2061 at Singapore Warehouse · OFF-2055 at Digital Solutions London', link: '/pages/services/sync-inbox.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'DSP-0207: wipe failed on 1 of 4 drives', description: 'FinanceExperts · 9d 13h overdue · confirm shred with the disposal partner', link: '/pages/services/disposal.html' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'REP-0871 waiting on a back-ordered part', description: 'TechGlobal · Dell ETA Friday · loaner already with the user', link: '/pages/services/work-order.html?wo=REP-0871' },
     { section: 'operations', requires: 'coordination', when: towerView, category: 'NEEDS_ATTENTION', title: 'Courier X invite pending for Sophie Tran', description: 'AU courier · invited 14 Oct, not signed in · 0 jobs assigned', link: '/pages/vendors/access.html' },
     { section: 'operations', requires: 'stock', category: 'NEEDS_ATTENTION', title: '3 restock proposals to send', description: 'Thresholds below minimum · 1 more awaiting client', link: '/pages/stock/restock.html' },
-    { section: 'operations', requires: 'shipments', category: 'NEEDS_ATTENTION', title: '3 devices to inspect', description: 'Received at hub, intake not done', link: '/pages/stock/receiving.html' },
+    { section: 'operations', requires: 'shipments', category: 'NEEDS_ATTENTION', title: '3 devices to inspect', description: 'Received at warehouse, intake not done', link: '/pages/stock/receiving.html' },
     { section: 'operations', requires: 'stock', category: 'UPCOMING', title: '68 devices stored 90+ days', description: 'Review with clients: redeploy or dispose', link: '/pages/stock/fees.html' },
 
     // Procurement
     { section: 'procurement', when: OPS_GROUP, category: 'PENDING_APPROVAL', title: '31 POs need prepayment', description: 'Orders awaiting payment before vendor placement', link: '/pages/orders/board.html?status=attention' },
-    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at hub 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/orders/order.html?id=ORD-30398' },
+    { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ORD-30398 held at customs', description: 'Acme Tech · received at warehouse 5d 7h overdue · broker needs the commercial invoice re-issued with HS codes', link: '/pages/orders/order.html?id=ORD-30398' },
     { section: 'procurement', requires: 'purchase_orders', category: 'URGENT', title: 'ONB-1188: vendor backorder on the 14" model', description: 'FinanceExperts · confirm the 16" substitute with the client', link: '/pages/services/onboarding.html' },
-    { section: 'procurement', requires: 'purchase_orders', category: 'NEEDS_ATTENTION', title: '2 joiners need devices ordered this week', description: 'No stock in the client hub · Priya Nair (Acme Tech, 26 Oct) · Daniel Okafor (TechGlobal, 28 Oct)', link: '/pages/people/joiners.html' },
+    { section: 'procurement', requires: 'purchase_orders', category: 'NEEDS_ATTENTION', title: '2 joiners need devices ordered this week', description: 'No stock in the client warehouse · Priya Nair (Acme Tech, 26 Oct) · Daniel Okafor (TechGlobal, 28 Oct)', link: '/pages/people/joiners.html' },
     { section: 'procurement', requires: 'purchase_orders', when: user => !user.can('stock'), category: 'NEEDS_ATTENTION', title: '3 restock proposals to quote', description: 'Thresholds below minimum · 1 more awaiting client approval', link: '/pages/stock/restock.html' },
     { section: 'procurement', requires: 'purchase_orders', when: user => !user.can(null, CS_LEAD), category: 'NEEDS_ATTENTION', title: '1 client over procurement cap', description: 'Orders above the cap need client approval · 3 more near cap', link: '/pages/clients/caps.html' },
 
@@ -540,7 +540,7 @@ window.DashboardWidgets = (() => {
     { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5538: laptop won’t boot after update', description: 'TechGlobal · Sarah Kim · urgent · unassigned · first response due in 18m', link: SUPPORT },
     { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5517 resolution 2h 15m overdue', description: 'TechGlobal · screen flicker · blocked on a part with Kelvin Tan', link: SUPPORT },
     { section: 'it_euc', requires: 'support', when: itView, category: 'URGENT', title: 'SUP-5521: 52m left to resolve', description: 'Acme Tech · VPN drops every 20 minutes · profile reissued, confirm with the user', link: '/pages/support/ticket.html' },
-    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1186: finish Jamf enrolment', description: 'Acme Tech · Sophie Tan started 19 Oct · device at Singapore Hub', link: '/pages/services/onboarding-detail.html?id=ONB-1186' },
+    { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1186: finish Jamf enrolment', description: 'Acme Tech · Sophie Tan started 19 Oct · device at Singapore Warehouse', link: '/pages/services/onboarding-detail.html?id=ONB-1186' },
     { section: 'it_euc', requires: 'onboarding', when: itView, category: 'NEEDS_ATTENTION', title: 'ONB-1179: get setup sign-off', description: 'MediaWorks · Mei Lin Tan · delivered, waiting on the employee', link: '/pages/services/onboarding.html' },
     { section: 'it_euc', requires: 'support', when: itView, category: 'UPCOMING', title: '2 tickets waiting on the client', description: 'SUP-5509 confirm fix (1d) · SUP-5503 cost approval (2d)', link: SUPPORT },
 
@@ -1528,7 +1528,7 @@ window.DashboardWidgets = (() => {
     { label: 'Awaiting approval', n: 5 },
     { label: 'PO to place', n: 4, state: 'warn' },
     { label: 'With vendor', n: 26 },
-    { label: 'Arriving at hub', n: 3 }
+    { label: 'Arriving at warehouse', n: 3 }
   ];
   const WAITING_ON_VENDORS = [
     { id: 'ORD-30398', client: 'Acme Tech', cc: 'SG', state: 'bad', status: '5d 7h overdue', note: 'Customs hold: missing import permit', link: '/pages/orders/order.html?id=ORD-30398' },
@@ -1578,7 +1578,7 @@ window.DashboardWidgets = (() => {
     { vendor: 'Courier X', type: 'Courier', countries: ['SG', 'MY', 'AU'], metric: 'Deliveries on time 91% · pickups 94%', vsTarget: 'AU last mile 3.4d vs 2–3d', state: 'warn', link: '/pages/vendors/detail.html' },
     { vendor: 'DHL Express', type: 'Courier', countries: ['GB'], metric: 'Last mile 2–3d', vsTarget: 'Integration failing', state: 'bad', link: '/pages/vendors/list.html' },
     { vendor: 'FedEx', type: 'Courier', countries: ['US'], metric: 'Last mile 2–4d · 21 jobs', vsTarget: 'Within target', state: 'ok', link: '/pages/vendors/list.html' },
-    { vendor: 'Hub SG Logistics', type: '3PL', countries: ['SG'], metric: '38 jobs · integration healthy', vsTarget: 'Within target', state: 'ok', link: '/pages/warehouses/list.html' },
+    { vendor: 'SG Logistics', type: '3PL', countries: ['SG'], metric: '38 jobs · integration healthy', vsTarget: 'Within target', state: 'ok', link: '/pages/warehouses/list.html' },
     { vendor: 'Kerry Logistics', type: '3PL', countries: ['MY', 'AU'], metric: '17 jobs · portal only', vsTarget: 'Within target', state: 'ok', link: '/pages/warehouses/list.html' },
     { vendor: 'FixPoint London', type: 'Repair', countries: ['GB'], metric: 'Turnaround 4.8d · 9 jobs', vsTarget: 'Within 5d target', state: 'ok', link: '/pages/services/repairs.html' },
     { vendor: 'iFix Kuala Lumpur', type: 'Repair', countries: ['MY'], metric: 'Turnaround 5.6d · 2 quotes this month', vsTarget: 'Within 7d target', state: 'ok', link: '/pages/services/repair-quotes.html' },
@@ -1720,7 +1720,7 @@ window.DashboardWidgets = (() => {
     { vendor: 'DHL Express', type: 'Courier', method: 'Integration', state: 'bad', last: 'Failing · manual updates', jobs: 46, link: '/pages/vendors/list.html' },
     { vendor: 'Courier X', type: 'Courier', method: 'Both', state: 'ok', last: '4 min ago', jobs: 38, link: '/pages/vendors/access.html' },
     { vendor: 'FedEx', type: 'Courier', method: 'Integration', state: 'ok', last: '6 min ago', jobs: 21, link: '/pages/vendors/list.html' },
-    { vendor: 'Hub SG Logistics', type: '3PL', method: 'Both', state: 'ok', last: '12 min ago', jobs: 38, link: '/pages/warehouses/list.html' },
+    { vendor: 'SG Logistics', type: '3PL', method: 'Both', state: 'ok', last: '12 min ago', jobs: 38, link: '/pages/warehouses/list.html' },
     { vendor: 'Kerry Logistics', type: '3PL', method: 'Portal', state: 'warn', last: 'Portal · updated 2h ago', jobs: 17, link: '/pages/warehouses/list.html' },
     { vendor: 'FixPoint London', type: 'Repair', method: 'Portal', state: 'warn', last: 'Portal · updated yesterday', jobs: 9, link: '/pages/vendors/list.html' },
     { vendor: 'GreenCycle ITAD', type: 'ITAD', method: 'Portal', state: 'warn', last: 'On hold', jobs: 5, link: '/pages/vendors/list.html' }
@@ -1812,7 +1812,7 @@ window.DashboardWidgets = (() => {
                 <td>${flagOf(o.cc)} ${o.client}</td>
                 <td><span class="oms-why">${o.why}</span></td>
                 <td>${o.stage}</td>
-                <td class="${/ops|Hub/.test(o.waiting) ? 'muted' : 'is-warn'}">${o.waiting}</td>
+                <td class="${/ops|Warehouse/.test(o.waiting) ? 'muted' : 'is-warn'}">${o.waiting}</td>
                 <td class="muted">${o.owner}</td>
                 <td class="num ${o.state === 'bad' ? 'is-bad' : 'is-warn'}">${o.due}</td>
               </tr>`).join('')}
@@ -2089,7 +2089,7 @@ window.DashboardWidgets = (() => {
   ];
   // Device work due this week, from the Onboarding and Offboarding boards
   const DEVICE_WORK = [
-    { when: 'Now', kind: 'Provision', id: 'ONB-1186', person: 'Sophie Tan', client: 'Acme Tech', task: 'Jamf enrolment at Singapore Hub', state: 'bad' },
+    { when: 'Now', kind: 'Provision', id: 'ONB-1186', person: 'Sophie Tan', client: 'Acme Tech', task: 'Jamf enrolment at Singapore Warehouse', state: 'bad' },
     { when: 'Today', kind: 'Ship', id: 'ONB-1185', person: 'Ryan Cooper', client: 'CloudSystems', task: 'Intune applied · courier pickup this afternoon', state: 'bad' },
     { when: 'Mon', kind: 'Ship', id: 'ONB-1190', person: 'Hannah Lee', client: 'TechGlobal Inc', task: 'Kit packed · label created', state: 'warn' },
     { when: 'Today', kind: 'Sign-off', id: 'ONB-1179', person: 'Mei Lin Tan', client: 'MediaWorks', task: 'Confirm setup with the employee', state: 'warn' },

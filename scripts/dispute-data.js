@@ -14,7 +14,7 @@ const DISPUTES = [
     reason: 'We were billed for retrieving a monitor from Jordan Blake, but the courier never collected it. Jordan still has it at home.',
     notes: [
       { at: '2026-10-09 10:20', by: 'CS · Aisha', text: 'Courier X shows a return label created but no pickup scan.' },
-      { at: '2026-10-14 16:05', by: 'Ops · Mike', text: 'Not received at US East Hub. Charge was triggered by label creation, not receipt. Our error.' }
+      { at: '2026-10-14 16:05', by: 'Ops · Mike', text: 'Not received at US East Warehouse. Charge was triggered by label creation, not receipt. Our error.' }
     ],
     creditNote: 'CN-2026-0044' },
   { id: 'DIS-0033', client: 'digital', invoice: 'INV-2026-0921', wo: 'REP-0401', raised: '2026-10-13', raisedBy: 'Hannah Clarke', status: 'open', owner: '',
@@ -45,4 +45,3 @@ const disputeForLedger = entry => DISPUTES.find(d => {
   return line && line.ledger === entry.id;
 });
 const canRaiseDispute = entry => entry.status === 'invoiced' && entry.kind !== 'reversal' && !entry.credited && !entry.reversedBy && !disputeForLedger(entry);
-

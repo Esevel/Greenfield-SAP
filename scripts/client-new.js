@@ -9,7 +9,7 @@
   const $ = id => document.getElementById(id);
   const STEPS = [
     { id: 'company', label: 'Company and owner' },
-    { id: 'countries', label: 'Countries and hubs' },
+    { id: 'countries', label: 'Countries and warehouses' },
     { id: 'entities', label: 'Billing entities' },
     { id: 'plan', label: 'Plan and subscription' },
     { id: 'pricing', label: 'Pricing and fees' },
@@ -134,14 +134,14 @@
       const hubs = hubsIn(cc);
       return `<tr class="${on ? '' : 'row-muted'}">
         <td><label class="sla-check"><input type="checkbox" data-cc="${cc}" ${on ? 'checked' : ''}> ${ccLabel(cc)}</label></td>
-        <td>${on ? `<select class="form-select" data-hub="${cc}" aria-label="Hub in ${WH_COUNTRIES[cc][1]}">${hubs.map(w => opt(w.id, w.name, d.hubs[cc])).join('')}${opt('none', 'No hub · stock stays at client sites', d.hubs[cc])}</select>` : '<span class="text-muted">Not active</span>'}</td>
+        <td>${on ? `<select class="form-select" data-hub="${cc}" aria-label="Warehouse in ${WH_COUNTRIES[cc][1]}">${hubs.map(w => opt(w.id, w.name, d.hubs[cc])).join('')}${opt('none', 'No warehouse · stock stays at client sites', d.hubs[cc])}</select>` : '<span class="text-muted">Not active</span>'}</td>
         <td class="text-muted">${COUNTRY_CURRENCY[cc]} · standard fees from ${escapeHtml(standardFeeVersion(cc).note)}</td>
       </tr>`;
     }).join('');
-    return `<p class="text-muted cn-intro">Where the client has employees. Each country gets lifecycle fees in its local currency and, optionally, an Esevel hub for storage and deployment.</p>
-      <table class="device-list-table"><thead><tr><th>Country</th><th>Hub</th><th>Pricing</th></tr></thead><tbody>${rows}</tbody></table>
+    return `<p class="text-muted cn-intro">Where the client has employees. Each country gets lifecycle fees in its local currency and, optionally, an Esevel warehouse for storage and deployment.</p>
+      <table class="device-list-table"><thead><tr><th>Country</th><th>Warehouse</th><th>Pricing</th></tr></thead><tbody>${rows}</tbody></table>
       ${err('countries')}
-      <div class="readonly-note">Hubs can be changed later in <a href="/pages/warehouses/assignments.html">Warehouses › Hub assignments</a>. Countries are contract terms and change through an amendment.</div>`;
+      <div class="readonly-note">Warehouses can be changed later in <a href="/pages/warehouses/assignments.html">Warehouses › Warehouse assignments</a>. Countries are contract terms and change through an amendment.</div>`;
   }
 
   function entitiesHtml() {
@@ -299,10 +299,10 @@
       last = r.section;
       return `${head}<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.text)}</td></tr>`;
     }).join('');
-    const hubs = countries().map(cc => `${ccLabel(cc)} → ${d.hubs[cc] === 'none' ? 'no hub (client sites)' : escapeHtml(WAREHOUSES.find(w => w.id === d.hubs[cc]).name)}`).join(' · ');
+    const hubs = countries().map(cc => `${ccLabel(cc)} → ${d.hubs[cc] === 'none' ? 'no warehouse (client sites)' : escapeHtml(WAREHOUSES.find(w => w.id === d.hubs[cc]).name)}`).join(' · ');
     return `<div class="cn-review-head">
         <div class="client-cell"><div class="client-logo">${escapeHtml(d.logo)}</div><div><strong>${escapeHtml(d.name)}</strong><div class="stock-sub">${d.tier} · ${billingDate(d.start)} – ${billingDate(endDate())}${isSeatPlan(d.tier) ? (d.autoRenew ? ', auto-renews' : ', no auto-renew') : ''} · owner ${escapeHtml(d.admin)} (${escapeHtml(d.adminEmail)})</div></div></div>
-        <div class="stock-sub cn-mt">Hubs: ${hubs}</div>
+        <div class="stock-sub cn-mt">Warehouses: ${hubs}</div>
       </div>
       <table class="table doc-table compare-table cn-mt"><thead><tr><th>Term</th><th>v1 (initial contract)</th></tr></thead><tbody>${rows}</tbody></table>
       <div class="readonly-note">Fees not listed are at the Settings standard.</div>

@@ -217,7 +217,7 @@
             const rows = RECEIVING.filter(r => r.wo === wo && r.status === 'expected');
             rows.forEach(r => { r.status = 'arrived'; });
             saveBilling();
-            note(`${e.ref} matched to ${wo}. ${rows.length ? `${rows.length} device${rows.length > 1 ? 's' : ''} marked arrived in Receiving` : 'Devices already at the hub'}; retrieval is charged per device at intake.`);
+            note(`${e.ref} matched to ${wo}. ${rows.length ? `${rows.length} device${rows.length > 1 ? 's' : ''} marked arrived in Receiving` : 'Devices already at the warehouse'}; retrieval is charged per device at intake.`);
           } else {
             const log = completeStep({ wo, step: e.step, source: `Sync inbox · ${SYNC_SOURCES[e.source]} · ${e.ref}`, doc: e.doc, cc: e.cc, client: e.client });
             note(`${e.ref} matched to ${wo}. ${e.step} completed. ${postingSummary(log)}.`);

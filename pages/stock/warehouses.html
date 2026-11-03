@@ -93,7 +93,7 @@
           </table></td></tr>` : `<tr class="expanded-content-row"><td colspan="7"><div class="text-muted" style="padding: var(--space-sm);">No stock recorded in this warehouse.</div></td></tr>`;
           return `<tr class="stock-warehouse-row ${open ? 'open' : ''}" data-warehouse="${warehouse.id}" tabindex="0" aria-expanded="${open}">
             <td><button type="button" class="expand-button" aria-label="${open ? 'Hide' : 'Show'} stock for ${escapeHtml(warehouse.name)}">${open ? '▼' : '▶'}</button> <strong>${escapeHtml(warehouse.name)}</strong></td>
-            <td>${isHub(warehouse) ? '<span class="tag tag-loc-hub">Esevel hub</span>' : '<span class="tag tag-loc-site">Client site</span>'}</td>
+            <td>${isHub(warehouse) ? '            <span class="tag tag-loc-hub">Esevel warehouse</span>' : '<span class="tag tag-loc-site">Client site</span>'}</td>
             <td><span class="flag">${WH_COUNTRIES[warehouse.country][0]}</span> ${WH_COUNTRIES[warehouse.country][1]}</td>
             <td class="num">${new Set(stock.map(line => line.client)).size}</td>
             <td class="num">${units}</td><td class="num">${reserved}</td><td class="num"><strong>${available}</strong></td>

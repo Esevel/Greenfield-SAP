@@ -29,11 +29,11 @@ Every row below also includes People (joiners, leavers) and Integrations.
 | Nalene | Tickets this quarter · Avg first response · Avg resolution · Contracts needing attention · September service reports · Open breaches across clients. Plus Client portfolio, Contracts timeline, Joiners & leavers, My team | — (portfolio instead) | — |
 | Thiva | Tickets this quarter · Avg first response · Avg resolution · Contracts needing attention · Joiners · Leavers, SMB clients only | — | — |
 | Kirthinni | Hardware delivery on time · Courier deliveries on time · Repair partner turnaround · Disposal certificates on time · Service gaps · Vendor contracts renewing. Plus Country coverage, Vendor contracts and Vendor performance. No People or Integrations. | — | — |
-| Siti | Work orders opened · completed · Within SLA · Deliveries this quarter · Delivered on time · Avg hub prep to dispatch | ✓ | — |
+| Siti | Work orders opened · completed · Within SLA · Deliveries this quarter · Delivered on time · Avg warehouse prep to dispatch | ✓ | — |
 | Vinh | Open · New · In progress · Blocked · Delivered, awaiting sign-off · Completed this week. Plus Order fulfillment pipeline, Partner status updates, Priority orders | Pipeline instead | — |
 | Natasa, Yosefin | Vendor orders this quarter · POs to place · Late at vendor delivery · Partial deliveries · Restock proposals · Clients over / near cap. Plus Waiting on vendors and Suppliers on my orders. No People or Integrations. | — | — |
 | Karen | Tickets this quarter · Avg first response · Avg resolution · Reopened tickets · Repair turnaround · Onboarding set up on time. Plus Support volume and speed chart, SLA by service, ticket categories, team workload, devices and onboarding trends | — | — |
-| Justin | Tickets this quarter · Avg first response · Avg resolution · Deliveries this quarter · Delivered on time · Avg hub prep to dispatch | — | — |
+| Justin | Tickets this quarter · Avg first response · Avg resolution · Deliveries this quarter · Delivered on time · Avg warehouse prep to dispatch | — | — |
 | Pooja | Revenue this quarter (≈ SGD) · Gross margin · Outstanding invoices (≈ SGD) · Unbilled charges (≈ SGD) · Overdue invoices · Billing items to review. No By area cards. | — | ✓ with SGD equivalents and margins |
 | Roehl, Jericho, Cassandra, Jerome | Unassigned tickets · Breached or at risk · Open tickets · Repairs in flight · Resolved this week · First response in target. Plus Support queue, Repairs in flight, Device work this week | — | — |
 

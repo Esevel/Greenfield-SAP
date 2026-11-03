@@ -244,12 +244,11 @@ npm run preview   # Preview production build
 ## Known Limitations
 
 This is a **prototype**, not a production application:
-- No real authentication or authorization
-- No API calls or data fetching
-- No form validation or submission
-- No state persistence
-- Interactions are demonstrative only
-- Data is static and hardcoded
+- Sign-in and role/access checks are implemented client-side for demonstration; they do not provide production authentication or server-enforced authorization.
+- There is no business-data API or backend. Pages may fetch shared HTML templates, and domain data is primarily seeded in browser-side JavaScript.
+- Some forms validate inputs or update demo state, but they do not submit authoritative business transactions.
+- Selected state, including the demo session and some workflow or role changes, can persist in browser `localStorage`; it is not shared or durable application storage.
+- Interactions and calculations demonstrate prototype behavior and must not be treated as operational records.
 
 ---
 

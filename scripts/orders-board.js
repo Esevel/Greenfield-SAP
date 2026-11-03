@@ -60,7 +60,7 @@
     const by = key => list.filter(o => laneOf(o) === key);
     const sg = SLA_DEFAULTS.regular.SG;
     let html = column('paused', '⏸ SLA paused', 'Clock stopped', by('paused'), 'board-column-paused');
-    html += STAGES.map((m, i) => column(m.key, m.label, `${m.hubOnly ? 'Via hub only · ' : ''}SG standard ${sg[i]}h`, by(m.key))).join('');
+    html += STAGES.map((m, i) => column(m.key, m.label, `${m.hubOnly ? 'Via warehouse only · ' : ''}SG standard ${sg[i]}h`, by(m.key))).join('');
     if (['all', 'cancelled', 'delivered'].includes(f.status)) {
       if (f.status !== 'cancelled') html += column('done', 'Delivered', '', by('done'), 'board-column-done');
       html += column('cancelled', 'Cancelled', '', by('cancelled'), 'board-column-done');

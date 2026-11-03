@@ -95,6 +95,7 @@
                       <button class="segment-button active" data-value="active">Active</button>
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -106,24 +107,6 @@
                   <div class="form-group">
                     <label class="form-label">Processor</label>
                     <input type="text" class="form-input" value="Apple M3 (8-core CPU, 10-core GPU)">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Memory</label>
-                    <select class="form-select">
-                      <option>8 GB</option>
-                      <option selected>16 GB</option>
-                      <option>24 GB</option>
-                      <option>36 GB</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Storage</label>
-                    <select class="form-select">
-                      <option>256 GB SSD</option>
-                      <option selected>512 GB SSD</option>
-                      <option>1 TB SSD</option>
-                      <option>2 TB SSD</option>
-                    </select>
                   </div>
                   <div class="form-group">
                     <label class="form-label">Display</label>
@@ -164,6 +147,40 @@
                 </div>
               </div>
             </div>
+
+            <section class="card mt-lg spec-options-card">
+                  <div class="card-header">
+                    <div>
+                      <h3 class="card-title">Spec options</h3>
+                      <div class="text-muted">9 combinations · 8 valid</div>
+                    </div>
+                    <span class="badge badge-success badge-sm">Default: 16 GB · 512 GB</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="spec-option-groups">
+                      <div>
+                        <div class="detail-label">RAM</div>
+                        <div class="spec-option-chips"><span>8 GB</span><span class="is-default">16 GB · Default</span><span>24 GB</span></div>
+                      </div>
+                      <div>
+                        <div class="detail-label">Storage</div>
+                        <div class="spec-option-chips"><span class="is-default">512 GB · Default</span><span>1 TB</span><span>2 TB</span></div>
+                      </div>
+                    </div>
+                    <div class="spec-matrix-wrap">
+                      <table class="table spec-matrix">
+                        <caption>Configuration validity · ticks are supported options; dash is not supported</caption>
+                        <thead><tr><th>RAM / Storage</th><th>512 GB</th><th>1 TB</th><th>2 TB</th></tr></thead>
+                        <tbody>
+                          <tr><th>8 GB</th><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-invalid" aria-label="Invalid">—</span></td></tr>
+                          <tr><th>16 GB</th><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-valid" aria-label="Valid">✓</span></td></tr>
+                          <tr><th>24 GB</th><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-valid" aria-label="Valid">✓</span></td><td><span class="spec-valid" aria-label="Valid">✓</span></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="readonly-note">8 GB / 2 TB is not a supported configuration. A valid specification combination may still need a country-specific vendor mapping and approved price before it can be offered.</div>
+                  </div>
+            </section>
           </div>
           
           <!-- Right Column: Image & Summary -->

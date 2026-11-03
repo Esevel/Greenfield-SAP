@@ -12,7 +12,7 @@ const INVOICE_STATE = {
   cancelled: ['Cancelled', 'badge-muted']
 };
 const CREDIT_STATE = { draft: ['Awaiting approval', 'badge-warning'], issued: ['Issued · not applied', 'badge-info'], applied: ['Applied', 'badge-success'] };
-const DEFAULT_STEP = { deployment: 'Delivered', retrieval: 'Received at hub', storage: 'Monthly accrual', redeployment: 'Delivered', repair: 'Repaired', disposal: 'Certificate issued', managed: 'Monthly snapshot' };
+const DEFAULT_STEP = { deployment: 'Delivered', retrieval: 'Received at warehouse', storage: 'Monthly accrual', redeployment: 'Delivered', repair: 'Repaired', disposal: 'Certificate issued', managed: 'Monthly snapshot' };
 
 const invAddDays = (iso, n) => { const [y, m, d] = iso.split('-').map(Number); const t = new Date(y, m - 1, d + n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
 const round2 = v => Math.round(v * 100) / 100;
@@ -44,7 +44,7 @@ const ledgerLine = e => ({ kind: e.kind, event: e.event, cc: e.cc, wo: e.wo, ass
         L('acme', 'retrieval', 'SG', 'OFF-2031', 'C02XK3501A · MacBook Pro 14" M3', { recipient: 'Daniel Ho', costCentre: 'CC-4410 Platform Eng', doc: 'Intake · 3 photos' }),
         L('acme', 'deployment', 'SG', 'ONB-1150', 'C02XK3611B · MacBook Pro 14" M3', { recipient: 'Kai Tan', costCentre: 'CC-4410 Platform Eng', doc: 'POD-CX-88301772.pdf' }),
         L('acme', 'deployment', 'SG', 'ONB-1152', 'FVFHG3620A · MacBook Air 13" M2', { recipient: 'Ivy Chen', costCentre: 'CC-2100 Sales', doc: 'POD-CX-88302010.pdf' }),
-        L('acme', 'storage', 'SG', 'Storage', 'Singapore Hub · Sep 2026', { qty: 492, step: 'Sep 2026 · 492 device-days', doc: 'Daily hub snapshots 1–30 Sep' })
+        L('acme', 'storage', 'SG', 'Storage', 'Singapore Warehouse · Sep 2026', { qty: 492, step: 'Sep 2026 · 492 device-days', doc: 'Daily warehouse snapshots 1–30 Sep' })
       ] },
     { id: 'INV-2026-0913', client: 'acme', entity: 'e2', period: 'Sep 2026', issued: '2026-10-01', status: 'issued',
       lines: [
@@ -62,7 +62,7 @@ const ledgerLine = e => ({ kind: e.kind, event: e.event, cc: e.cc, wo: e.wo, ass
     { id: 'INV-2026-0919', client: 'techglobal', entity: 'e2', period: 'Sep 2026', issued: '2026-10-01', status: 'issued', po: 'PO-TG-9077', payments: [{ ...pay('2026-10-12', 'JPM WIRE 55871', 'Finance · Marcus'), partial: 150 }],
       lines: [
         L('techglobal', 'deployment', 'SG', 'ONB-1158', 'C02XK3990D · MacBook Pro 14" M3', { recipient: 'Lee Jun Hao', po: 'PO-TG-9077', doc: 'POD-CX-88320991.pdf' }),
-        L('techglobal', 'storage', 'SG', 'Storage', 'Singapore Hub · Sep 2026', { qty: 180, po: 'PO-TG-9077', step: 'Sep 2026 · 180 device-days', doc: 'Daily hub snapshots 1–30 Sep' }),
+        L('techglobal', 'storage', 'SG', 'Storage', 'Singapore Warehouse · Sep 2026', { qty: 180, po: 'PO-TG-9077', step: 'Sep 2026 · 180 device-days', doc: 'Daily warehouse snapshots 1–30 Sep' }),
         L('techglobal', 'managed', 'SG', 'Billable users', '60 billable users', { qty: 60, po: 'PO-TG-9077', step: 'Sep 2026 snapshot', doc: 'Snapshot MU-TECH-2026-09 (locked)' })
       ] },
     { id: 'INV-2026-0921', client: 'digital', entity: 'e1', period: 'Sep 2026', issued: '2026-10-02', status: 'issued',

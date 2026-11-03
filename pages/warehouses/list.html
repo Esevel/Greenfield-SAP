@@ -29,7 +29,7 @@
         
         <nav class="tab-strip">
           <a href="/pages/warehouses/list.html" class="tab-link active">Warehouses</a>
-          <a href="/pages/warehouses/assignments.html" class="tab-link">Hub assignments</a>
+          <a href="/pages/warehouses/assignments.html" class="tab-link">Warehouse assignments</a>
         </nav>
         
         <div class="asset-toolbar">
@@ -38,7 +38,7 @@
               <button class="dropdown-toggle filter-chip">Type <span class="filter-chip-caret">▼</span></button>
               <div class="dropdown-menu">
                 <a href="#" class="dropdown-menu-item">All types</a>
-                <a href="#" class="dropdown-menu-item">Esevel-managed hub</a>
+                <a href="#" class="dropdown-menu-item">Esevel-managed warehouse</a>
                 <a href="#" class="dropdown-menu-item">Client-owned location</a>
               </div>
             </div>
@@ -110,7 +110,7 @@
       <div class="form-group">
         <span class="form-label">Type</span>
         <div class="segmented-control" id="whType">
-          <button type="button" class="segment-button" data-type="esevel">Esevel-managed hub</button>
+          <button type="button" class="segment-button" data-type="esevel">Esevel-managed warehouse</button>
           <button type="button" class="segment-button" data-type="client">Client-owned location</button>
         </div>
         <div class="input-helper" id="whTypeNote"></div>
@@ -157,7 +157,7 @@
       <div class="form-group" id="whBufferGroup">
         <label class="form-label" for="whBuffer">Dispatch buffer (business days)</label>
         <input type="number" class="form-input" id="whBuffer" min="0" max="10" step="1" style="width: 100px;">
-        <div class="input-helper">Added to checkout estimates for orders shipping from this hub, after vendor arrival or stock reservation.</div>
+        <div class="input-helper">Added to checkout estimates for orders shipping from this warehouse, after vendor arrival or stock reservation.</div>
       </div>
       
       <div class="form-group">

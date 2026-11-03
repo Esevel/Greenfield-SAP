@@ -398,7 +398,7 @@ function initClientDetail() {
         <span class="toggle-switch"><input type="checkbox" id="cdSplitShip" ${SLA_SPLIT_DELIVERY[client.id] ? 'checked' : ''}><span class="toggle-slider"></span></span>
         <span>Allow split shipments</span>
       </label>
-      <div class="input-helper">Off: each kit ships complete once everything reaches the hub. On: ready items ship separately (extra courier cost). Ops setting; changes apply immediately and don't create a contract version.</div>`;
+      <div class="input-helper">Off: each kit ships complete once everything reaches the warehouse. On: ready items ship separately (extra courier cost). Ops setting; changes apply immediately and don't create a contract version.</div>`;
   }
 
   function renderHeader() {
@@ -669,7 +669,7 @@ function initClientDetail() {
       note('Draft discarded.');
       show(activeVersion(k).v);
     } else if (id === 'cdDeleteClient') {
-      if (!confirm(`Delete ${client.name}? The draft contract and hub assignments are removed.`)) return;
+      if (!confirm(`Delete ${client.name}? The draft contract and warehouse assignments are removed.`)) return;
       delete CONTRACTS[client.id];
       delete HUB_ASSIGNMENTS[client.id];
       WH_CLIENTS.splice(WH_CLIENTS.indexOf(client), 1);

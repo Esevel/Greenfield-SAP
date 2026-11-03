@@ -25,7 +25,7 @@
             <div class="flex gap-md">
               <button class="btn btn-secondary">Import</button>
               <button class="btn btn-secondary">Export</button>
-              <button class="btn btn-primary">Add model</button>
+              <button class="btn btn-primary" id="addModelButton" type="button">Add model</button>
             </div>
           </div>
         </div>
@@ -142,6 +142,7 @@
                 <th class="col-brand">Brand</th>
                 <th class="col-category">Category</th>
                 <th class="col-specs">Key specs</th>
+                <th>Spec options</th>
                 <th class="col-countries">Countries live</th>
                 <th class="col-stock">Client stock</th>
                 <th class="col-status">Status</th>
@@ -165,7 +166,8 @@
                 </td>
                 <td>Apple</td>
                 <td>Laptops</td>
-                <td class="text-muted">M3 · 16GB · 512GB</td>
+                <td class="text-muted">M3</td>
+                <td><span class="spec-options-count">9 combinations · 8 valid</span></td>
                 <td>4 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 8 · at client sites 4">12</span>
@@ -191,6 +193,7 @@
                 <td>Dell</td>
                 <td>Laptops</td>
                 <td class="text-muted">i7-13700H · 32GB · 1TB</td>
+                <td>—</td>
                 <td>7 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 24 · at client sites 12">36</span>
@@ -219,6 +222,7 @@
                 <td>Lenovo</td>
                 <td>Laptops</td>
                 <td class="text-muted">i7-1355U · 16GB · 512GB</td>
+                <td>—</td>
                 <td>5 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 18 · at client sites 9">27</span>
@@ -244,6 +248,7 @@
                 <td>Dell</td>
                 <td>Monitors</td>
                 <td class="text-muted">4K · IPS · USB-C</td>
+                <td>—</td>
                 <td>6 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 14 · at client sites 6">20</span>
@@ -269,6 +274,7 @@
                 <td>Logitech</td>
                 <td>Accessories</td>
                 <td class="text-muted">Wireless · Backlit · Multi-device</td>
+                <td>—</td>
                 <td>7 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 45 · at client sites 15">60</span>
@@ -294,6 +300,7 @@
                 <td>Apple</td>
                 <td>Laptops</td>
                 <td class="text-muted">M2 · 8GB · 256GB</td>
+                <td>—</td>
                 <td>6 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 32 · at client sites 18">50</span>
@@ -319,6 +326,7 @@
                 <td>Logitech</td>
                 <td>Accessories</td>
                 <td class="text-muted">Wireless · 8K DPI · USB-C</td>
+                <td>—</td>
                 <td>7 / 7</td>
                 <td>
                   <span class="stock-value" data-tooltip="Held for clients · in Esevel hubs 38 · at client sites 22">60</span>
@@ -354,6 +362,100 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="addModelModal" role="dialog" aria-modal="true" aria-labelledby="addModelTitle">
+    <div class="modal add-model-modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="addModelTitle">Add model</h2>
+        <button class="modal-close" type="button" data-add-model-close aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ol class="add-model-steps" aria-label="Model setup steps">
+          <li class="active" data-step-indicator="1">Model</li>
+          <li data-step-indicator="2">Configurations</li>
+          <li data-step-indicator="3">Markets</li>
+          <li data-step-indicator="4">Review</li>
+        </ol>
+        <section class="add-model-step" data-step="1">
+          <p class="text-muted">Create the shared base product identity first. It will remain a draft until its market offers are ready.</p>
+          <div class="form-group">
+            <label class="form-label" for="newModelName">Model name <span class="required">*</span></label>
+            <input class="form-input" id="newModelName" type="text" autocomplete="off" placeholder="e.g. MacBook Pro 14&quot; M3">
+            <div class="form-error" id="newModelNameError" role="alert" hidden>Enter a model name.</div>
+          </div>
+          <div class="add-model-fields">
+            <div class="form-group">
+              <label class="form-label" for="newModelBrand">Brand</label>
+              <select class="form-select" id="newModelBrand">
+                <option value="">Select brand</option>
+                <option>Apple</option><option>Dell</option><option>Lenovo</option><option>Logitech</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newModelCategory">Category</label>
+              <select class="form-select" id="newModelCategory">
+                <option value="">Select category</option>
+                <option>Laptops</option><option>Monitors</option><option>Peripherals</option><option>Accessories</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newModelSpecs">Shared specifications</label>
+            <input class="form-input" id="newModelSpecs" type="text" placeholder="e.g. Apple M3 · 14-inch display">
+            <div class="input-helper">Keep upgradeable options such as RAM and storage for the next step.</div>
+          </div>
+        </section>
+        <section class="add-model-step" data-step="2" hidden>
+          <p class="text-muted">Define selectable specifications once on the base model. Each valid combination becomes a configuration; it is not a separate model.</p>
+          <div class="add-model-fields">
+            <div class="form-group">
+              <label class="form-label" for="newModelRam">RAM options</label>
+              <input class="form-input" id="newModelRam" type="text" placeholder="8 GB, 16 GB, 24 GB">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newModelStorage">Storage options</label>
+              <input class="form-input" id="newModelStorage" type="text" placeholder="512 GB, 1 TB, 2 TB">
+            </div>
+          </div>
+          <div class="add-model-fields">
+            <div class="form-group">
+              <label class="form-label" for="newModelDefaultRam">Default RAM</label>
+              <select class="form-select" id="newModelDefaultRam" disabled><option value="">Add RAM options first</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newModelDefaultStorage">Default storage</label>
+              <select class="form-select" id="newModelDefaultStorage" disabled><option value="">Add storage options first</option></select>
+            </div>
+          </div>
+          <div class="add-model-matrix-heading"><strong>Valid configurations</strong><span id="newModelCombinationCount">Enter options to build the matrix</span></div>
+          <div class="add-model-matrix" id="newModelMatrix"></div>
+          <div class="input-helper">Uncheck unsupported combinations. The default must remain valid.</div>
+        </section>
+        <section class="add-model-step" data-step="3" hidden>
+          <p class="text-muted">Create a country listing only for markets you intend to source and offer the product in. You can also add markets later.</p>
+          <div class="add-model-country-list">
+            <label><input type="checkbox" value="SG" data-model-country> 🇸🇬 Singapore</label>
+            <label><input type="checkbox" value="MY" data-model-country> 🇲🇾 Malaysia</label>
+            <label><input type="checkbox" value="AU" data-model-country> 🇦🇺 Australia</label>
+            <label><input type="checkbox" value="US" data-model-country> 🇺🇸 United States</label>
+            <label><input type="checkbox" value="GB" data-model-country> 🇬🇧 United Kingdom</label>
+          </div>
+          <div class="add-model-note"><strong>Country selection does not invent a vendor offer.</strong> Vendor mappings can be imported from supplier data or added manually per configuration. Each offer needs a vendor SKU, cost, approved local retail, and availability review before it can be published or quoted.</div>
+          <div class="add-model-market-summary" id="newModelMarketSummary">No country listings selected. The model can be set up without markets and configured later.</div>
+        </section>
+        <section class="add-model-step" data-step="4" hidden>
+          <p class="text-muted">Review what this setup would create. This preview does not save or publish anything.</p>
+          <div class="add-model-review" id="newModelReview"></div>
+          <div class="add-model-note">After a real draft is saved, configure supplier mappings and local pricing under Country listings. Client catalogues are assigned separately; inventory comes from stock records.</div>
+        </section>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-add-model-close>Cancel</button>
+        <button class="btn btn-secondary" id="addModelBack" type="button" hidden>Back</button>
+        <button class="btn btn-primary" id="addModelNext" type="button">Continue</button>
+      </div>
+    </div>
   </div>
   
   <script src="/scripts/navigation.js"></script>

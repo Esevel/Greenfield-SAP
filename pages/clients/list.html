@@ -185,7 +185,7 @@
         $('qsDefaults').innerHTML = [
           `Starts today (${fmt(SUB_TODAY)}), expires ${fmt(qsEnd())}, auto-renews`,
           `${QS_SEATS} seats on ${tier}${PLANS[tier].free ? ', no charge' : ` at list price ${fmtAmount(cur, price)} / seat / month (${fmtAmount(cur, price * 12 * QS_SEATS)} / year)`}`,
-          `One billing entity in ${WH_COUNTRIES[cc][1]} (${cur}), standard fees, no hub assigned`,
+          `One billing entity in ${WH_COUNTRIES[cc][1]} (${cur}), standard fees, no warehouse assigned`,
           'Seats, prices, term and entities can be changed afterwards on the client page'
         ].map(x => `<li>${escapeHtml(x)}</li>`).join('');
       }

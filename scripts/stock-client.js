@@ -28,8 +28,8 @@ function initStockClient() {
     $('scTiles').innerHTML = [
       tile('In stock', inStock, `${sum(stockNew)} new · ${sum(l => l.used)} used`),
       tile('Available', inStock - sum(l => l.reserved), `${sum(l => l.reserved)} reserved`),
-      tile('Where', `${hub} / ${inStock - hub}`, 'In Esevel hubs / at client sites'),
-      tile('Storage / month', Object.keys(fees).length ? feesLabel(fees) : 'None', aged ? `${aged} device${aged === 1 ? '' : 's'} stored 90+ days` : 'Hub stock only', `summary-tile-fees ${aged ? 'summary-tile-alert' : ''}`)
+      tile('Where', `${hub} / ${inStock - hub}`, 'In Esevel warehouses / at client sites'),
+      tile('Storage / month', Object.keys(fees).length ? feesLabel(fees) : 'None', aged ? `${aged} device${aged === 1 ? '' : 's'} stored 90+ days` : 'Warehouse stock only', `summary-tile-fees ${aged ? 'summary-tile-alert' : ''}`)
     ].join('');
   }
 
@@ -80,7 +80,7 @@ function initStockClient() {
     $('scBody').innerHTML = ccs.map(cc => {
       const cl = lines.filter(l => stockLoc(l.loc).country === cc);
       const a = HUB_ASSIGNMENTS[client.id][cc];
-      const hubLabel = typeof a === 'number' ? stockLoc(a).name : a === 'none' ? 'No hub · client sites' : 'Not active';
+      const hubLabel = typeof a === 'number' ? stockLoc(a).name : a === 'none' ? 'No warehouse · client sites' : 'Not active';
       const open = !collapsedCc.has(cc);
       const sum = fn => cl.reduce((s, l) => s + fn(l), 0);
       const head = `<tr class="cc-group-row">

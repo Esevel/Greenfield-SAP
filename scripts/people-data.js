@@ -171,7 +171,7 @@ function joinerRisk(p) {
     const v = supplyVendorsIn(p.cc).sort((a, b) => a.range[1] - b.range[1])[0];
     if (!v) return { name, from: 'No vendor serves this country', range: [99, 99], stock: false };
     const range = hubId ? add(v.range, SUPPLY_PREP, [buffer, buffer], lm) : add(v.range, lm);
-    return { name, from: `${v.name}${hubId ? ' → hub' : ' → direct to employee'}`, range, stock: false };
+    return { name, from: `${v.name}${hubId ? ' → warehouse' : ' → direct to employee'}`, range, stock: false };
   });
 
   const need = items.reduce((w, i) => (i.range[1] > w[1] ? i.range : w), [0, 0]);
@@ -206,7 +206,7 @@ function outcomeDestination(p, outcome) {
   const hub = HUB_ASSIGNMENTS[p.client][p.cc];
   if (typeof hub === 'number') return stockLoc(hub).name;
   const site = WAREHOUSES.find(w => w.type === 'client' && w.country === p.cc && w.client === peopleClientName(p.client));
-  return site ? site.name : 'Client office (no Esevel hub in this country)';
+  return site ? site.name : 'Client office (no Esevel warehouse in this country)';
 }
 
 // Reminder goes out the working day before departure (Fri for a Monday leaver)

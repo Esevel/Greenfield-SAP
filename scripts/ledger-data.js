@@ -40,17 +40,17 @@ function makeCharge(e) {
   add({ at: '2026-10-16 15:42', client: 'acme', cc: 'SG', event: 'deployment', wo: 'ONB-1186', step: 'Delivered', asset: 'C02XK4801A · MacBook Pro 14" M3', recipient: 'Sophie Tan', doc: 'POD-CX-88412093.pdf', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '' });
   add({ at: '2026-10-16 15:42', client: 'acme', cc: 'SG', event: 'deployment', wo: 'ONB-1186', step: 'Delivered', asset: '2241LZ4802B · Logitech MX Master 3S', recipient: 'Sophie Tan', doc: 'POD-CX-88412093.pdf', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '' });
   add({ at: '2026-10-16 14:10', client: 'northwind', cc: 'US', event: 'deployment', wo: 'ONB-1184', step: 'Delivered', asset: '8HJ24810C · Dell XPS 15', recipient: 'Ryan Cooper', doc: 'fedex-7712445900.pdf', entity: 'e1', costCentre: 'IT-200', po: 'PO-NW-55120' });
-  add({ at: '2026-10-15 14:26', client: 'techglobal', cc: 'US', event: 'retrieval', wo: 'OFF-2044', step: 'Received at hub', asset: 'CN-0H8W2K-4740C · Dell UltraSharp U2723QE', recipient: 'Kevin Brooks', doc: 'Intake · 4 photos', entity: 'e1', costCentre: '', po: 'PO-TG-9081' });
-  add({ at: '2026-10-15 14:20', client: 'techglobal', cc: 'US', event: 'retrieval', wo: 'OFF-2044', step: 'Received at hub', asset: 'CN-0H8W2K-4733B · Dell UltraSharp U2723QE', recipient: 'Kevin Brooks', doc: 'Intake · 3 photos', entity: 'e1', costCentre: '', po: 'PO-TG-9081' });
+  add({ at: '2026-10-15 14:26', client: 'techglobal', cc: 'US', event: 'retrieval', wo: 'OFF-2044', step: 'Received at warehouse', asset: 'CN-0H8W2K-4740C · Dell UltraSharp U2723QE', recipient: 'Kevin Brooks', doc: 'Intake · 4 photos', entity: 'e1', costCentre: '', po: 'PO-TG-9081' });
+  add({ at: '2026-10-15 14:20', client: 'techglobal', cc: 'US', event: 'retrieval', wo: 'OFF-2044', step: 'Received at warehouse', asset: 'CN-0H8W2K-4733B · Dell UltraSharp U2723QE', recipient: 'Kevin Brooks', doc: 'Intake · 3 photos', entity: 'e1', costCentre: '', po: 'PO-TG-9081' });
   add({ at: '2026-10-15 10:02', client: 'mediaworks', cc: 'SG', event: 'deployment', wo: 'ONB-1182', step: 'Delivered', asset: 'C02XK4777D · MacBook Pro 16" M3 Max', recipient: 'Arjun Mehta', doc: 'POD-CX-88400117.pdf', entity: 'e1', costCentre: 'Design', po: '' });
   add({ at: '2026-10-14 17:05', client: 'digital', cc: 'AU', event: 'repair', wo: 'REP-0409', step: 'Repaired', asset: 'PF3Q3301B · Lenovo ThinkPad X1 Carbon', recipient: 'Hannah Clarke', doc: 'Repair report RR-0409.pdf', entity: 'e1', costCentre: 'OPS', po: '' });
   add({ at: '2026-10-14 11:30', client: 'acme', cc: 'MY', event: 'redeployment', wo: 'RDP-0391', step: 'Delivered', asset: 'FVFHG4120B · MacBook Air 13" M2', recipient: 'Lim Wei Ling', doc: 'POD-CX-88395002.pdf', entity: 'e2', costCentre: 'MY-Sales', po: '' });
   add({ at: '2026-10-13 16:40', client: 'northwind', cc: 'US', event: 'disposal', wo: 'DSP-0218', step: 'Certificate issued', asset: 'C02TT1180Q · MacBook Pro 13" (2019)', recipient: '—', doc: 'CoD-DSP-0218.pdf', entity: 'e2', costCentre: 'Clinics IT', po: 'PO-NW-55002' });
   add({ at: '2026-10-12 09:00', client: 'finance', cc: 'GB', event: 'deployment', wo: 'ONB-1188', step: 'Delivered', asset: 'C02XK4130G · MacBook Pro 14" M3', recipient: 'Olivia Hart', doc: 'dhl-JD014600007731.pdf', entity: 'e1', costCentre: '', po: '' });
-  // Storage: one charge per device per day, rolled up daily per client × hub
-  add({ at: '2026-10-16 00:05', client: 'acme', cc: 'SG', event: 'storage', qty: 17, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '17 devices · Singapore Hub', recipient: '—', doc: 'Hub stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
-  add({ at: '2026-10-16 00:05', client: 'techglobal', cc: 'US', event: 'storage', qty: 37, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '37 devices · US East Hub', recipient: '—', doc: 'Hub stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
-  add({ at: '2026-10-16 00:05', client: 'mediaworks', cc: 'SG', event: 'storage', qty: 21, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '21 devices · Singapore Hub', recipient: '—', doc: 'Hub stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
+  // Storage: one charge per device per day, rolled up daily per client × warehouse
+  add({ at: '2026-10-16 00:05', client: 'acme', cc: 'SG', event: 'storage', qty: 17, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '17 devices · Singapore Warehouse', recipient: '—', doc: 'Warehouse stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
+  add({ at: '2026-10-16 00:05', client: 'techglobal', cc: 'US', event: 'storage', qty: 37, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '37 devices · US East Warehouse', recipient: '—', doc: 'Warehouse stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
+  add({ at: '2026-10-16 00:05', client: 'mediaworks', cc: 'SG', event: 'storage', qty: 21, wo: 'Storage', step: 'Daily accrual 15 Oct', asset: '21 devices · Singapore Warehouse', recipient: '—', doc: 'Warehouse stock snapshot 15 Oct 23:59', entity: 'e1', costCentre: '', po: '' });
   // Billable users: one charge per billing entity from the locked Sep snapshot, at that entity's rate
   [['acme', 142], ['northwind', 88]].forEach(([client, total]) => Object.entries(muEntitySplit(client, total)).forEach(([entity, qty]) => {
     if (!qty) return;
@@ -61,7 +61,7 @@ function makeCharge(e) {
   // Seat subscriptions: annual fees and pro-rata additions not yet invoiced (since 1 Sep), including approved seat orders
   if (typeof subYearLines === 'function') Object.entries(CONTRACTS).forEach(([id, k]) => { if (k.terms.subscription && k.status !== 'expired' && activeVersion(k)) postSubscriptionDue(id, '2026-09-01', BILLING_TODAY); });
   // Already invoiced
-  add({ at: '2026-09-28 13:15', client: 'acme', cc: 'SG', event: 'retrieval', wo: 'OFF-2031', step: 'Received at hub', asset: 'C02XK3501A · MacBook Pro 14" M3', recipient: 'Daniel Ho', doc: 'Intake · 3 photos', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '', status: 'invoiced', invoice: 'INV-2026-0912' });
+  add({ at: '2026-09-28 13:15', client: 'acme', cc: 'SG', event: 'retrieval', wo: 'OFF-2031', step: 'Received at warehouse', asset: 'C02XK3501A · MacBook Pro 14" M3', recipient: 'Daniel Ho', doc: 'Intake · 3 photos', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '', status: 'invoiced', invoice: 'INV-2026-0912' });
   add({ at: '2026-09-25 10:40', client: 'techglobal', cc: 'US', event: 'deployment', wo: 'ONB-1160', step: 'Delivered', asset: '8HJ24102A · Dell XPS 15', recipient: 'Maya Patel', doc: 'fedex-7712440011.pdf', entity: 'e1', costCentre: '', po: 'PO-TG-9050', status: 'invoiced', invoice: 'INV-2026-0918' });
 
   // Anomaly: duplicate charge for the same step (two POD events)
@@ -75,7 +75,7 @@ function makeCharge(e) {
   add({ at: '2026-10-10 12:00', client: 'acme', cc: 'AU', event: 'deployment', wo: 'ONB-1171', step: 'Delivered', asset: 'C02XK4402F · MacBook Pro 14" M3', recipient: 'Tom Reid', doc: 'POD-CX-88370021.pdf', entity: 'e1', costCentre: 'CC-4410 Platform Eng', po: '' });
   const wrong = LEDGER[LEDGER.length - 1];
   add({ at: '2026-10-11 09:14', client: 'acme', cc: 'AU', event: 'deployment', kind: 'reversal', amount: -wrong.amount, reverses: wrong.id, wo: wrong.wo, step: wrong.step, asset: wrong.asset, recipient: wrong.recipient, doc: wrong.doc, entity: 'e1', costCentre: wrong.costCentre, po: '',
-    reason: 'Charged at AU rate; device shipped from Singapore Hub to SG address', by: 'Billing · Wen' });
+    reason: 'Charged at AU rate; device shipped from Singapore Warehouse to SG address', by: 'Billing · Wen' });
   add({ at: '2026-10-11 09:14', client: 'acme', cc: 'SG', event: 'deployment', kind: 'rebill', replaces: wrong.id, wo: wrong.wo, step: wrong.step, asset: wrong.asset, recipient: wrong.recipient, doc: wrong.doc, entity: 'e1', costCentre: wrong.costCentre, po: '', by: 'Billing · Wen' });
   wrong.reversedBy = LEDGER[LEDGER.length - 2].id;
 

@@ -13,7 +13,7 @@ const HC_COUNTRIES = [
       ['2026-05-27', '2026-05-27', 'public', 'Hari Raya Haji'],
       ['2026-05-31', '2026-06-01', 'public', 'Vesak Day (observed Mon)'],
       ['2026-08-09', '2026-08-10', 'public', 'National Day (observed Mon)'],
-      ['2026-10-23', '2026-10-23', 'adhoc', 'Singapore Hub stocktake', 'Procurement · Country'],
+      ['2026-10-23', '2026-10-23', 'adhoc', 'Singapore Warehouse stocktake', 'Procurement · Country'],
       ['2026-11-08', '2026-11-09', 'public', 'Deepavali (observed Mon)'],
       ['2026-12-24', '2026-12-24', 'adhoc', 'Year-end courier cut-off', 'Both · Country'],
       ['2026-12-25', '2026-12-25', 'public', 'Christmas Day']

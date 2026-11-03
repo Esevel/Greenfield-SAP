@@ -202,7 +202,7 @@ function initAddAsset() {
   });
   $('aaSample').addEventListener('click', e => {
     e.preventDefault();
-    const csv = 'serial,model,category,client,location,assignee,warranty\nC02ZZ1234A,MacBook Pro 14" M3,Laptops,Acme Tech,employee,Jane Tan,2028-03\n2241LZ9999B,Logitech MX Master 3S,Peripherals,Acme Tech,hub,,';
+    const csv = 'serial,model,category,client,location,assignee,warranty\nC02ZZ1234A,MacBook Pro 14" M3,Laptops,Acme Tech,employee,Jane Tan,2028-03\n2241LZ9999B,Logitech MX Master 3S,Peripherals,Acme Tech,warehouse,,';
     const a = Object.assign(document.createElement('a'), { href: `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`, download: 'assets-sample.csv' });
     a.click();
   });
@@ -211,7 +211,7 @@ function initAddAsset() {
 
   function addRow({ serial, model, category, clientName, logo, loc, assignee, warranty }) {
     const wBadge = warranty ? `<span class="badge badge-success badge-sm">Active</span> <span class="text-muted">to ${warranty}</span>` : '<span class="badge badge-muted badge-sm">Unknown</span>';
-    const locHtml = { employee: '<span class="asset-loc loc-employee">With employee</span>', site: '<span class="asset-loc loc-site">Client site</span>', hub: '<span class="asset-loc loc-hub">Esevel hub</span>' }[loc];
+    const locHtml = { employee: '<span class="asset-loc loc-employee">With employee</span>', site: '<span class="asset-loc loc-site">Client site</span>', hub: '<span class="asset-loc loc-hub">Esevel warehouse</span>' }[loc];
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><div class="model-cell">
@@ -258,6 +258,7 @@ function initAddAsset() {
     Object.entries(errors).forEach(([id, show]) => { $(id).hidden = !show; });
     if (Object.values(errors).some(Boolean)) return;
     const warranty = $('aaWarranty').value ? new Date(`${$('aaWarranty').value}-01`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '';
+    const location = cols[idx('location')];
     addRow({
       serial, model: $('aaModel').value, category: document.querySelector('input[name="aaType"]:checked').value,
       clientName: clientSel.options[clientSel.selectedIndex].text, logo: (WH_CLIENTS.find(c => c.id === clientSel.value) || {}).logo || '?',
@@ -286,7 +287,7 @@ function initAddAsset() {
         addRow({
           serial, model: cols[idx('model')] || 'Unknown model', category: cols[idx('category')] || 'Laptops',
           clientName: clientSel.options[clientSel.selectedIndex].text, logo: (WH_CLIENTS.find(c => c.id === clientSel.value) || {}).logo || '?',
-          loc: ['employee', 'site', 'hub'].includes(cols[idx('location')]) ? cols[idx('location')] : 'hub',
+          loc: location === 'warehouse' ? 'hub' : ['employee', 'site', 'hub'].includes(location) ? location : 'hub',
           assignee: cols[idx('assignee')] || '', warranty: cols[idx('warranty')] || ''
         });
         added++;

@@ -94,7 +94,7 @@
               <fieldset class="form-group source-group">
                 <legend class="form-label">Delivery route</legend>
                 <div class="radio-row">
-                  <label class="check-option"><input type="radio" name="onbRoute" value="hub" checked> Via Esevel hub <span class="text-muted" id="onbHubNote"></span></label>
+                  <label class="check-option"><input type="radio" name="onbRoute" value="hub" checked> Via Esevel warehouse <span class="text-muted" id="onbHubNote"></span></label>
                   <label class="check-option"><input type="radio" name="onbRoute" value="direct"> Vendor ships direct to employee</label>
                 </div>
               </fieldset>
@@ -133,7 +133,7 @@
                 <div class="form-group">
                   <label class="form-label" for="offDisposition">After retrieval</label>
                   <select class="form-select" id="offDisposition">
-                    <option value="store" selected>Store at hub</option>
+                    <option value="store" selected>Store at warehouse</option>
                     <option value="redeploy">Hold for redeployment</option>
                     <option value="dispose">Wipe and dispose</option>
                   </select>
@@ -163,7 +163,7 @@
               <fieldset class="form-group source-group">
                 <legend class="form-label">Source</legend>
                 <div class="radio-row">
-                  <label class="check-option"><input type="radio" name="source" value="hub" checked> Esevel hub <span class="text-muted" id="srcHubNote"></span></label>
+                  <label class="check-option"><input type="radio" name="source" value="hub" checked> Esevel warehouse <span class="text-muted" id="srcHubNote"></span></label>
                   <label class="check-option"><input type="radio" name="source" value="site"> Client site</label>
                   <label class="check-option"><input type="radio" name="source" value="employee"> Another employee</label>
                 </div>
@@ -196,7 +196,7 @@
               <div class="readonly-note">Resale steps: partner estimates value from the device details → you confirm with the client → physical assessment → final offer → on acceptance the device is wiped (report + certificate shared) and the vendor pays the client directly. Declined offers are returned; logistics fees are billed to the client at month end. <strong>Laptops and MacBooks only</strong> — peripherals are case by case.</div>
             </div>
             
-            <!-- Loaner: a hub device lent while the employee's device is away -->
+            <!-- Loaner: a warehouse device lent while the employee's device is away -->
             <div id="loanerFields" hidden>
               <div class="form-grid">
                 <div class="form-group">
@@ -222,7 +222,7 @@
                   </select>
                 </div>
               </div>
-              <div class="readonly-note">The loaner ships from the client's assigned hub, subject to stock. It's returned and refurbished when the employee's own device is back.</div>
+              <div class="readonly-note">The loaner ships from the client's assigned warehouse, subject to stock. It's returned and refurbished when the employee's own device is back.</div>
             </div>
             
             <!-- Device setup: on-site or remote setup of a device already with the user -->
@@ -254,11 +254,11 @@
               <div class="readonly-note">Available on Support and Complete plans. Billed per the client's device setup fee.</div>
             </div>
             
-            <!-- Storage / Disposal: destination comes from the assigned hub -->
+            <!-- Storage / Disposal: destination comes from the assigned warehouse -->
             <div class="form-group" id="destBlock">
               <span class="form-label">Destination</span>
               <div class="dest-list" id="destList"></div>
-              <div class="form-error" id="destError" hidden>Some devices have no destination. Assign a hub for that country first.</div>
+              <div class="form-error" id="destError" hidden>Some devices have no destination. Assign a warehouse for that country first.</div>
             </div>
             
             <!-- Redeployment: plan preview -->

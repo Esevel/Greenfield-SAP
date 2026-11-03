@@ -24,8 +24,8 @@ function initThresholdPanel(onChange) {
     $('prCost').textContent = t.unitCost;
     const sup = Object.values(SUPPLY_SUPPLIERS).find(s => s.name === t.vendor);
     const lt = sup && sup.leadTimes[t.country];
-    $('prLead').textContent = lt ? `${supplyRangeLabel(lt)} to hub` : 'Not set on vendor page';
-    $('prHub').textContent = r.hub || 'No assigned hub · client to nominate a site';
+    $('prLead').textContent = lt ? `${supplyRangeLabel(lt)} to warehouse` : 'Not set on vendor page';
+    $('prHub').textContent = r.hub || 'No assigned warehouse · client to nominate a site';
     if (typeof capInfo === 'function') {
       if (!$('prCap')) $('prHub').closest('.info-row').insertAdjacentHTML('afterend', '<div class="info-row"><span class="info-label">Procurement cap</span><span class="info-value" id="prCap"></span></div>');
       const c = capInfo(t.client);

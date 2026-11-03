@@ -1,4 +1,4 @@
-// Shared stock data for all Stock tabs. Every unit belongs to a client; it sits in an Esevel hub or at a client site.
+// Shared stock data for all Stock tabs. Every unit belongs to a client; it sits in an Esevel warehouse or at a client site.
 // Requires hub-data.js (WAREHOUSES, WH_CLIENTS, WH_COUNTRIES, HUB_ASSIGNMENTS).
 
 const STOCK_MODELS = {
@@ -71,7 +71,7 @@ const stockNew = l => l.onHand - l.used;
 
 function locationTag(loc) {
   return isHub(loc)
-    ? '<span class="tag tag-loc-hub">Esevel hub</span>'
+    ? '<span class="tag tag-loc-hub">Esevel warehouse</span>'
     : '<span class="tag tag-loc-site">Client site</span>';
 }
 
@@ -90,7 +90,7 @@ const SERIAL_PREFIX = { mbp14: 'C02XK', air13: 'FVFHG', xps15: '8HJ2', x1c: 'PF3
 const GRADES_USED = ['B', 'A', 'C', 'B', 'D', 'B'];
 const INTAKE_DATES = ['2026-06-02', '2026-07-13', '2026-08-02', '2026-08-29', '2026-09-21', '2026-10-11', '2026-04-09', '2026-01-15'];
 
-// Storage: every device in an Esevel hub is billed daily from intake at the client's contract rate, in their invoice currency.
+// Storage: every device in an Esevel warehouse is billed daily from intake at the client's contract rate, in their invoice currency.
 // Client sites are never billed. Falls back to a USD default where billing-data.js isn't loaded.
 const STOCK_TODAY = new Date(2026, 9, 16);
 const STORAGE_FALLBACK = { cur: 'USD', perDay: 0.4 };

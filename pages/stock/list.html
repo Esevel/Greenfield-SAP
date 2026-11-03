@@ -111,7 +111,7 @@
             <td class="num">${r.inStock}</td>
             <td class="num">${r.reserved}</td>
             <td class="num"><strong>${r.inStock - r.reserved}</strong></td>
-            <td>${r.inStock ? `<span class="where-split"><span class="tag tag-loc-hub">${r.hub} in hubs</span>${r.inStock - r.hub ? `<span class="tag tag-loc-site">${r.inStock - r.hub} at sites</span>` : ''}</span>` : '<span class="text-muted">—</span>'}</td>
+            <td>${r.inStock ? `            <span class="where-split"><span class="tag tag-loc-hub">${r.hub} in warehouses</span>${r.inStock - r.hub ?  `<span class="tag tag-loc-site">${r.inStock - r.hub} at sites</span>` : ''}</span>` : '<span class="text-muted">—</span>'}</td>
             <td>${Object.keys(fees).length ? feesLabel(fees) : '<span class="text-muted">None</span>'}</td>
             <td>${r.att.join(' ') || '<span class="text-muted">—</span>'}</td>
           </tr>`;

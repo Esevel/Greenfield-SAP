@@ -76,6 +76,15 @@
     const opt = (v, cur, l = v) => `<option value="${escapeHtml(v)}"${v === cur ? ' selected' : ''}>${escapeHtml(l)}</option>`;
     const clockCls = c => (c.met ? (c.health === 'met' ? 'clock-met' : 'clock-breached') : c.paused ? 'clock-paused' : c.health === 'breached' ? 'clock-breached' : c.health === 'risk' ? 'clock-risk' : '');
     const clockVal = c => (c.met ? `${c.health === 'met' ? '✓ Met' : '✕ Missed'} · ${fmtMins(c.used)}` : c.paused ? `⏸ Paused · ${fmtMins(c.left)} left` : c.left < 0 ? `${fmtMins(c.left)} overdue` : `${fmtMins(c.left)} left`);
+    const completedStages = t.stage === 'resolved' ? SUPPORT_STAGES.length : Math.max(0, stageIdx);
+    const stageProgress = Math.round(completedStages / SUPPORT_STAGES.length * 100);
+    const blocker = !t.owner ? 'Unassigned' : t.stage === 'waiting' ? 'Waiting on client response · resolution clock paused' : '';
+    const blockerHtml = blocker ? `<div class="service-sla-blocker" role="status"><strong>⛔ Blocker: ${escapeHtml(blocker)}</strong></div>` : '';
+    const slaHref = `/pages/sla-config/${s.custom ? `exceptions.html?client=${t.client}&type=support&country=${t.cc}` : `standard.html?country=${t.cc}`}`;
+    const liveDue = s.live.met
+      ? t.resolvedAt || t.firstResponse
+      : new Date(SUPPORT_NOW.getTime() + s.live.left * 60000);
+    const elapsedLabel = s.live.met ? `Met · ${fmtMins(s.live.used)}` : s.live.paused ? `Paused · ${fmtMins(s.live.used)} elapsed` : `${fmtMins(s.live.used)} of ${fmtMins(s.live.target)}`;
 
     root.innerHTML = `<div class="asset-header order-header">
         <div>
@@ -91,6 +100,31 @@
         <div class="header-actions">${secondary}${primary}</div>
       </div>
       ${stepper}
+      ${blockerHtml}
+      <section class="card mb-lg service-sla-summary">
+        <div class="card-header">
+          <h3 class="card-title">SLA timing</h3>
+          <span class="sla-pill ${pc}">${pt}</span>
+        </div>
+        <div class="card-body">
+          <div class="service-sla-progress">
+            <div class="service-sla-progress-label"><strong>${completedStages} of ${SUPPORT_STAGES.length} stages</strong><span>${stageProgress}% complete</span></div>
+            <div class="service-sla-progress-bar" role="progressbar" aria-label="Support stages completed" aria-valuemin="0" aria-valuemax="${SUPPORT_STAGES.length}" aria-valuenow="${completedStages}">
+              <span class="${s.health === 'breached' ? 'is-breached' : s.health === 'complete' ? 'is-complete' : ''}" style="width:${stageProgress}%"></span>
+            </div>
+          </div>
+          <div class="service-sla-timing-grid">
+            <div><span class="info-label">Current clock</span><strong>${escapeHtml(s.liveName)}</strong></div>
+            <div><span class="info-label">Elapsed / target</span><strong>${escapeHtml(elapsedLabel)}</strong></div>
+            <div><span class="info-label">${s.live.met ? 'Completed' : 'Due'}</span><strong>${escapeHtml(fmtSupportTs(liveDue))}</strong></div>
+          </div>
+          <div class="sla-clocks sla-clocks-lg">
+            <div class="sla-clock ${clockCls(s.response)}"><span>First response · ${fmtMins(s.response.target)}</span><span>${clockVal(s.response)}</span></div>
+            <div class="sla-clock ${clockCls(s.resolution)}"><span>Resolution · ${fmtMins(s.resolution.target)}</span><span>${clockVal(s.resolution)}</span></div>
+          </div>
+          <div class="readonly-note">Targets from <a href="${slaHref}" class="link-sm">SLA configuration</a>, adjusted for ${escapeHtml(t.priority)} priority. Waiting on client pauses resolution${t.pausedMins ? ` (${fmtMins(t.pausedMins)} paused so far)` : ''}.</div>
+        </div>
+      </section>
       <div class="edit-layout">
         <div class="edit-form-column">
           <section class="card mb-lg">
@@ -113,13 +147,6 @@
           </section>
         </div>
         <div class="edit-sidebar-column">
-          <div class="card mb-lg"><div class="card-header"><h3 class="card-title">SLA</h3>${s.custom ? '<span class="text-muted">Client exception</span>' : ''}</div><div class="card-body">
-            <div class="sla-clocks sla-clocks-lg">
-              <div class="sla-clock ${clockCls(s.response)}"><span>First response · ${fmtMins(s.response.target)}</span><span>${clockVal(s.response)}</span></div>
-              <div class="sla-clock ${clockCls(s.resolution)}"><span>Resolution · ${fmtMins(s.resolution.target)}</span><span>${clockVal(s.resolution)}</span></div>
-            </div>
-            <div class="readonly-note">Targets from <a href="/pages/sla-config/${s.custom ? `exceptions.html?client=${t.client}` : 'standard.html'}" class="link-sm">SLA configuration</a>, adjusted for ${t.priority} priority. Waiting on client pauses resolution${t.pausedMins ? ` (${fmtMins(t.pausedMins)} paused so far)` : ''}.</div>
-          </div></div>
           <div class="card mb-lg"><div class="card-header"><h3 class="card-title">Details</h3></div><div class="card-body"><div class="info-grid">
             <div class="info-row"><span class="info-label">Owner</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-field="owner" aria-label="Owner">${opt('', t.owner, 'Unassigned')}${SUPPORT_AGENTS.map(a => opt(a, t.owner)).join('')}</select></span></div>
             <div class="info-row"><span class="info-label">Priority</span><span class="info-value"><select class="form-select form-select-sm owner-select" data-field="priority" aria-label="Priority">${SUPPORT_PRIORITIES.map(p => opt(p, t.priority)).join('')}</select></span></div>

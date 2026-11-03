@@ -84,7 +84,7 @@ function slaTotalText(type, values) {
   });
   if (type.bizHours) {
     const days = x => `${Math.round(x / 9 * 10) / 10} business days`;
-    return `${h + hub}h via hub (≈ ${days(h + hub)}) · ${h}h direct`;
+    return `${h + hub}h via warehouse (≈ ${days(h + hub)}) · ${h}h direct`;
   }
   const parts = [d ? `${d}d` : '', h ? `${h}h` : ''].filter(Boolean).join(' ') || '0';
   const prefix = type.milestones.some(m => m.fixed) ? 'vendor date + ' : type.milestones.some(m => m.synced) ? 'vendor lead time + ' : '';

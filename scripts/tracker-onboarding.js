@@ -50,7 +50,7 @@ function renderOnboardingBoard(el) {
     return `<section class="board-column">
       <div class="board-column-header">
         <div class="board-column-title">${m.label} <span class="board-count">${cards.length}</span></div>
-        <span class="board-avg">${m.hubOnly ? 'Via hub only · ' : ''}SG default ${SLA_DEFAULTS.onboarding.SG[idx]}${SLA_UNITS[m.unit].short}</span>
+        <span class="board-avg">${m.hubOnly ? 'Via warehouse only · ' : ''}SG default ${SLA_DEFAULTS.onboarding.SG[idx]}${SLA_UNITS[m.unit].short}</span>
       </div>
       <div class="board-cards">${cards.map(onbCardHtml).join('') || '<div class="board-empty">Nothing here</div>'}</div>
     </section>`;
@@ -116,7 +116,7 @@ function renderOnboardingDetail() {
     let eta = '<span class="text-muted">—</span>';
     if (inProcurement && l) {
       const late = !l.received && s.lines.late.includes(l);
-      const arrived = { hub: 'At hub', site: 'At client site', employee: 'Delivered' }[s.route];
+      const arrived = { hub: 'At warehouse', site: 'At client site', employee: 'Delivered' }[s.route];
       status = l.received
         ? `<span class="badge badge-sm badge-success">${arrived}</span>${l.note ? `<div class="sla-sub">${escapeHtml(l.note)}</div>` : ''}`
         : `<span class="badge badge-sm ${late ? 'badge-error' : 'badge-warning'}">Ordered</span>`;

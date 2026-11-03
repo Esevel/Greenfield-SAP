@@ -31,7 +31,7 @@
               <button type="button" class="btn btn-primary" id="rcFind">Find</button>
             </div>
             <div class="form-error" id="rcScanError" hidden></div>
-            <div class="readonly-note">Receiving a device records its grade and photos, completes the work order's "Received at hub" step, and starts storage billing from today.</div>
+            <div class="readonly-note">Receiving a device records its grade and photos, completes the work order's "Received at warehouse" step, and starts storage billing from today.</div>
           </div>
         </div>
         
@@ -43,14 +43,14 @@
               <button type="button" class="segment-button" data-s="received">Received</button>
               <button type="button" class="segment-button" data-s="">All</button>
             </div>
-            <label class="filter-select"><span>Hub</span><select id="rcHub"></select></label>
+            <label class="filter-select"><span>Warehouse</span><select id="rcHub"></select></label>
           </div>
         </div>
         
         <div class="table-container">
           <table class="table catalogue-table receiving-table">
             <thead class="catalogue-table-header">
-              <tr><th>Device</th><th>Client</th><th>From</th><th>Hub</th><th>Work order</th><th>Expected</th><th>Outcome</th><th>Grade</th><th>Status</th></tr>
+              <tr><th>Device</th><th>Client</th><th>From</th><th>Warehouse</th><th>Work order</th><th>Expected</th><th>Outcome</th><th>Grade</th><th>Status</th></tr>
             </thead>
             <tbody id="rcRows"></tbody>
           </table>
@@ -172,7 +172,7 @@
         $('rcMeta').textContent = `${r.serial} · ${stockClient(r.client).name}`;
         const rate = storageRate(r.client, stockLoc(r.hub).country);
         $('rcInfo').innerHTML = [
-          ['From', escapeHtml(r.from)], ['Work order', `<a href="/pages/services/offboarding-detail.html">${r.wo}</a>`], ['Hub', escapeHtml(stockLoc(r.hub).name)],
+          ['From', escapeHtml(r.from)], ['Work order', `<a href="/pages/services/offboarding-detail.html">${r.wo}</a>`], ['Warehouse', escapeHtml(stockLoc(r.hub).name)],
           ['Outcome', OUTCOME[r.outcome]], ['Storage', rate.perDay ? `${money(rate.cur, rate.perDay)} / day from intake${rate.fx ? `<div class="stock-sub">${money(rate.local.cur, rate.local.perDay)} local fee at ${rate.fx.rate.toFixed(4)} (${escapeHtml(rate.fx.source)})</div>` : ''}` : 'Not billable on contract']
         ].map(([a, b]) => `<div class="info-row"><span class="info-label">${a}</span><span class="info-value">${b}</span></div>`).join('');
         setCond(form.condition);
@@ -185,7 +185,7 @@
         $('rcError').hidden = true;
         $('rcFooter').hidden = locked;
         $('rcDone').hidden = !locked;
-        const ch = locked ? activeCharges(r.wo, 'Received at hub').find(x => x.asset.startsWith(r.serial)) : null;
+        const ch = locked ? activeCharges(r.wo, 'Received at warehouse').find(x => x.asset.startsWith(r.serial)) : null;
         $('rcDone').innerHTML = locked ? `✓ Received ${r.receivedAt} by ${escapeHtml(r.receivedBy)}. Storage billing started.${ch ? `<div class="stock-sub">Retrieval charge <a href="/pages/billing/ledger.html?entry=${ch.id}" class="link-sm">${ch.id}</a> · ${fmtAmount(ch.cur, ch.amount)} · ${escapeHtml(chargeBasisText(ch))}</div>` : ''}` : '';
         $('rcPanel').classList.add('open');
         $('rcOverlay').classList.add('show');
@@ -200,7 +200,7 @@
         if (m) return;
         Object.assign(current, { status: 'received', grade: form.grade, condition: form.condition, notes: $('rcNotes').value.trim(), photos: form.photos, receivedAt: billNow(), receivedBy: 'You' });
         const r = current;
-        const log = completeStep({ wo: r.wo, step: 'Received at hub', source: `Receiving · ${stockLoc(r.hub).name}`, doc: `Intake · ${r.photos} photos · grade ${r.grade}`, cc: stockLoc(r.hub).country, client: r.client,
+        const log = completeStep({ wo: r.wo, step: 'Received at warehouse', source: `Receiving · ${stockLoc(r.hub).name}`, doc: `Intake · ${r.photos} photos · grade ${r.grade}`, cc: stockLoc(r.hub).country, client: r.client,
           assets: [`${r.serial} · ${r.model}`], recipient: r.from.replace(/ \(.*\)$/, '') });
         close();
         note(`${r.serial} received as grade ${r.grade}. ${postingSummary(log)}. Storage billing starts today.${r.grade === 'D' && r.outcome !== 'dispose' ? ' Grade D: consider changing the outcome to Dispose.' : ''}`);
@@ -211,7 +211,7 @@
         const s = $('rcScan').value.trim().toUpperCase();
         const r = RECEIVING.find(x => x.serial.toUpperCase() === s);
         $('rcScanError').hidden = !!r || !s;
-        $('rcScanError').textContent = s ? `${s} isn't expected at any hub. Check the serial, or raise a support ticket for an unexpected arrival.` : '';
+        $('rcScanError').textContent = s ? `${s} isn't expected at any warehouse. Check the serial, or raise a support ticket for an unexpected arrival.` : '';
         if (!r) return;
         if (r.status === 'expected') { r.status = 'arrived'; saveBilling(); }
         state = r.status;

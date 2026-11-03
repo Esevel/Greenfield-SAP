@@ -20,7 +20,7 @@ const TRACKER_ITEMS = [
   { id: 'REP-0871', client: 'techglobal', type: 'repair', cc: 'SG', start: '2026-10-09T14:00', done: ['2026-10-09T16:00', '2026-10-11T19:00'],
     stage: 'Awaiting part', owner: ['JL', 'Jia Ling'], blocker: 'Awaiting part', note: ['Jia Ling', 'Logic board back-ordered, vendor ETA Friday. Loaner sent.'], href: '/pages/services/work-order.html' },
   { id: 'ONB-1182', client: 'mediaworks', type: 'onboarding', cc: 'SG', start: '2026-10-14T15:00', done: ['2026-10-14T18:00'],
-    stage: 'Arriving at hub 21 Oct', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Client approved the 16" upgrade; vendor shipping to Singapore Hub'],
+    stage: 'Arriving at warehouse 21 Oct', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Client approved the 16" upgrade; vendor shipping to Singapore Warehouse'],
     lines: [
       { item: 'MacBook Pro 16" M3 Max', received: null, eta: '2026-10-21' },
       { item: 'Apple Studio Display', received: '2026-10-16T09:00' },
@@ -38,9 +38,9 @@ const TRACKER_ITEMS = [
     ],
     onb: { employee: 'Nur Aisyah Binti Rahim', role: 'Lecturer', startDate: '2026-11-04', pkg: 'Educator Kit', address: '12 Jalan Ampang, 50450 Kuala Lumpur', devices: ['Lenovo ThinkPad X1 Carbon', 'Logitech MX Master 3S'] } },
   { id: 'ONB-1192', client: 'digital', type: 'onboarding', cc: 'AU', start: '2026-10-14T09:00', done: ['2026-10-14T15:00'],
-    stage: 'Procuring', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'XPS 15 allocated from Sydney Hub stock; dock on order'],
+    stage: 'Procuring', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'XPS 15 allocated from Sydney Warehouse stock; dock on order'],
     lines: [
-      { item: 'Dell XPS 15', received: '2026-10-14T15:00', note: 'From hub stock' },
+      { item: 'Dell XPS 15', received: '2026-10-14T15:00', note: 'From warehouse stock' },
       { item: 'Dell UltraSharp U2723QE', received: '2026-10-15T10:00' },
       { item: 'Dell WD19S dock', received: null, eta: '2026-10-16' }
     ],
@@ -53,7 +53,7 @@ const TRACKER_ITEMS = [
     ],
     onb: { employee: 'Olivia Hart', role: 'Financial Analyst', startDate: '2026-11-03', pkg: 'Analyst Standard', address: '25 Bank St, London E14 5JP', devices: ['MacBook Pro 14" M3', 'Dell UltraSharp U2723QE'] } },
   { id: 'ONB-1186', client: 'acme', type: 'onboarding', cc: 'SG', start: '2026-10-13T22:00', done: ['2026-10-14T09:00', '2026-10-15T19:00'],
-    stage: 'Imaging · Jamf enrolment today', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Device at Singapore Hub, Jamf enrolment running'],
+    stage: 'Imaging · Jamf enrolment today', owner: ['Q', 'Qonit'], blocker: '', note: ['Qonit', 'Device at Singapore Warehouse, Jamf enrolment running'],
     onb: { employee: 'Sophie Tan', role: 'Backend Engineer', startDate: '2026-10-19', pkg: 'Developer Tier 1', address: '1 Raffles Place, Tower 2, #28-01, Singapore 048616', devices: ['MacBook Pro 14" M3', 'Logitech MX Master 3S'] } },
   { id: 'ONB-1185', client: 'cloud', type: 'onboarding', cc: 'US', start: '2026-10-12T09:00', done: ['2026-10-12T15:00', '2026-10-14T12:00', '2026-10-16T06:00'],
     stage: 'Packed, label created', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Intune profile applied, courier pickup this afternoon'],
@@ -65,7 +65,7 @@ const TRACKER_ITEMS = [
     stage: 'Awaiting employee sign-off', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Delivered to reception this morning'],
     onb: { employee: 'Mei Lin Tan', role: 'Content Producer', startDate: '2026-10-20', pkg: 'Designer Pro', address: '9 Raffles Blvd, Singapore 039596', devices: ['MacBook Pro 16" M3 Max', 'Apple Magic Keyboard'] } },
   { id: 'OFF-2044', client: 'techglobal', type: 'offboarding', cc: 'US', start: '2026-10-09T10:00', done: ['2026-10-10T15:00', '2026-10-14T03:00'],
-    stage: 'In Transit', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Tracking stalled at Memphis hub, opened trace with FedEx'], href: '/pages/services/offboarding-detail.html' },
+    stage: 'In Transit', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Tracking stalled at Memphis warehouse, opened trace with FedEx'], href: '/pages/services/offboarding-detail.html' },
   { id: 'RED-0318', client: 'techglobal', type: 'redeploy', cc: 'US', start: '2026-10-13T19:00', done: [],
     stage: 'Collection booked', owner: ['JL', 'Jia Ling'], blocker: 'Austin IT room closed until 17 Oct', note: ['Jia Ling', 'Sarah Kim confirmed the room reopens Friday; FedEx rebooked for 09:00'], href: '/pages/services/redeployments.html' },
   { id: 'DSP-0207', client: 'finance', type: 'disposal', cc: 'SG', start: '2026-10-08T10:00', done: ['2026-10-10T16:00'],
@@ -75,7 +75,7 @@ const TRACKER_ITEMS = [
   { id: 'RED-0311', client: 'mediaworks', type: 'redeploy', cc: 'SG', start: '2026-10-14T21:00', done: ['2026-10-14T21:00'], skipCollection: true,
     stage: 'QC and wipe', owner: ['AI', 'Aisha'], blocker: '', note: ['Aisha', 'Wipe certificate generated, QC bench slot tomorrow AM'], href: '/pages/services/redeployments.html' },
   { id: 'ORD-30455', client: 'acme', type: 'stock', cc: 'SG', start: '2026-10-16T07:00', done: ['2026-10-16T08:00'],
-    stage: 'Picking', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Allocated from Singapore Hub (C02WR9T6MD6T)'] },
+    stage: 'Picking', owner: ['M', 'Marcus'], blocker: '', note: ['Marcus', 'Allocated from Singapore Warehouse (C02WR9T6MD6T)'] },
   { id: 'REP-0874', client: 'digital', type: 'repair', cc: 'GB', assetSerials: ['PF3QW8ZN'], start: '2026-10-14T10:00', done: ['2026-10-14T12:00', '2026-10-15T13:00'],
     stage: 'In Repair', owner: ['JL', 'Jia Ling'], blocker: '', note: ['Jia Ling', 'Booked with FixPoint London, drop-off Thursday'], href: '/pages/services/work-order.html' },
   { id: 'ONB-1190', client: 'techglobal', type: 'onboarding', cc: 'SG', start: '2026-10-13T09:00', done: ['2026-10-13T15:00', '2026-10-15T10:00', '2026-10-16T09:00'],
@@ -256,7 +256,7 @@ function renderMilestoneCard(el) {
         } else if (st.state === 'current') {
           detail = `<span class="${s.health === 'breached' ? 'ms-late' : s.health === 'risk' ? 'ms-risk' : ''}">${fmtHours(st.actual)}</span> of ${target} · ${s.remaining < 0 ? `${fmtHours(s.remaining)} overdue` : `${fmtHours(s.remaining)} left`}`;
         } else if (st.state === 'skipped') {
-          detail = st.skipReason ? `Skipped · ${escapeHtml(st.skipReason)}` : st.m.hubOnly ? `Not needed · ${SLA_ROUTES[s.route].label.toLowerCase()}` : 'Not needed · device already at hub';
+          detail = st.skipReason ? `Skipped · ${escapeHtml(st.skipReason)}` : st.m.hubOnly ? `Not needed · ${SLA_ROUTES[s.route].label.toLowerCase()}` : 'Not needed · device already at warehouse';
         } else {
           detail = `Target ${target}`;
         }

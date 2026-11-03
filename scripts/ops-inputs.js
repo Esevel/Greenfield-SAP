@@ -12,8 +12,8 @@ const SYNC_EVENTS = [
     state: 'matched', wo: 'ONB-1186', step: 'Delivered', client: 'acme' },
   { id: 's2', at: '2026-10-16 14:10', source: 'fedex', kind: 'pod', ref: '7712 4459 0021', recipient: 'Ryan Cooper', cc: 'US', signedBy: 'R COOPER', doc: 'fedex-7712445900.pdf',
     state: 'matched', wo: 'ONB-1184', step: 'Delivered', client: 'northwind' },
-  { id: 's3', at: '2026-10-16 11:05', source: 'courierx', kind: 'return', ref: 'CX-88409911', recipient: 'Singapore Hub', cc: 'SG', signedBy: 'Hub SG · Ahmad', doc: 'RET-CX-88409911.pdf',
-    state: 'suggested', wo: 'OFF-2061', step: 'Received at hub', client: 'mediaworks', why: 'Sender address matches Leo Tan (leaver)' },
+  { id: 's3', at: '2026-10-16 11:05', source: 'courierx', kind: 'return', ref: 'CX-88409911', recipient: 'Singapore Warehouse', cc: 'SG', signedBy: 'Warehouse SG · Ahmad', doc: 'RET-CX-88409911.pdf',
+    state: 'suggested', wo: 'OFF-2061', step: 'Received at warehouse', client: 'mediaworks', why: 'Sender address matches Leo Tan (leaver)' },
   { id: 's4', at: '2026-10-16 09:30', source: 'email', kind: 'pod', ref: 'Scan from courier', recipient: 'J. Whitfield', cc: 'US', signedBy: 'Illegible', doc: 'IMG_2231.jpg',
     state: 'unmatched', client: '', why: 'No tracking number in the document' },
   { id: 's5', at: '2026-10-15 17:48', source: 'dhl', kind: 'return', ref: 'JD014600009112', recipient: 'Digital Solutions · London office', cc: 'GB', signedBy: 'Reception', doc: 'dhl-JD0146.pdf',
@@ -33,7 +33,7 @@ const SYNC_OPEN_ORDERS = [
   { wo: 'ONB-1194', client: 'techglobal', who: 'Ethan Walker', step: 'Delivered', cc: 'US' },
   { wo: 'ONB-1185', client: 'cloud', who: 'Grace Liu', step: 'Delivered', cc: 'US' },
   { wo: 'ONB-1179', client: 'mediaworks', who: 'Mei Lin Tan', step: 'Delivered', cc: 'SG' },
-  { wo: 'OFF-2044', client: 'techglobal', who: 'Kevin Brooks', step: 'Received at hub', cc: 'US' },
+  { wo: 'OFF-2044', client: 'techglobal', who: 'Kevin Brooks', step: 'Received at warehouse', cc: 'US' },
   { wo: 'ONB-1188', client: 'finance', who: 'Olivia Hart', step: 'Delivered', cc: 'GB' },
   { wo: 'REP-0412', client: 'northwind', who: 'James Whitfield', step: 'Returned to user', cc: 'US' }
 ];
@@ -47,9 +47,9 @@ const RECEIVING = [
   { id: 'r1', hub: 1, wo: 'OFF-2061', client: 'mediaworks', from: 'Leo Tan (leaver)', serial: 'C02XK4511G', model: 'MacBook Pro 14" M3', eta: '2026-10-16', tracking: 'CX-88409911', status: 'arrived', outcome: 'redeploy' },
   { id: 'r2', hub: 1, wo: 'OFF-2061', client: 'mediaworks', from: 'Leo Tan (leaver)', serial: 'F0T324558D', model: 'Apple Magic Keyboard', eta: '2026-10-16', tracking: 'CX-88409911', status: 'arrived', outcome: 'store' },
   { id: 'r3', hub: 4, wo: 'OFF-2044', client: 'techglobal', from: 'Kevin Brooks (leaver)', serial: 'CN-0H8W2K-4733B', model: 'Dell UltraSharp U2723QE', eta: '2026-10-15', tracking: '7712 4459 0877', status: 'received',
-    grade: 'B', condition: 'used', notes: 'Light scuff on stand', photos: 3, receivedAt: '2026-10-15 14:20', receivedBy: 'Hub US East · Mike', outcome: 'store' },
+    grade: 'B', condition: 'used', notes: 'Light scuff on stand', photos: 3, receivedAt: '2026-10-15 14:20', receivedBy: 'Warehouse US East · Mike', outcome: 'store' },
   { id: 'r4', hub: 4, wo: 'OFF-2044', client: 'techglobal', from: 'Kevin Brooks (leaver)', serial: 'CN-0H8W2K-4740C', model: 'Dell UltraSharp U2723QE', eta: '2026-10-15', tracking: '7712 4459 0877', status: 'received',
-    grade: 'C', condition: 'used', notes: 'Dead pixel cluster, lower left', photos: 4, receivedAt: '2026-10-15 14:26', receivedBy: 'Hub US East · Mike', outcome: 'store' },
+    grade: 'C', condition: 'used', notes: 'Dead pixel cluster, lower left', photos: 4, receivedAt: '2026-10-15 14:26', receivedBy: 'Warehouse US East · Mike', outcome: 'store' },
   { id: 'r5', hub: 1, wo: 'OFF-2063', client: 'finance', from: 'Oliver Grant (leaver)', serial: 'FVFHG4336E', model: 'MacBook Air 13" M2', eta: '2026-10-22', tracking: '', status: 'expected', outcome: 'redeploy' },
   { id: 'r6', hub: 8, wo: 'OFF-2066', client: 'northwind', from: 'Emma Wilson (leaver)', serial: 'C02XK4692H', model: 'MacBook Pro 14" M3', eta: '2026-10-29', tracking: '', status: 'expected', outcome: 'redeploy' },
   { id: 'r7', hub: 3, wo: 'RDP-0388', client: 'digital', from: 'Vendor B (restock PO-7740)', serial: 'PF3Q5011A', model: 'Lenovo ThinkPad X1 Carbon', eta: '2026-10-16', tracking: 'VB-55102', status: 'arrived', outcome: 'store' }

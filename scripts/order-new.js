@@ -95,9 +95,9 @@
 
         <section class="card mb-lg"><div class="card-header"><h3 class="card-title">Recipient and delivery</h3></div><div class="card-body"><div class="order-form-grid">
           <div class="form-group"><label class="form-label" for="nPerson">From People</label><select class="form-select" id="nPerson">${opt('', people.length ? 'Choose an employee…' : 'No employees in this country', d.person)}${people.map(x => opt(x.id, `${x.name} · ${x.role}${x.state === 'joining' ? ` · starts ${peopleFmt(x.start, false)}` : ''}`, d.person)).join('')}</select></div>
-          <div class="form-group"><label class="form-label" for="nRecipient">Recipient <span class="req">*</span></label><input class="form-input" id="nRecipient" value="${escapeHtml(d.recipient)}" placeholder="Name, or a site such as Singapore Hub (restock)">${err('recipient')}</div>
-          <div class="form-group"><label class="form-label" for="nRoute">Route</label><select class="form-select" id="nRoute">${Object.entries(SLA_ROUTES).map(([x, r]) => `<option value="${x}"${x === d.route ? ' selected' : ''}${x === 'hub' && HUB_ASSIGNMENTS[d.client][d.cc] === 'none' ? ' disabled' : ''}>${r.label}${x === 'hub' ? (HUB_ASSIGNMENTS[d.client][d.cc] === 'none' ? ' (no hub assigned)' : ` · ${escapeHtml(WAREHOUSES.find(w => w.id === HUB_ASSIGNMENTS[d.client][d.cc]).name)}`) : ''}</option>`).join('')}</select><div class="readonly-note">Via a hub adds Received at hub and QC &amp; dispatch.</div></div>
-          <div class="form-group"><label class="form-label" for="nAddress">Delivery address</label><input class="form-input" id="nAddress" value="${escapeHtml(d.address)}" placeholder="${d.route === 'hub' ? 'Hub address is used' : 'Street, city, postcode'}" ${d.route === 'hub' ? 'disabled' : ''}>${err('address')}</div>
+          <div class="form-group"><label class="form-label" for="nRecipient">Recipient <span class="req">*</span></label><input class="form-input" id="nRecipient" value="${escapeHtml(d.recipient)}" placeholder="Name, or a site such as Singapore Warehouse (restock)">${err('recipient')}</div>
+          <div class="form-group"><label class="form-label" for="nRoute">Route</label><select class="form-select" id="nRoute">${Object.entries(SLA_ROUTES).map(([x, r]) => `<option value="${x}"${x === d.route ? ' selected' : ''}${x === 'hub' && HUB_ASSIGNMENTS[d.client][d.cc] === 'none' ? ' disabled' : ''}>${r.label}${x === 'hub' ? (HUB_ASSIGNMENTS[d.client][d.cc] === 'none' ? ' (no warehouse assigned)' : ` · ${escapeHtml(WAREHOUSES.find(w => w.id === HUB_ASSIGNMENTS[d.client][d.cc]).name)}`) : ''}</option>`).join('')}</select><div class="readonly-note">Via a warehouse adds Received at warehouse and QC &amp; dispatch.</div></div>
+          <div class="form-group"><label class="form-label" for="nAddress">Delivery address</label><input class="form-input" id="nAddress" value="${escapeHtml(d.address)}" placeholder="${d.route === 'hub' ? 'Warehouse address is used' : 'Street, city, postcode'}" ${d.route === 'hub' ? 'disabled' : ''}>${err('address')}</div>
           <div class="form-group"><label class="form-label" for="nTicket">Ticket</label><input class="form-input" id="nTicket" value="${escapeHtml(d.ticket)}" placeholder="e.g. ZD-1234"></div>
           <div class="form-group"><label class="form-label" for="nCostCentre">Cost centre</label><input class="form-input" id="nCostCentre" value="${escapeHtml(d.costCentre)}"></div>
         </div></div></section>
@@ -146,7 +146,7 @@
           </ul>
           ${cap ? `<div class="${cap.over || cap.near ? 'cap-warning' : 'readonly-note'}">${cap.over ? '⚠ Over procurement cap: ' : cap.near ? '⚠ Near procurement cap: ' : 'Procurement cap: '}${fmtAmount(cap.ci.cur, Math.max(0, cap.ci.limit - cap.ci.spent), 0)} left before this order, ${fmtAmount(cap.ci.cur, cap.after, 0)} after (${Math.round(cap.pct)}% used). <a href="/pages/clients/caps.html" class="link-sm">Caps</a></div>` : ''}
           <label class="def-also-item" style="margin-top: var(--space-sm);"><input type="checkbox" id="nApproval" ${d.approvalRequired || (cap && cap.over) ? 'checked' : ''} ${cap && cap.over ? 'disabled' : ''}> Requires client approval${cap && cap.over ? ' (over cap)' : ''}</label>
-          <div class="readonly-note">SLA: ${total}h of business time in ${WH_COUNTRIES[d.cc][1]}${ov ? ' (client exception)' : ''}, so delivery by about ${fmtOrderDate(calIso(expected))}${vendor ? `. ${escapeHtml(vendor.name)} quotes ${supplyRangeLabel(vendor.range)} to ${d.route === 'hub' ? 'the hub' : 'site'}` : ''}.</div>
+          <div class="readonly-note">SLA: ${total}h of business time in ${WH_COUNTRIES[d.cc][1]}${ov ? ' (client exception)' : ''}, so delivery by about ${fmtOrderDate(calIso(expected))}${vendor ? `. ${escapeHtml(vendor.name)} quotes ${supplyRangeLabel(vendor.range)} to ${d.route === 'hub' ? 'the warehouse' : 'site'}` : ''}.</div>
         </div>
         <div class="side-panel-footer" style="flex-direction: column; align-items: stretch;">
           <button type="button" class="btn btn-primary" id="nCreate">Create order</button>
@@ -176,7 +176,7 @@
     else if (id === 'nPerson') {
       d.person = v;
       const pp = personById(v);
-      if (pp) { d.recipient = pp.name; d.address = pp.address || ''; if (!pp.address && d.route !== 'hub') d.errors.address = 'No address on file for this person. Add one or route via the hub.'; }
+      if (pp) { d.recipient = pp.name; d.address = pp.address || ''; if (!pp.address && d.route !== 'hub') d.errors.address = 'No address on file for this person. Add one or route via the warehouse.'; }
     } else if (id === 'nShipCost') d.shippingCost = +v;
     else if (id === 'nShipRev') d.shippingRev = +v;
     else if (el.dataset.line != null) {
@@ -225,7 +225,7 @@
   function create() {
     d.errors = {};
     if (!d.recipient.trim()) d.errors.recipient = 'Enter who receives the order.';
-    if (d.route !== 'hub' && !d.address.trim()) d.errors.address = 'Enter a delivery address, or route via the hub.';
+    if (d.route !== 'hub' && !d.address.trim()) d.errors.address = 'Enter a delivery address, or route via the warehouse.';
     if (!d.lines.length || d.lines.some(l => !(l.qty >= 1))) d.errors.lines = 'Every item needs a quantity of at least 1.';
     if (Object.keys(d.errors).length) { render(); orderToast('Fix the highlighted fields.', 'error'); root.querySelector('.form-error')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     const draft = draftOrder();

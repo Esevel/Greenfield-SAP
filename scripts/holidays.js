@@ -208,7 +208,7 @@ function initHolidays() {
     preview.textContent = `⚠ Shifts ${shifted} SLA target${shifted === 1 ? '' : 's'} · ${days} business day${days === 1 ? '' : 's'} closed in ${where}`;
   }
 
-  // Hub closures only pause work that runs through that hub: storage intake and deploy-from-stock for the clients assigned to it
+  // Warehouse closures only pause work that runs through that warehouse: storage intake and deploy-from-stock for its assigned clients
   const countryHubs = () => WAREHOUSES.filter(w => w.type === 'esevel' && w.status === 'Active' && w.country === country.code);
   const selectedHub = () => WAREHOUSES.find(w => w.id === Number($('closureHub').value));
 
@@ -218,7 +218,7 @@ function initHolidays() {
     const names = clientsAssignedTo(hub.id).map(x => x.client.name);
     $('hubClients').textContent = names.length
       ? `Pauses deploy-from-stock and intake for ${names.length} assigned client${names.length === 1 ? '' : 's'}: ${names.join(', ')}`
-      : 'No clients are assigned to this hub';
+      : 'No clients are assigned to this warehouse';
   }
 
   function openModal() {
@@ -227,7 +227,7 @@ function initHolidays() {
     const hubs = countryHubs();
     $('closureHub').innerHTML = hubs.map(h => `<option value="${h.id}">${escapeHtml(h.name)}</option>`).join('');
     $('hubScopeBtn').disabled = !hubs.length;
-    $('hubScopeBtn').title = hubs.length ? '' : `No active Esevel hub in ${country.name}`;
+    $('hubScopeBtn').title = hubs.length ? '' : `No active Esevel warehouse in ${country.name}`;
     $('hubGroup').hidden = true;
     updateHubClients();
     $('closureFrom').value = '2026-10-29';
@@ -285,7 +285,7 @@ function initHolidays() {
     if (dateMsg || !reason) return;
 
     const appliesLabel = { procurement: 'Procurement', services: 'Services', both: 'Both' }[applies];
-    const scopeLabel = scope === 'region' ? `Region: ${$('closureRegion').value}` : scope === 'hub' ? `Hub: ${selectedHub().name}` : 'Country';
+    const scopeLabel = scope === 'region' ? `Region: ${$('closureRegion').value}` : scope === 'hub' ? `Warehouse: ${selectedHub().name}` : 'Country';
     country.entries.push([fromV, toV, 'adhoc', reason, `${appliesLabel} · ${scopeLabel}`]);
     const savedFrom = parseDate(fromV);
     view = { year: savedFrom.getFullYear(), month: savedFrom.getMonth() };

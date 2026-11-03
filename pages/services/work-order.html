@@ -47,6 +47,33 @@
             <button class="btn btn-primary" type="button" data-tracker-milestone-action="complete">Complete Current Milestone</button>
           </div>
         </div>
+
+        <div class="info-line" role="status">
+          <strong>Repair at risk:</strong> Replacement part is back-ordered, with vendor ETA Friday 17 Oct.
+        </div>
+
+        <ol class="stage-stepper" aria-label="Repair progress" data-tracker-stepper>
+          <li class="done">
+            <span class="stage-dot">✓</span>
+            <span class="stage-name">Response</span>
+            <span class="stage-date">9 Oct</span>
+          </li>
+          <li class="done">
+            <span class="stage-dot">✓</span>
+            <span class="stage-name">Triage</span>
+            <span class="stage-date">11 Oct</span>
+          </li>
+          <li class="current-risk" aria-current="step">
+            <span class="stage-dot">3</span>
+            <span class="stage-name">Repair / loaner sent</span>
+            <span class="stage-date">At risk</span>
+          </li>
+          <li>
+            <span class="stage-dot">4</span>
+            <span class="stage-name">Returned</span>
+            <span class="stage-date">Upcoming</span>
+          </li>
+        </ol>
         
         <div class="edit-layout">
           <div class="edit-form-column">
@@ -93,34 +120,9 @@
               </div>
             </section>
 
-            <section class="card mb-lg">
-              <div class="card-header"><h3 class="card-title">Timeline</h3></div>
-              <div class="card-body">
-                <div class="timeline">
-                  <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-head"><strong>Alert sent</strong></div>
-                    <div class="timeline-meta">15 Oct, 09:00 · System</div>
-                    <div class="timeline-text">Technician and client admin notified that the repair is behind schedule.</div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-head"><strong>Status changed</strong></div>
-                    <div class="timeline-meta">11 Oct, 11:15 · Dell Service Centre</div>
-                    <div class="before-after"><span class="strikethrough">Diagnosing</span> → <strong>Awaiting part</strong></div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-head"><strong>Received at facility</strong></div>
-                    <div class="timeline-meta">10 Oct, 14:30 · DHL Express</div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-head"><strong>Repair created</strong></div>
-                    <div class="timeline-meta">9 Oct, 14:00 · Jia Ling</div>
-                  </div>
-                </div>
-              </div>
+            <section class="card mb-lg" data-tracker-audit-card>
+              <div class="card-header"><h3 class="card-title">Audit trail</h3></div>
+              <div class="card-body"><div class="timeline" data-tracker-audit></div></div>
             </section>
           </div>
           

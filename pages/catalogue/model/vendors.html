@@ -17,12 +17,12 @@
       <div class="page-content">
         <div id="model-header-container" data-active-tab="vendors"></div>
         <div class="toolbar-with-description">
-          <div class="toolbar-description"><p>Suppliers currently designated for this model’s country listings.</p></div>
+          <div class="toolbar-description"><p>Vendor mappings for each priced configuration and country. Costs, stock and lead times are shown against the specific local listing.</p></div>
           <a href="/pages/vendors/list.html" class="btn btn-secondary">Manage vendors</a>
         </div>
         <div class="table-container">
           <table class="table">
-            <thead><tr><th>Vendor</th><th>Countries supplied</th><th>Local listings</th><th>Vendor cost</th><th>Stock by country</th><th>Lead time</th></tr></thead>
+            <thead><tr><th>Vendor</th><th>Countries supplied</th><th>Mapped configurations</th><th>Vendor cost by listing</th><th>Stock by listing</th><th>Lead time by country</th></tr></thead>
             <tbody id="modelVendorRows"></tbody>
           </table>
         </div>
@@ -38,34 +38,44 @@
   <script>
     (function () {
       const model = 'MacBook Pro 14" M3';
-      const listings = MODEL_VENDOR_LISTINGS[model].countries;
+      const modelListings = MODEL_VENDOR_LISTINGS[model];
+      if (!modelListings) throw new Error(`Missing vendor listings for ${model}`);
       const vendorKeys = Object.fromEntries(Object.entries(SUPPLY_SUPPLIERS).map(([key, vendor]) => [vendor.name, key]));
       const byVendor = new Map();
-      Object.entries(listings).forEach(([country, listing]) => {
-        if (!byVendor.has(listing.vendor)) byVendor.set(listing.vendor, []);
-        byVendor.get(listing.vendor).push({ country, listing });
+      Object.values(modelListings.configurations).forEach(configuration => {
+        Object.entries(configuration.countries).forEach(([country, listing]) => {
+          if (!byVendor.has(listing.vendor)) byVendor.set(listing.vendor, []);
+          byVendor.get(listing.vendor).push({ country, configuration, listing });
+        });
       });
       const rows = [...byVendor.entries()].map(([name, supplies]) => {
         const key = vendorKeys[name];
         const vendor = SUPPLY_SUPPLIERS[key];
-        const countries = supplies.map(({ country }) => `<div><span class="flag">${WH_COUNTRIES[country]?.[0] || country}</span> ${WH_COUNTRIES[country]?.[1] || country}</div>`).join('');
-        const costsByCountry = supplies.map(({ country, listing }) => `<div>${country}: <strong>${listing.currency} ${listing.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>`).join('');
-        const stockByCountry = supplies.map(({ country, listing }) => `<div><span class="flag">${WH_COUNTRIES[country]?.[0] || country}</span> ${country}: <strong>${listing.stock}</strong> units</div>`).join('');
-        const leadTimes = supplies.map(({ country }) => {
-          const range = vendor?.leadTimes[country];
+        const countriesSupplied = [...new Set(supplies.map(({ country }) => country))];
+        const countries = countriesSupplied.map(country => `<div><span class="flag">${WH_COUNTRIES[country]?.[0] || country}</span> ${WH_COUNTRIES[country]?.[1] || country}</div>`).join('');
+        const costsByListing = supplies.map(({ country, configuration, listing }) => {
+          const cost = Number.isFinite(listing.cost)
+            ? `${escapeHtml(listing.currency || '')} ${listing.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : '<span class="text-warning">Cost unavailable · pricing review</span>';
+          return `<div><span class="text-muted">${escapeHtml(configuration.label)} · ${country}</span><br><strong>${cost}</strong></div>`;
+        }).join('');
+        const stockByListing = supplies.map(({ country, configuration, listing }) => `<div><span class="text-muted">${escapeHtml(configuration.label)} · ${country}</span><br><strong>${Number.isFinite(listing.stock) ? listing.stock : '—'}</strong> units</div>`).join('');
+        const leadTimes = countriesSupplied.map(country => {
+          const range = vendor?.leadTimes?.[country];
           return range ? `${country}: ${range[0]}–${range[1]} days` : `${country}: —`;
         }).join('<br>');
         return `<tr>
-          <td><a class="link-sm" href="/pages/vendors/supplier.html?v=${encodeURIComponent(key || '')}">${escapeHtml(name)}</a></td>
+          <td>${key ? `<a class="link-sm" href="/pages/vendors/supplier.html?v=${encodeURIComponent(key)}">${escapeHtml(name)}</a>` : escapeHtml(name)}</td>
           <td>${countries}</td>
           <td>${supplies.length}</td>
-          <td>${costsByCountry}</td>
-          <td>${stockByCountry}</td>
+          <td>${costsByListing}</td>
+          <td>${stockByListing}</td>
           <td>${leadTimes}</td>
         </tr>`;
       });
       document.getElementById('modelVendorRows').innerHTML = rows.join('') || '<tr><td colspan="6" class="text-muted sla-empty">No vendors are assigned to this model.</td></tr>';
-      document.getElementById('modelVendorCount').textContent = `${byVendor.size} vendors supplying this model · ${Object.keys(listings).length} country listings`;
+      const listingCount = [...byVendor.values()].reduce((count, listings) => count + listings.length, 0);
+      document.getElementById('modelVendorCount').textContent = `${byVendor.size} vendors · ${listingCount} configuration-country listings`;
       const updateTabCount = () => {
         const badge = document.getElementById('modelVendorsTabCount');
         if (badge) badge.textContent = byVendor.size;

@@ -7,14 +7,14 @@ const ms = (key, label, unit, flags = {}) => ({ key, label, unit, ...flags });
 
 // Delivery route, chosen at checkout. Direct routes skip the hub steps; the vendor delivery is the final delivery.
 const SLA_ROUTES = {
-  hub: { label: 'Via Esevel hub', short: 'Via hub' },
+  hub: { label: 'Via Esevel warehouse', short: 'Via warehouse' },
   site: { label: 'Direct to client site', short: 'To client site' },
   employee: { label: 'Direct to employee', short: 'To employee' }
 };
 const HUB_ONLY = { hubOnly: true };
 
 // Purchase orders (Regular, Rush, Bulk, Pre-order): fulfilment stages measured in business hours of the order country.
-// Received at hub and QC & dispatch only apply when the vendor ships to an Esevel hub.
+// Received at warehouse and QC & dispatch only apply when the vendor ships to an Esevel warehouse.
 const ORDER_MILESTONES = () => [
   ms('submitted', 'Submitted to vendor', 'h'),
   ms('quote_sent', 'Quotation sent for approval', 'h'),
@@ -23,7 +23,7 @@ const ORDER_MILESTONES = () => [
   ms('client_confirmed', 'Client confirmed', 'h'),
   ms('payment', 'Payment confirmed', 'h'),
   ms('awb', 'Shipping info (AWB)', 'h'),
-  ms('received', 'Received at hub', 'h', HUB_ONLY),
+  ms('received', 'Received at warehouse', 'h', HUB_ONLY),
   ms('qc', 'QC & dispatch', 'h', HUB_ONLY),
   ms('out', 'Out for delivery', 'h'),
   ms('delivered', 'Delivered', 'h')
@@ -34,7 +34,7 @@ const SLA_TYPES = [
   { key: 'rush', group: 'order', name: 'Rush', note: 'Buy new with priority handling', bizHours: true, milestones: ORDER_MILESTONES() },
   { key: 'bulk', group: 'order', name: 'Bulk', note: 'Buy new · 20+ units in one order', bizHours: true, milestones: ORDER_MILESTONES() },
   { key: 'preorder', group: 'order', name: 'Pre-order', note: 'Clock starts at the vendor’s confirmed stock date', bizHours: true, milestones: ORDER_MILESTONES() },
-  { key: 'stock', group: 'order', name: 'Deploy from stock', note: 'From the client’s assigned hub',
+  { key: 'stock', group: 'order', name: 'Deploy from stock', note: 'From the client’s assigned warehouse',
     milestones: [ms('reserve', 'Reserve', 'h'), ms('prep', 'Prep & reimage', 'd'), ms('dispatch', 'Dispatch', 'd'), ms('delivered', 'Delivered', 'd')] },
   { key: 'onboarding', group: 'service', name: 'Onboarding', note: 'New-hire kit to a working setup',
     milestones: [ms('initiated', 'Initiated', 'd'), ms('procured', 'Procured', 'd', { perLine: true }), ms('imaged', 'Imaged / Provisioned', 'd', HUB_ONLY), ms('dispatched', 'Dispatched', 'd', HUB_ONLY), ms('delivered', 'Delivered', 'd', HUB_ONLY), ms('setup', 'Setup confirmed', 'd')] },
@@ -43,11 +43,11 @@ const SLA_TYPES = [
   { key: 'repair', group: 'service', name: 'Repair', note: 'Faulty device back in the employee’s hands',
     milestones: [ms('response', 'Response', 'h'), ms('triage', 'Triage', 'd'), ms('repair', 'Repair / loaner sent', 'd'), ms('returned', 'Returned', 'd')] },
   { key: 'redeploy', group: 'service', name: 'Redeployment', note: 'Client device sent to a new user',
-    milestones: [ms('collection', 'Collection', 'd', { conditional: 'Skipped when the device is already in a hub' }), ms('refurbish', 'Refurbish', 'd'), ms('repackage', 'Repackage', 'd'), ms('dispatched', 'Dispatched', 'd')] },
+    milestones: [ms('collection', 'Collection', 'd', { conditional: 'Skipped when the device is already in a warehouse' }), ms('refurbish', 'Refurbish', 'd'), ms('repackage', 'Repackage', 'd'), ms('dispatched', 'Dispatched', 'd')] },
   { key: 'storage', group: 'service', name: 'Storage', note: 'Client devices collected into Esevel storage',
-    milestones: [ms('collection', 'Collection', 'd'), ms('received', 'Received at hub', 'd'), ms('stored', 'Stored', 'd')] },
+    milestones: [ms('collection', 'Collection', 'd'), ms('received', 'Received at warehouse', 'd'), ms('stored', 'Stored', 'd')] },
   { key: 'disposal', group: 'service', name: 'Disposal', note: 'Secure wipe and certified disposal',
-    milestones: [ms('collection', 'Collection', 'd', { conditional: 'Skipped when the device is already in a hub' }), ms('wiped', 'Data wipe', 'd'), ms('disposed', 'Disposed & certificate', 'd')] },
+    milestones: [ms('collection', 'Collection', 'd', { conditional: 'Skipped when the device is already in a warehouse' }), ms('wiped', 'Data wipe', 'd'), ms('disposed', 'Disposed & certificate', 'd')] },
   { key: 'support', group: 'service', name: 'Support', note: 'Helpdesk tickets',
     milestones: [ms('response', 'Response', 'h'), ms('resolution', 'Resolution', 'h')] }
 ];
@@ -190,7 +190,7 @@ function slaTotalHtml(type, values, syncedFixed = false) {
   const prefix = type.milestones.some(m => m.fixed) ? 'Vendor date + ' : followsQuote ? 'Vendor lead time + ' : '';
   const condNote = cond ? `<div class="sla-sub">+${cond}d with collection</div>` : '';
   if (hubD) {
-    return `<span class="sla-total">Via hub: ${prefix}${fmt(d + hubD)}</span><div class="sla-sub">Direct: ${prefix}${fmt(d)}</div>${condNote}`;
+    return `<span class="sla-total">Via warehouse: ${prefix}${fmt(d + hubD)}</span><div class="sla-sub">Direct: ${prefix}${fmt(d)}</div>${condNote}`;
   }
   return `<span class="sla-total">${prefix}${fmt(d)}</span>${condNote}`;
 }

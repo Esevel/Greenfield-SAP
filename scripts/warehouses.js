@@ -15,7 +15,7 @@ function warehouseRow(w) {
     <tr data-id="${w.id}" class="${active ? '' : 'row-muted'}">
       <td><span class="vendor-name">${escapeHtml(w.name)}</span></td>
       <td>${w.type === 'esevel'
-        ? '<span class="tag tag-hub">Esevel-managed hub</span>'
+        ? '<span class="tag tag-hub">Esevel-managed warehouse</span>'
         : '<span class="tag tag-client-loc">Client-owned location</span>'}</td>
       <td>${w.type === 'client' ? escapeHtml(w.client) : '<span class="text-muted">—</span>'}</td>
       <td><span class="flag">${flag}</span> ${countryName}</td>
@@ -86,7 +86,7 @@ function initWarehouses() {
     field('whBufferGroup').hidden = type !== 'esevel';
     field('whTypeNote').textContent = type === 'client'
       ? 'Devices here stay with the client. No Esevel storage fees, and redeployments from this site start with a collection step.'
-      : 'Storage fees apply from intake. Clients are assigned to this hub in Clients › Hub assignments.';
+      : 'Storage fees apply from intake. Clients are assigned to this warehouse in Clients › Warehouse assignments.';
   }
 
   function openPanel(w) {

@@ -26,7 +26,7 @@ const REQUEST_ASSETS = [
   { id: 'C02ZP3Q8MD6T', client: 'brightpath', model: 'MacBook Pro 14" M3', icon: '💻', kind: 'employee', who: 'Aiden Lee', country: 'MY' }
 ];
 
-const KIND_LABEL = { employee: 'With employee', hub: 'Esevel hub', site: 'Client site' };
+const KIND_LABEL = { employee: 'With employee', hub: 'Esevel warehouse', site: 'Client site' };
 
 function initRaiseRequest() {
   const $ = id => document.getElementById(id);
@@ -109,7 +109,7 @@ function initRaiseRequest() {
     const route = onbRoute();
     $('onbMdmHelp').textContent = route === 'direct'
       ? 'Vendor-direct devices enrol zero-touch (ABM / Autopilot) at first boot where supported; otherwise the employee follows the guide.'
-      : `Hub devices can have the ${platform.agent} installed during provisioning.`;
+      : `Warehouse devices can have the ${platform.agent} installed during provisioning.`;
   }
 
   let onbRouteChosen = false;
@@ -118,7 +118,7 @@ function initRaiseRequest() {
     const hubRadio = document.querySelector('input[name="onbRoute"][value="hub"]');
     hubRadio.disabled = !hub;
     $('onbHubNote').textContent = clientId() && $('onbCountry').value
-      ? (hub ? `· ${hub.name}` : `· no assigned hub in ${WH_COUNTRIES[$('onbCountry').value][1]}`)
+      ? (hub ? `· ${hub.name}` : `· no assigned warehouse in ${WH_COUNTRIES[$('onbCountry').value][1]}`)
       : '';
     if (!hub && hubRadio.checked) document.querySelector('input[name="onbRoute"][value="direct"]').checked = true;
     // Unless the user picked a route, default back to the hub when one is available
@@ -131,7 +131,7 @@ function initRaiseRequest() {
     const hubRadio = document.querySelector('input[name="source"][value="hub"]');
     hubRadio.disabled = !hub;
     $('srcHubNote').textContent = clientId() && destCountry()
-      ? (hub ? `· ${hub.name}` : `· no assigned hub in ${WH_COUNTRIES[destCountry()][1]}`)
+      ? (hub ? `· ${hub.name}` : `· no assigned warehouse in ${WH_COUNTRIES[destCountry()][1]}`)
       : '';
     if (hubRadio.disabled && hubRadio.checked) document.querySelector('input[name="source"][value="site"]').checked = true;
   }
@@ -161,7 +161,7 @@ function initRaiseRequest() {
     if (type === 'resale') return `No laptops for ${clientName()} — resale covers laptops and MacBooks only`;
     if (type === 'setup') return `No devices with employees for ${clientName()}`;
     if (type === 'disposal') return `No devices for ${clientName()}`;
-    const where = { hub: 'in the assigned hub', site: 'at client sites', employee: 'with employees' }[source()];
+    const where = { hub: 'in the assigned warehouse', site: 'at client sites', employee: 'with employees' }[source()];
     return `No ${clientName()} devices ${where} in ${WH_COUNTRIES[destCountry()][1]}`;
   }
 
@@ -219,27 +219,27 @@ function initRaiseRequest() {
       const base = { cc, count: assets.length };
       if (type === 'disposal') {
         const collect = assets.filter(a => a.kind !== 'hub').length;
-        return { ...base, ok: true, name: hub ? hub.name : 'E-waste partner', note: `${collect ? `${collect} collected first` : 'Already in a hub, no collection'} · wipe, dispose, certificate` };
+        return { ...base, ok: true, name: hub ? hub.name : 'E-waste partner', note: `${collect ? `${collect} collected first` : 'Already in a warehouse, no collection'} · wipe, dispose, certificate` };
       }
       if (type === 'offboarding') {
         const after = { store: 'stored', redeploy: 'held for redeployment', dispose: 'wiped and disposed' }[$('offDisposition').value];
         if ($('offDisposition').value === 'dispose') return { ...base, ok: true, name: hub ? hub.name : 'E-waste partner', note: `Collected, wiped, then ${after}` };
-        if (hub) return { ...base, ok: true, name: hub.name, note: `Return hub · collected, wiped, then ${after}` };
-        return { ...base, ok: false, name: 'No assigned hub', note: 'Storing or holding devices needs an Esevel hub.' };
+        if (hub) return { ...base, ok: true, name: hub.name, note: `Return warehouse · collected, wiped, then ${after}` };
+        return { ...base, ok: false, name: 'No assigned warehouse', note: 'Storing or holding devices needs an Esevel warehouse.' };
       }
-      if (hub) return { ...base, ok: true, name: hub.name, note: 'Assigned hub · storage fees from intake' };
-      if (type === 'storage') return { ...base, ok: false, name: 'No assigned hub', note: 'Storage needs an Esevel hub.' };
+      if (hub) return { ...base, ok: true, name: hub.name, note: 'Assigned warehouse · storage fees from intake' };
+      if (type === 'storage') return { ...base, ok: false, name: 'No assigned warehouse', note: 'Storage needs an Esevel warehouse.' };
       const site = WAREHOUSES.find(w => w.type === 'client' && w.client === clientName() && w.country === cc && w.status === 'Active'
         && !assets.some(a => a.loc === w.id));
-      if (site) return { ...base, ok: true, name: site.name, note: 'No assigned hub · goes to a client site, no Esevel fees' };
-      return { ...base, ok: false, name: 'No destination', note: 'No assigned hub or client site in this country.' };
+      if (site) return { ...base, ok: true, name: site.name, note: 'No assigned warehouse · goes to a client site, no Esevel fees' };
+      return { ...base, ok: false, name: 'No destination', note: 'No assigned warehouse or client site in this country.' };
     });
   }
 
   function renderDestination() {
     const list = $('destList');
     if (!selected.size) {
-      list.innerHTML = '<div class="dest-empty">Set automatically from the client\'s assigned hub in each country</div>';
+      list.innerHTML = '<div class="dest-empty">Set automatically from the client\'s assigned warehouse in each country</div>';
       $('destError').hidden = true;
       return;
     }
@@ -247,7 +247,7 @@ function initRaiseRequest() {
     list.innerHTML = dests.map(d => `<div class="dest-line ${d.ok ? '' : 'dest-bad'}">
       <span class="dest-country">${countryLabel(d.cc)} <span class="text-muted">· ${d.count} device${d.count === 1 ? '' : 's'}</span></span>
       <span class="dest-arrow">→</span>
-      <span><strong>${escapeHtml(d.name)}</strong><span class="dest-note">${d.note}${d.ok ? '' : ' <a href="/pages/warehouses/assignments.html" class="link-sm">Assign a hub</a>'}</span></span>
+      <span><strong>${escapeHtml(d.name)}</strong><span class="dest-note">${d.note}${d.ok ? '' : ' <a href="/pages/warehouses/assignments.html" class="link-sm">Assign a warehouse</a>'}</span></span>
     </div>`).join('');
     $('destError').hidden = true;
   }
@@ -266,12 +266,12 @@ function initRaiseRequest() {
     let intro;
     let estimate;
     if (!viaCollection) {
-      intro = `Ships from <strong>${escapeHtml(hub.name)}</strong>, ${escapeHtml(clientName())}'s assigned hub in ${country}.`;
+      intro = `Ships from <strong>${escapeHtml(hub.name)}</strong>, ${escapeHtml(clientName())}'s assigned warehouse in ${country}.`;
       estimate = 'Estimated delivery: 2–3 business days';
     } else {
       const from = source() === 'site' ? 'at a client site' : 'with an employee';
       intro = `The devices are ${from}, so the request starts with a <strong>Collection</strong> step into ${hub ? `<strong>${escapeHtml(hub.name)}</strong>` : 'Esevel'}.`;
-      if (!hub) intro += ` ${escapeHtml(clientName())} has no assigned hub in ${country}, so deploys here always start with collection.`;
+      if (!hub) intro += ` ${escapeHtml(clientName())} has no assigned warehouse in ${country}, so deploys here always start with collection.`;
       estimate = 'Estimated delivery: collection 2–4 days + redeploy 3–4 days';
     }
     plan.innerHTML = `<p class="plan-intro">${intro}</p>
@@ -285,12 +285,12 @@ function initRaiseRequest() {
     const offboarding = type === 'offboarding';
     $('typeHelp').textContent = {
       onboarding: 'Kit a new hire: procure or pull from stock, provision and deliver before their start date.',
-      offboarding: 'Collect a leaver\'s devices, wipe them and store, hold or dispose at the assigned hub.',
-      redeployment: 'Send a device to an employee. Hub stock ships directly; anything else is collected first.',
-      storage: 'Collect devices into Esevel storage at the client\'s assigned hub. Storage fees start at intake.',
-      disposal: 'Wipe and dispose of devices with a certificate. Devices in storage or a hub skip collection.',
+      offboarding: 'Collect a leaver\'s devices, wipe them and store, hold or dispose at the assigned warehouse.',
+      redeployment: 'Send a device to an employee. Warehouse stock ships directly; anything else is collected first.',
+      storage: 'Collect devices into Esevel storage at the client\'s assigned warehouse. Storage fees start at intake.',
+      disposal: 'Wipe and dispose of devices with a certificate. Devices in storage or a warehouse skip collection.',
       resale: 'Sell used laptops through Esevel\'s resale partner: estimate, assessment, offer, then data erasure with certificate on acceptance.',
-      loaner: 'Lend a device from the assigned hub while the employee\'s own device is in repair or delayed.',
+      loaner: 'Lend a device from the assigned warehouse while the employee\'s own device is in repair or delayed.',
       setup: 'Set up a device already with the employee: OS, standard apps, MDM agent, data migration.'
     }[type];
     $('onboardingFields').hidden = !onboarding;
@@ -389,7 +389,7 @@ function initRaiseRequest() {
     const destBad = selected.size > 0 && destinations().some(d => !d.ok);
     $('destError').hidden = !destBad;
     if (Object.values(errors).some(Boolean) || destBad) return null;
-    const after = { store: 'store at hub', redeploy: 'hold for redeployment', dispose: 'wipe and dispose' }[$('offDisposition').value];
+    const after = { store: 'store at warehouse', redeploy: 'hold for redeployment', dispose: 'wipe and dispose' }[$('offDisposition').value];
     const item = {
       id: StaffRequests.nextId('OFF', 2061), client: clientId(), type: 'offboarding', cc: $('offCountry').value,
       start: nowIso(), done: [],
@@ -446,7 +446,7 @@ function initRaiseRequest() {
       } else if (type === 'loaner') {
         const hub = $('loCountry').value ? hubFor(clientId(), $('loCountry').value) : null;
         text = `✓ Created ${newId('LNR')} for ${clientName()}: loaner for ${$('loRecipient').value.trim()} (${$('loReason').value.toLowerCase()})${hub ? `, shipping from ${hub.name}` : ''}${$('loUntil').value ? `, needed until ${$('loUntil').value}` : ''}.`;
-        links.push(['/pages/stock/list.html', 'Check hub stock']);
+        links.push(['/pages/stock/list.html', 'Check warehouse stock']);
       } else {
         const tasks = [...document.querySelectorAll('#suTasks input:checked')].length;
         text = `✓ Created ${newId('SET')} for ${clientName()}: ${$('suKind').value.toLowerCase()} device setup for ${$('suRecipient').value.trim()} · ${tasks} task${tasks === 1 ? '' : 's'} on ${n} device${n === 1 ? '' : 's'}.`;

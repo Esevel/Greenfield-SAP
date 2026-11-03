@@ -3,6 +3,9 @@ function initClientCatalogues() {
   const $ = id => document.getElementById(id);
   const model = 'MacBook Pro 14" M3';
   const listingData = MODEL_VENDOR_LISTINGS[model];
+  const defaultConfiguration = modelConfiguration(model);
+  if (!listingData || !defaultConfiguration) throw new Error(`Missing model catalogue configuration for ${model}`);
+  const countryListings = defaultConfiguration.countries;
   const clients = Object.fromEntries(WH_CLIENTS.map(c => [c.id, c]));
   const money = (cur, amount) => fmtAmount(cur, amount);
   const catalogueModal = $('clientCatalogueModal');
@@ -10,24 +13,30 @@ function initClientCatalogues() {
   let editingCatalogue = null;
 
   $('newCatalogueClient').innerHTML = WH_CLIENTS.map(client => `<option value="${client.id}">${escapeHtml(client.name)}</option>`).join('');
-  $('newCatalogueCountry').innerHTML = Object.keys(listingData.countries).map(country => `<option value="${country}">${WH_COUNTRIES[country]?.[1] || country}</option>`).join('');
   $('newCatalogueTier').innerHTML = Object.entries(VOLUME_TIERS).map(([key, label]) => `<option value="${key}">${escapeHtml(label)}</option>`).join('');
 
+  function updateCountryOptions(clientId, preferredCountry = '') {
+    const clientCountries = CONTRACTS[clientId]?.terms.countries || [];
+    const availableCountries = Object.keys(countryListings).filter(country => clientCountries.includes(country));
+    $('newCatalogueCountry').innerHTML = availableCountries.map(country => `<option value="${country}">${WH_COUNTRIES[country]?.[1] || country}</option>`).join('');
+    if (availableCountries.includes(preferredCountry)) $('newCatalogueCountry').value = preferredCountry;
+  }
+
   function selectedPrice() {
-    return modelClientPrice($('newCatalogueClient').value, model, $('newCatalogueCountry').value, $('newCatalogueTier').value);
+    return modelClientPrice($('newCatalogueClient').value, model, $('newCatalogueCountry').value, $('newCatalogueTier').value, defaultConfiguration.id);
   }
 
   function updateCataloguePreview() {
     const country = $('newCatalogueCountry').value;
-    const vendor = listingData.countries[country];
+    const vendor = countryListings[country];
     const price = selectedPrice();
     if (!vendor || !price) return;
     $('newCatalogueBilling').value = `${price.entity.name} · ${price.currency}`;
-    $('newCatalogueCost').value = money(vendor.currency, vendor.cost);
+    $('newCatalogueCost').value = Number.isFinite(vendor.cost) ? money(vendor.currency, vendor.cost) : 'Not available';
     $('newCatalogueRetail').value = money(vendor.currency, vendor.retail);
     $('newCataloguePriceLabel').textContent = `Contract price (${vendor.currency})`;
     $('newCatalogueAdjustment').value = price.hasContractPrice ? price.adjustment : editingCatalogue ? '' : 0;
-    $('newCataloguePrice').value = price.hasContractPrice ? price.localPrice : editingCatalogue ? '' : vendor.cost;
+    $('newCataloguePrice').value = price.hasContractPrice ? price.localPrice : editingCatalogue ? '' : vendor.cost ?? '';
     $('newCatalogueAdjustment').dataset.baseCost = vendor.cost;
     $('newCataloguePrice').dataset.baseCost = vendor.cost;
     $('newCatalogueAdjustment').dataset.currency = vendor.currency;
@@ -52,7 +61,7 @@ function initClientCatalogues() {
 
   function updateTabCount() {
     const tabCount = $('clientCatalogueTabCount');
-    if (tabCount) tabCount.textContent = CLIENT_MODEL_CATALOGUE.filter(row => modelClientPrice(row.client, model, row.country, row.tier)?.hasContractPrice).length;
+    if (tabCount) tabCount.textContent = CLIENT_MODEL_CATALOGUE.filter(row => modelClientPrice(row.client, model, row.country, row.tier, defaultConfiguration.id)?.hasContractPrice).length;
   }
 
   function render() {
@@ -62,12 +71,13 @@ function initClientCatalogues() {
       const c = clients[row.client];
       return (!query || `${c.name} ${row.country}`.toLowerCase().includes(query))
         && (!filter || (filter === 'offered' ? row.offered : !row.offered))
-        && modelClientPrice(row.client, model, row.country, row.tier)?.hasContractPrice;
+        && modelClientPrice(row.client, model, row.country, row.tier, defaultConfiguration.id)?.hasContractPrice;
     });
     $('clientCatalogueRows').innerHTML = entries.map(row => {
       const c = clients[row.client];
-      const vendor = listingData.countries[row.country];
-      const price = modelClientPrice(row.client, model, row.country, row.tier);
+      const vendor = countryListings[row.country];
+      const price = modelClientPrice(row.client, model, row.country, row.tier, defaultConfiguration.id);
+      if (!c || !vendor || !price) return '';
       const adjustment = `${price.adjustment > 0 ? '+' : ''}${price.adjustment}% · Client contract`;
       const marketplace = !row.offered ? '<span class="badge badge-muted badge-sm">Not offered</span>' : row.hidden ? '<span class="badge badge-muted badge-sm">Hidden by client</span>' : '<span class="badge badge-success badge-sm">Visible</span>';
       return `<tr>
@@ -82,7 +92,8 @@ function initClientCatalogues() {
         <td><button type="button" class="btn btn-secondary btn-sm" data-edit="${row.client}" data-country="${row.country}" data-tier="${row.tier}">Edit</button></td>
       </tr>`;
     }).join('') || '<tr><td colspan="9" class="text-muted sla-empty">No client listings match.</td></tr>';
-    $('clientCatalogueCount').textContent = `${entries.length} client catalogue listings`;
+    const visibleCount = entries.filter(row => clients[row.client] && countryListings[row.country] && modelClientPrice(row.client, model, row.country, row.tier, defaultConfiguration.id)).length;
+    $('clientCatalogueCount').textContent = `${visibleCount} client catalogue listings`;
     updateTabCount();
   }
 
@@ -105,16 +116,25 @@ function initClientCatalogues() {
   $('clientCatalogueFilter').addEventListener('change', render);
   function openCatalogueModal(row = null) {
     editingCatalogue = row;
-    const candidate = WH_CLIENTS.flatMap(client => Object.keys(listingData.countries).flatMap(country => Object.keys(VOLUME_TIERS).map(tier => ({ client, country, tier }))))
+    const candidate = WH_CLIENTS.flatMap(client => Object.keys(countryListings)
+      .filter(country => (CONTRACTS[client.id]?.terms.countries || []).includes(country))
+      .flatMap(country => Object.keys(VOLUME_TIERS)
+      .filter(tier => modelClientPrice(client.id, model, country, tier, defaultConfiguration.id))
+      .map(tier => ({ client, country, tier }))))
       .find(({ client, country, tier }) => !CLIENT_MODEL_CATALOGUE.some(row => row.client === client.id && row.country === country && row.tier === tier));
     if (row) {
       $('newCatalogueClient').value = row.client;
+      updateCountryOptions(row.client, row.country);
       $('newCatalogueCountry').value = row.country;
       $('newCatalogueTier').value = row.tier;
     } else if (candidate) {
       $('newCatalogueClient').value = candidate.client.id;
+      updateCountryOptions(candidate.client.id, candidate.country);
       $('newCatalogueCountry').value = candidate.country;
       $('newCatalogueTier').value = candidate.tier;
+    } else {
+      $('newCatalogueClient').value = WH_CLIENTS[0]?.id || '';
+      updateCountryOptions($('newCatalogueClient').value);
     }
     $('clientCatalogueModalTitle').textContent = row ? 'Edit client catalogue' : 'Add client catalogue';
     $('clientCatalogueSave').textContent = row ? 'Save changes' : 'Add catalogue';
@@ -124,18 +144,24 @@ function initClientCatalogues() {
     $('newCatalogueOffered').checked = row ? row.offered : true;
     $('clientCatalogueError').hidden = true;
     updateCataloguePreview();
-    $('newCatalogueCost').dataset.rawCost = listingData.countries[$('newCatalogueCountry').value].cost;
+    $('newCatalogueCost').dataset.rawCost = countryListings[$('newCatalogueCountry').value]?.cost ?? '';
     if (row) {
-      $('newCatalogueAdjustment').value = modelClientPrice(row.client, model, row.country, row.tier).adjustment;
-      $('newCataloguePrice').value = listingData.countries[row.country].cost * (1 + Number($('newCatalogueAdjustment').value) / 100);
+      $('newCatalogueAdjustment').value = modelClientPrice(row.client, model, row.country, row.tier, defaultConfiguration.id).adjustment;
+      $('newCataloguePrice').value = countryListings[row.country].cost * (1 + Number($('newCatalogueAdjustment').value) / 100);
     } else if (candidate) syncPriceFromAdjustment();
     catalogueModal.classList.add('show');
     $('newCatalogueClient').focus();
   }
   $('addClientCatalogue').addEventListener('click', () => openCatalogueModal());
-  ['newCatalogueClient', 'newCatalogueCountry', 'newCatalogueTier'].forEach(id => $(id).addEventListener('change', () => {
+  $('newCatalogueClient').addEventListener('change', () => {
+    updateCountryOptions($('newCatalogueClient').value);
     updateCataloguePreview();
-    $('newCatalogueCost').dataset.rawCost = listingData.countries[$('newCatalogueCountry').value].cost;
+    $('newCatalogueCost').dataset.rawCost = countryListings[$('newCatalogueCountry').value]?.cost ?? '';
+    syncPriceFromAdjustment();
+  });
+  ['newCatalogueCountry', 'newCatalogueTier'].forEach(id => $(id).addEventListener('change', () => {
+    updateCataloguePreview();
+    $('newCatalogueCost').dataset.rawCost = countryListings[$('newCatalogueCountry').value]?.cost ?? '';
     syncPriceFromAdjustment();
   }));
   $('newCatalogueAdjustment').addEventListener('input', syncPriceFromAdjustment);
@@ -151,8 +177,9 @@ function initClientCatalogues() {
     const duplicate = !editingCatalogue && CLIENT_MODEL_CATALOGUE.some(row => row.client === client && row.country === country && row.tier === tier);
     const adjustment = Number($('newCatalogueAdjustment').value);
     const contractPrice = Number($('newCataloguePrice').value);
-    const vendorCost = listingData.countries[country].cost;
+    const vendorCost = countryListings[country]?.cost;
     const error = duplicate ? 'This client catalogue already exists.'
+      : !Number.isFinite(vendorCost) || vendorCost <= 0 ? 'A valid vendor cost is required before adding this client catalogue.'
       : !Number.isFinite(adjustment) || !Number.isFinite(contractPrice) || $('newCatalogueAdjustment').value === '' || $('newCataloguePrice').value === '' ? 'Enter an adjustment and contract price.'
       : adjustment < -100 || contractPrice < vendorCost ? 'Contract price cannot be below vendor cost; adjustment cannot be less than -100%.' : '';
     $('clientCatalogueError').textContent = error;

@@ -22,7 +22,7 @@
         
         <div class="toolbar-with-description">
           <div class="toolbar-description">
-            <p>Client stock of this model. Every unit belongs to a client and sits in an Esevel hub or at a client site. <span class="badge badge-muted badge-sm">Read-only</span></p>
+            <p>Client stock of this model. Every unit belongs to a client and sits in an Esevel warehouse or at a client site. <span class="badge badge-muted badge-sm">Read-only</span></p>
           </div>
           <a href="/pages/stock/list.html" class="btn btn-secondary">Open in Stock</a>
         </div>
@@ -31,7 +31,7 @@
         
         <div class="segmented-control mb-lg" id="invFilter">
           <button type="button" class="segment-button active" data-f="">All</button>
-          <button type="button" class="segment-button" data-f="hub">In Esevel hubs</button>
+          <button type="button" class="segment-button" data-f="hub">In Esevel warehouses</button>
           <button type="button" class="segment-button" data-f="site">At client sites</button>
         </div>
         
@@ -67,7 +67,7 @@
       const tile = (label, value, sub) => `<div class="summary-tile"><div class="summary-tile-label">${label}</div><div class="summary-tile-value">${value}</div><div class="summary-tile-sub">${sub}</div></div>`;
       const sum = (ls, fn) => ls.reduce((s, l) => s + fn(l), 0);
       document.getElementById('invTiles').innerHTML = [
-        tile('In Esevel hubs', sum(lines.filter(l => isHub(stockLoc(l.loc))), l => l.onHand), 'Storage fees apply'),
+        tile('In Esevel warehouses', sum(lines.filter(l => isHub(stockLoc(l.loc))), l => l.onHand), 'Storage fees apply'),
         tile('At client sites', sum(lines.filter(l => !isHub(stockLoc(l.loc))), l => l.onHand), 'No Esevel fees'),
         tile('Reserved', sum(lines, l => l.reserved), 'For open orders')
       ].join('');

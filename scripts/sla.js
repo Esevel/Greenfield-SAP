@@ -47,7 +47,7 @@ const SLA_DETAILS = {
     target: '4 days (in transit)', started: '12 Oct, 13:00', due: '17 Oct, 00:00', elapsed: '2d 1h',
     blocker: null,
     notes: [
-      ['Jia Ling', 'Today, 07:50', 'Tracking stalled at Memphis hub, opened trace with FedEx'],
+      ['Jia Ling', 'Today, 07:50', 'Tracking stalled at Memphis warehouse, opened trace with FedEx'],
       ['Ben', '12 Oct, 13:10', 'Picked up from recipient, 1 laptop + charger']
     ]
   },
@@ -62,7 +62,7 @@ const SLA_DETAILS = {
     target: '4 days (fulfilment)', started: '14 Oct, 15:00', due: '18 Oct, 15:00', elapsed: '22h',
     blocker: null,
     notes: [
-      ['Marcus', 'Today, 10:30', 'Allocated from SG Hub return pool (C02WR9T6MD6T)']
+      ['Marcus', 'Today, 10:30', 'Allocated from SG Warehouse return pool (C02WR9T6MD6T)']
     ]
   },
   'REP-0874': {
